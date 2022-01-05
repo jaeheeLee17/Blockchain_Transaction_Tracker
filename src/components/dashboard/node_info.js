@@ -8,44 +8,65 @@ import {
   Button,
 } from "@mui/material";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-// import MoneyIcon from "@mui/icons-material/Money";
+import MoneyIcon from "@mui/icons-material/Money";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
-export const Node_info = (props) => (
-  <Card sx={{ height: "100%" }} {...props}>
-    <CardContent>
-      <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
-        <Grid item>
-          <Typography color="textSecondary" gutterBottom variant="overline">
-            Selected Node Information
-          </Typography>
-          <br />
-          <Typography color="black" variant="caption">
-            <p>Status: </p>
-            <p>Name: </p>
-            <p>Address: </p>
-            <p>Best block:</p>
-            <p>Version: </p>
-          </Typography>
-        </Grid>
-      </Grid>
+const datas = [
+  {
+    status: "start",
+    name: "test",
+    address: "13.125.146.191:3485",
+    best_block: "0 (0xd582)",
+    version: "0.1.0 (c76ef8)",
+  },
+];
 
-      <Box
-        sx={{
-          pt: 2,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <Button
-          color="primary"
-          endIcon={<ArrowRightIcon />}
-          size="small"
-          variant="text"
+export const Node_info = (props) => {
+  return (
+    <Card sx={{ height: "100%" }} {...props}>
+      <CardContent>
+        <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
+          <Grid item>
+            <Typography color="textSecondary" gutterBottom variant="overline">
+              Selected Node Information
+            </Typography>
+            <br />
+            {datas.map((data) => (
+              <Typography color="black" variant="caption">
+                <p>Status: {data.status}</p>
+                <p>Name: {data.name}</p>
+                <p>Address: {data.address}</p>
+                <p>Best block: {data.best_block}</p>
+                <p>Version: {data.version}</p>
+              </Typography>
+            ))}
+          </Grid>
+        </Grid>
+        <Box
+          sx={{
+            pt: 2,
+            display: "flex",
+            alignItems: "center",
+          }}
         >
-          View detail
-        </Button>
-      </Box>
-    </CardContent>
-  </Card>
-);
+          <Typography
+            color="error"
+            sx={{
+              mr: 1,
+            }}
+            variant="body2"
+          >
+            <Button
+              color="primary"
+              endIcon={<ArrowRightIcon />}
+              size="big"
+              variant="text"
+            >
+              View details
+            </Button>
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};

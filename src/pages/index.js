@@ -11,6 +11,7 @@ import { TrafficByDevice } from "../components/dashboard/traffic-by-device";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Status } from "../components/dashboard/status";
 import { Node_info } from "../components/dashboard/node_info";
+import { Node_ex } from "../components/dashboard/node_ex.js";
 
 const Dashboard = () => (
   <>
@@ -33,7 +34,10 @@ const Dashboard = () => (
             <Node_info />
           </Grid>
           <Grid item lg={3} sm={6} xl={3} xs={12}>
-            <Budget />
+            <Node_ex />
+          </Grid>
+          <Grid item lg={3} sm={6} xl={3} xs={12}>
+            <Node_ex />
           </Grid>
           <Grid item lg={3} sm={6} xl={3} xs={12}>
             <Budget />
