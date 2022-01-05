@@ -3,17 +3,19 @@ import { Box, Container, Grid } from "@mui/material";
 import { Budget } from "../components/dashboard/budget";
 import { LatestOrders } from "../components/dashboard/latest-orders";
 // import { LatestProducts } from '../components/dashboard/latest-products';
-import { Sales } from "../components/dashboard/sales";
+import { Sales } from "../components/dashboard/node_connect";
 import { TasksProgress } from "../components/dashboard/tasks-progress";
 import { TotalCustomers } from "../components/dashboard/total-customers";
 import { TotalProfit } from "../components/dashboard/total-profit";
 import { TrafficByDevice } from "../components/dashboard/traffic-by-device";
 import { DashboardLayout } from "../components/dashboard-layout";
+import { Status } from "../components/dashboard/status";
+import { Node_info } from "../components/dashboard/node_info";
 
 const Dashboard = () => (
   <>
     <Head>
-      <title>Dashboard | Material Kit</title>
+      <title>Dashboard</title>
     </Head>
     <Box
       component="main"
@@ -24,6 +26,15 @@ const Dashboard = () => (
     >
       <Container maxWidth={false}>
         <Grid container spacing={3}>
+          <Grid item lg={3} sm={6} xl={3} xs={12}>
+            <Status />
+          </Grid>
+          <Grid item lg={3} sm={6} xl={3} xs={12}>
+            <Node_info />
+          </Grid>
+          <Grid item lg={3} sm={6} xl={3} xs={12}>
+            <Budget />
+          </Grid>
           <Grid item lg={3} sm={6} xl={3} xs={12}>
             <Budget />
           </Grid>

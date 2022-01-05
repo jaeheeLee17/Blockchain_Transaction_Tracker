@@ -2,7 +2,14 @@ import { useEffect } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
-import { Box, Button, Divider, Drawer, Typography, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  Drawer,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { ChartBar as ChartBarIcon } from "../icons/chart-bar";
 import { Cog as CogIcon } from "../icons/cog";
@@ -25,7 +32,12 @@ const items = [
   {
     href: "/customers",
     icon: <UsersIcon fontSize="small" />,
-    title: "Customers",
+    title: "Node list",
+  },
+  {
+    href: "/customers",
+    icon: <UsersIcon fontSize="small" />,
+    title: "transaction",
   },
   {
     href: "/account",
@@ -132,7 +144,12 @@ export const DashboardSidebar = (props) => {
         />
         <Box sx={{ flexGrow: 1 }}>
           {items.map((item) => (
-            <NavItem key={item.title} icon={item.icon} href={item.href} title={item.title} />
+            <NavItem
+              key={item.title}
+              icon={item.icon}
+              href={item.href}
+              title={item.title}
+            />
           ))}
         </Box>
         <Divider sx={{ borderColor: "#2D3748" }} />

@@ -50,7 +50,10 @@ const products = [
 
 export const LatestProducts = (props) => (
   <Card {...props}>
-    <CardHeader subtitle={`${products.length} in total`} title="Latest Products" />
+    <CardHeader
+      subtitle={`${products.length} in total`}
+      title="Latest Products"
+    />
     <Divider />
     <List>
       {products.map((product, i) => (
@@ -83,7 +86,12 @@ export const LatestProducts = (props) => (
         p: 2,
       }}
     >
-      <Button color="primary" endIcon={<ArrowRightIcon />} size="small" variant="text">
+      <Button
+        color="primary"
+        endIcon={<ArrowRightIcon />}
+        size="small"
+        variant="text"
+      >
         View all
       </Button>
     </Box>
