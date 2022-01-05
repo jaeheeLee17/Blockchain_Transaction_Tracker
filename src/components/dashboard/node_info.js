@@ -13,7 +13,7 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
 const datas = [
   {
-    status: "start",
+    status: "Run",
     name: "test",
     address: "13.125.146.191:3485",
     best_block: "0 (0xd582)",
@@ -27,7 +27,7 @@ export const Node_info = (props) => {
       <CardContent>
         <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
           <Grid item>
-            <Typography color="textSecondary" gutterBottom variant="overline">
+            <Typography color="black" gutterBottom variant="overline">
               Selected Node Information
             </Typography>
             <br />
