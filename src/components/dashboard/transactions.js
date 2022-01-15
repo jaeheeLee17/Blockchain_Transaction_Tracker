@@ -10,8 +10,8 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 // import PeopleIcon from "@mui/icons-material/PeopleOutlined";
 import MoneyIcon from "@mui/icons-material/Money";
 
-export const TotalCustomers = (props) => (
-  <Card {...props}>
+export const Transactions = (props) => (
+  <Card sx={{ height: "100%" }} {...props}>
     <CardContent>
       <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
         <Grid item>

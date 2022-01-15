@@ -30,14 +30,14 @@ const items = [
     title: "Dashboard",
   },
   {
-    href: "/customers",
+    href: "/nodelist",
     icon: <UsersIcon fontSize="small" />,
     title: "Node list",
   },
   {
-    href: "/customers",
+    href: "/transaction_ratio",
     icon: <UsersIcon fontSize="small" />,
-    title: "transaction",
+    title: "Transaction ratio by exchange",
   },
   {
     href: "/account",

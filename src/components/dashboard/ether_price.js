@@ -10,7 +10,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 // import MoneyIcon from "@mui/icons-material/Money";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 
-export const Budget = (props) => (
+export const Ether_price = (props) => (
   <Card sx={{ height: "100%" }} {...props}>
     <CardContent>
       <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
