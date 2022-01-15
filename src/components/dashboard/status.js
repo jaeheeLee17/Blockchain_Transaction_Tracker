@@ -23,11 +23,23 @@ export const Status = (props) => (
 
           <Typography color="black" variant="caption">
             {/* <ion-icon name="ellipse-outline"></ion-icon> */}
-            <p>Run</p>
-            <p>Starting</p>
-            <p>updating</p>
-            <p>Stop</p>
-            <p>Error</p>
+            <div>
+              {/* <div
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: "green",
+                }}
+              > */}
+              <p>Run</p>
+              {/* </div> */}
+
+              <p>Starting</p>
+              <p>updating</p>
+              <p>Stop</p>
+              <p>Error</p>
+            </div>
           </Typography>
         </Grid>
       </Grid>

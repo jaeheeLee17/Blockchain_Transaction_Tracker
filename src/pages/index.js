@@ -28,7 +28,7 @@ const Dashboard = () => (
     >
       <Container maxWidth={false}>
         <Grid container spacing={3}>
-          <Grid item lg={3} sm={3} xl={6} xs={12}>
+          <Grid item lg={3} sm={6} xl={3} xs={12}>
             <Ether_price />
           </Grid>
           <Grid item xl={3} lg={3} sm={6} xs={12}>

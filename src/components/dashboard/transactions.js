@@ -19,7 +19,7 @@ export const Transactions = (props) => (
             TRANSACTIONS
           </Typography>
           <Typography color="textPrimary" variant="h4">
-            1,6k
+            {Math.floor(Math.random() * 100000)}M
           </Typography>
         </Grid>
         <Grid item>
@@ -59,9 +59,9 @@ export const Transactions = (props) => (
         >
           16%
         </Typography>
-        <Typography color="textSecondary" variant="caption">
+        {/* <Typography color="textSecondary" variant="caption">
           Since last month
-        </Typography>
+        </Typography> */}
       </Box>
     </CardContent>
   </Card>

@@ -95,9 +95,9 @@ export const Sales = (props) => {
     <Card {...props}>
       <CardHeader title="Node connection graph" />
       {/* 거래량에 따른 그래프 형태 변화 선택 기능 */}
-      <button>button ex1</button>
-      <button>button ex2</button>
-      <button>button ex3</button>
+      <button>button</button>
+      <button>button</button>
+      <button>button</button>
       <Divider />
       {/* const MyResponsiveNetwork = ({data}) => (
       <ResponsiveNetwork

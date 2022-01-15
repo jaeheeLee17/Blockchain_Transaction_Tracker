@@ -22,7 +22,7 @@ import { useFormik } from "formik";
 const orders = [
   {
     id: uuid(),
-    ref: "0xa56f2d6190c636...", //한 줄 라인 글자 수 제한
+    ref: "0xa56f2d6190c636...", //한 줄 라인 글자 수 제한 만들기
     amount: 30.5,
     customer: {
       method: "Transfer",
@@ -31,6 +31,7 @@ const orders = [
     age: "12 days 20 hrs ago",
     from: "0x462ef16694f7ad4cb...",
     flow: "out",
+    to: "0xd2a79d5278d0b...",
     value: "0 Ether",
     Txn_Fee: 0.000078522,
     createdAt: 1555016400000,
