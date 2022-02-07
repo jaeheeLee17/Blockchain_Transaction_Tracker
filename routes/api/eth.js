@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.get('/block', EthController.getBlockInfo);
 router.get('/transaction', EthController.getTransactionInfo);
+router.get('/txlist', EthController.getTxlistWithAddress);
 
 module.exports = router;
