@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const transactionSchema = new Schema({
+const EthTransactionSchema = new Schema({
   blockNumber: {
     type: Number,
     required: true
@@ -34,6 +34,6 @@ const transactionSchema = new Schema({
   timestamps: true
 })
 
-const EthTransactions = mongoose.model('transaction', transactionSchema)
+const EthTransactions = mongoose.model('ethTransactions', EthTransactionSchema)
 
 module.exports = EthTransactions

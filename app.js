@@ -7,8 +7,7 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 
 const indexRouter = require('./routes/index');
-// const loadingRouter = require('./routes/loading');
-// const usersRouter = require('./routes/users');
+const ethRouter = require('./routes/api/eth');
 
 const app = express();
 
@@ -30,8 +29,7 @@ connect.then(() => {
 }, (err) => { console.log(err) });
 
 app.use('/', indexRouter);
-// app.use('/loading', loadingRouter);
-// app.use('/users', usersRouter);
+app.use('/eth', ethRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
