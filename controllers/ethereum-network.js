@@ -7,7 +7,7 @@ const cwr = require('../utils/createWebResponse');
 const etherScan = require('etherscan-api').init(
   process.env.ETHERSCAN_API_KEY,
   process.env.ETHERSCAN_NETWORK,
-  process.env.QUERY_TIMEOUT,
+  Number(process.env.QUERY_TIMEOUT),
 );
 const {StandardABI} = require('../config/eth/standardABI');
 
@@ -188,7 +188,7 @@ const getEtherBalance = async (req, res) => {
 const getTokenBalanceList = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
-    const {walletAddress, contractAddress, startBlockNum='1', endBlockNum='latest', sort='asc'} = req.query;
+    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.query;
     const tokenTxList = await etherScan.account.tokentx(
       walletAddress,
       contractAddress,
