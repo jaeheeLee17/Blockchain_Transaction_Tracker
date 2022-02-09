@@ -4,9 +4,10 @@ const ethBlocks = require('../models/ethBlocks');
 const ethTransactions = require('../models/ethTransactions');
 const ethTokens = require('../models/ethTokens');
 const cwr = require('../utils/createWebResponse');
-const etherscan = require('etherscan-api').init(
+const etherScan = require('etherscan-api').init(
   process.env.ETHERSCAN_API_KEY,
-  'ropsten',
+  process.env.ETHERSCAN_NETWORK,
+  process.env.QUERY_TIMEOUT,
 );
 const {StandardABI} = require('../config/eth/standardABI');
 
@@ -16,7 +17,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(
 
 // 특정 범위의 거래 블록 정보를 불러온 후 DB에 저장
 const getBlockInfo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json')
+  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {startBlockNum, endBlockNum} = req.query;
     for (let i = startBlockNum; i < endBlockNum; i++) {
@@ -38,7 +39,7 @@ const getBlockInfo = async (req, res) => {
       }
     }
     return cwr.createWebResp(res, header, 200, {
-      message: "Transaction Blocks loading Completed, database updated!"
+      message: "Transaction Blocks loading Completed, database updated!",
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
@@ -48,7 +49,7 @@ const getBlockInfo = async (req, res) => {
 
 // 특정 거래 블록에 포함된 거래 정보 불러온 후 DB에 저장
 const getTransactionInfo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json')
+  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {BlockNum} = req.query;
     const blockInfo = await web3.eth.getBlock(BlockNum);
@@ -76,7 +77,7 @@ const getTransactionInfo = async (req, res) => {
       }
     }
     return cwr.createWebResp(res, header, 200, {
-      message: "Transactions loading Completed, database updated!"
+      message: "Transactions loading Completed, database updated!",
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
@@ -86,10 +87,10 @@ const getTransactionInfo = async (req, res) => {
 
 // 특정 지갑 주소가 포함된 트랜젝션 목록을 불러온 후 DB에 저장
 const getTxlistWithAddress = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json')
+  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress, startBlockNum, endBlockNum, page, offset, sort, isError} = req.query;
-    const txlist = await etherscan.account.txlist(
+    const txlist = await etherScan.account.txlist(
       walletAddress,
       startBlockNum,
       endBlockNum,
@@ -124,7 +125,7 @@ const getTxlistWithAddress = async (req, res) => {
         }
       }
       return cwr.createWebResp(res, header, 200, {
-        message: "Filtered transaction list loading Completed, database updated!"
+        message: "Filtered transaction list loading Completed, database updated!",
       });
     }
     for (let i = 0; i < txlist.result.length; i++) {
@@ -147,7 +148,7 @@ const getTxlistWithAddress = async (req, res) => {
       }
     }
     return cwr.createWebResp(res, header, 200, {
-      message: "Transaction list loading Completed, database updated!"
+      message: "Transaction list loading Completed, database updated!",
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
@@ -157,7 +158,7 @@ const getTxlistWithAddress = async (req, res) => {
 
 // 특정 지갑 주소의 암호화폐 보유량 조회
 const getEtherBalance = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json')
+  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress} = req.query;
     let balance = await web3.eth.getBalance(walletAddress);
@@ -176,7 +177,7 @@ const getEtherBalance = async (req, res) => {
     return cwr.createWebResp(res, header, 200, {
       type: addressType,
       balance: balance,
-    })
+    });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Ethereum balance failed', e.message || e);
@@ -187,8 +188,8 @@ const getEtherBalance = async (req, res) => {
 const getTokenBalanceList = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
-    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.query;
-    const tokenTxList = await etherscan.account.tokentx(
+    const {walletAddress, contractAddress, startBlockNum='1', endBlockNum='latest', sort='asc'} = req.query;
+    const tokenTxList = await etherScan.account.tokentx(
       walletAddress,
       contractAddress,
       startBlockNum,
@@ -216,7 +217,7 @@ const getTokenBalanceList = async (req, res) => {
       tokenList.push(tokenData);
     }
     return cwr.createWebResp(res, header, 200, {
-      tokens: tokenList
+      tokens: tokenList,
     })
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
@@ -229,7 +230,7 @@ const getTokenTxListWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
     const {walletAddress, contractAddress, startBlockNum, endBlockNum, sort} = req.query;
-    const tokenTxList = await etherscan.account.tokentx(
+    const tokenTxList = await etherScan.account.tokentx(
       walletAddress,
       contractAddress,
       startBlockNum,
@@ -260,7 +261,7 @@ const getTokenTxListWithAddress = async (req, res) => {
       });
     }
     return cwr.createWebResp(res, header, 200, {
-      message: "Token transaction list loading Completed, database updated!"
+      message: "Token transaction list loading Completed, database updated!",
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
