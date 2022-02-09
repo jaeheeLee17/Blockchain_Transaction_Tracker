@@ -6,5 +6,8 @@ const router = express.Router();
 router.get('/block', EthController.getBlockInfo);
 router.get('/transaction', EthController.getTransactionInfo);
 router.get('/txlist', EthController.getTxlistWithAddress);
+router.get('/etherBalance', EthController.getEtherBalance);
+router.get('/tokenBalanceList', EthController.getTokenBalanceList);
+router.get('/tokenTxlist', EthController.getTokenTxListWithAddress);
 
 module.exports = router;
