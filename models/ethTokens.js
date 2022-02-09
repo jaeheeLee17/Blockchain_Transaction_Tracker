@@ -18,6 +18,10 @@ const ethTokenSchema = new Schema({
     type: String,
     required: true
   },
+  from: {
+    type: String,
+    required: true
+  },
   to: {
     type: String,
     required: true
