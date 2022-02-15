@@ -237,6 +237,7 @@ export const Sales = (props) => {
   const onClickLink = function (source, target) {
     window.alert(`Clicked link between ${source} and ${target}`);
   };
+  const onMouseHover = (props) => {};
 
   return (
     <Card {...props}>
