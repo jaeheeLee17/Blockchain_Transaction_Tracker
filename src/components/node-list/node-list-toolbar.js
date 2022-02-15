@@ -26,7 +26,7 @@ export const CustomerListToolbar = (props) => (
       <Typography sx={{ m: 1 }} variant="h4">
         Node List
       </Typography>
-      <Box sx={{ m: 1 }}>
+      {/* <Box sx={{ m: 1 }}>
         <Button startIcon={<UploadIcon fontSize="small" />} sx={{ mr: 1 }}>
           Import
         </Button>
@@ -36,7 +36,7 @@ export const CustomerListToolbar = (props) => (
         <Button color="primary" variant="contained">
           Add Customers
         </Button>
-      </Box>
+      </Box> */}
     </Box>
     <Box sx={{ mt: 3 }}>
       <Card>
@@ -53,7 +53,7 @@ export const CustomerListToolbar = (props) => (
                   </InputAdornment>
                 ),
               }}
-              placeholder="Search customer"
+              placeholder="Search by Address / Txn Hash / Block / Token / Ens"
               variant="outlined"
             />
           </Box>

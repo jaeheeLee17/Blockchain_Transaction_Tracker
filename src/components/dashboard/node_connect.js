@@ -1,6 +1,8 @@
 import { Bar } from "react-chartjs-2";
 import React from "react";
 import { ResponsiveNetwork } from "@nivo/network";
+import node_graph from "./node_graph";
+import { ForceGraph, ForceGraphNode, ForceGraphLink } from "react-vis-force";
 import {
   Box,
   Button,
@@ -95,37 +97,9 @@ export const Sales = (props) => {
     <Card {...props}>
       <CardHeader title="Node connection graph" />
       {/* 거래량에 따른 그래프 형태 변화 선택 기능 */}
-      <button>button</button>
-      <button>button</button>
-      <button>button</button>
+
       <Divider />
-      {/* const MyResponsiveNetwork = ({data}) => (
-      <ResponsiveNetwork
-        data={data}
-        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-        linkDistance={function (e) {
-          return e.distance;
-        }}
-        centeringStrength={0.3}
-        repulsivity={6}
-        nodeSize={function (n) {
-          return n.size;
-        }}
-        activeNodeSize={function (n) {
-          return 1.5 * n.size;
-        }}
-        nodeColor={function (e) {
-          return e.color;
-        }}
-        nodeBorderWidth={1}
-        nodeBorderColor={{ from: "color", modifiers: [["darker", 0.8]] }}
-        linkThickness={function (n) {
-          return 2 + 2 * n.target.data.height;
-        }}
-        linkBlendMode="multiply"
-        motionConfig="wobbly"
-      />
-      )*/}
+      {/* 
       <img
         style={{
           alignItems: "center",
@@ -134,7 +108,17 @@ export const Sales = (props) => {
           margin: "20px",
         }}
         src="/static/images/node.png"
-      />
+      /> */}
+      <ForceGraph simulationOptions={{ height: 300, width: 300 }}>
+        <ForceGraphNode node={{ id: "first-node" }} fill="green" />
+        <ForceGraphNode node={{ id: "second-node" }} fill="green" />
+        <ForceGraphNode node={{ id: "third-node" }} fill="green" />
+        <ForceGraphNode node={{ id: "fourth-node" }} fill="green" />
+        <ForceGraphLink
+          link={{ source: "first-node", target: "second-node" }}
+        />
+      </ForceGraph>
+      <node_graph />
       {/* <CardContent>
         <Box
           sx={{
@@ -158,7 +142,7 @@ export const Sales = (props) => {
           endIcon={<ArrowRightIcon fontSize="small" />}
           size="small"
         >
-          Overview
+          More Details
         </Button>
       </Box>
     </Card>

@@ -8,6 +8,9 @@ import {
   IconButton,
   Toolbar,
   Tooltip,
+  TextField,
+  InputAdornment,
+  SvgIcon,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
@@ -69,18 +72,29 @@ export const DashboardNavbar = (props) => {
           >
             <MenuIcon fontSize="small" />
           </IconButton>
-          <Tooltip title="Search">
-            <IconButton sx={{ ml: 1 }}>
-              <input
-                type="text"
-                value={text}
-                placeholder="검색어를 입력하세요"
-                onChange={onChangeText}
-                onKeyPress={onKeyPress}
-              />
-              <SearchIcon onClick={onClick} fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          <Box
+            sx={{ maxWidth: 500 }}
+            style={{
+              marginTop: "20px",
+            }}
+          >
+            <TextField
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SvgIcon color="action" fontSize="small">
+                      <SearchIcon />
+                    </SvgIcon>
+                  </InputAdornment>
+                ),
+              }}
+              placeholder="Search"
+              variant="outlined"
+            />
+            <SearchIcon onClick={onClick} fontSize="small" />
+          </Box>
+
           <Box sx={{ flexGrow: 1 }} />
           <Tooltip title="Contacts">
             <IconButton sx={{ ml: 1 }}>
@@ -94,7 +108,7 @@ export const DashboardNavbar = (props) => {
               </Badge>
             </IconButton>
           </Tooltip>
-          <Avatar
+          {/* <Avatar
             sx={{
               height: 40,
               width: 40,
@@ -103,7 +117,7 @@ export const DashboardNavbar = (props) => {
             src="/static/images/avatars/avatar_1.png"
           >
             <UserCircleIcon fontSize="small" />
-          </Avatar>
+          </Avatar> */}
         </Toolbar>
       </DashboardNavbarRoot>
     </>

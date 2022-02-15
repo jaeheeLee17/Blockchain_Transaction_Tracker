@@ -35,9 +35,9 @@ const items = [
     title: "Node list",
   },
   {
-    href: "/transaction_ratio",
+    href: "/transactiondetail",
     icon: <UsersIcon fontSize="small" />,
-    title: "Transaction ratio by exchange",
+    title: "Transaction Detail",
   },
   {
     href: "/account",
@@ -105,7 +105,7 @@ export const DashboardSidebar = (props) => {
               </a>
             </NextLink>
           </Box>
-          <Box sx={{ px: 2 }}>
+          {/* <Box sx={{ px: 2 }}>
             <Box
               sx={{
                 alignItems: "center",
@@ -134,7 +134,7 @@ export const DashboardSidebar = (props) => {
                 }}
               />
             </Box>
-          </Box>
+          </Box> */}
         </div>
         <Divider
           sx={{
