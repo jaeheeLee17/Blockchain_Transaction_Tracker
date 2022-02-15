@@ -1,5 +1,6 @@
 import { Graph } from "react-d3-graph";
 import React from "react";
+import styled from "styled-components";
 // import node_graph from "./node_graph";
 import {
   Box,
@@ -14,6 +15,12 @@ import {
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
 export const Sales = (props) => {
+  const styledNode = styled.button`
+  @: hover {
+    background-color: #a99fee;
+  }
+}`;
+
   const data = {
     links: [
       {
@@ -27,15 +34,35 @@ export const Sales = (props) => {
       },
       {
         source: 1,
-        target: 4,
+        target: 5,
       },
       {
-        source: 3,
+        source: 1,
+        target: 6,
+      },
+      {
+        source: 1,
+        target: 7,
+      },
+      {
+        source: 1,
+        target: 8,
+      },
+      {
+        source: 1,
+        target: 9,
+      },
+      {
+        source: 1,
+        target: 10,
+      },
+      {
+        source: 1,
         target: 4,
-        breakPoints: [
-          { x: 100, y: 20 },
-          { x: 20, y: 100 },
-        ],
+        // breakPoints: [
+        //   { x: 100, y: 20 },
+        //   { x: 20, y: 100 },
+        // ],
       },
       {
         source: 4,
@@ -58,6 +85,30 @@ export const Sales = (props) => {
       {
         id: 4,
         name: "Node 4",
+      },
+      {
+        id: 5,
+        name: "Node 5",
+      },
+      {
+        id: 6,
+        name: "Node 6",
+      },
+      {
+        id: 7,
+        name: "Node 7",
+      },
+      {
+        id: 8,
+        name: "Node 8",
+      },
+      {
+        id: 9,
+        name: "Node 9",
+      },
+      {
+        id: 10,
+        name: "Node 10",
       },
     ],
   };
@@ -126,7 +177,7 @@ export const Sales = (props) => {
     linkHighlightBehavior: false,
     maxZoom: 8,
     minZoom: 0.1,
-    nodeHighlightBehavior: false,
+    nodeHighlightBehavior: true,
     panAndZoom: false,
     staticGraph: false,
     staticGraphWithDragAndDrop: false,
@@ -148,11 +199,11 @@ export const Sales = (props) => {
       highlightFontWeight: "normal",
       highlightStrokeColor: "SAME",
       highlightStrokeWidth: "SAME",
-      labelProperty: "id",
+      labelProperty: "name",
       mouseCursor: "pointer",
       opacity: 1,
       renderLabel: true,
-      size: 200,
+      size: 700,
       strokeColor: "none",
       strokeWidth: 1.5,
       svg: "",
@@ -188,30 +239,21 @@ export const Sales = (props) => {
   };
 
   return (
-      <Card {...props}>
-        <CardHeader title="Node connection graph" />
-        {/* 거래량에 따른 그래프 형태 변화 선택 기능 */}
+    <Card {...props}>
+      <CardHeader title="Node connection graph" />
+      {/* 거래량에 따른 그래프 형태 변화 선택 기능 */}
 
-        <Divider />
-        {/*
-      <img
-        style={{
-          alignItems: "center",
-          width: "600px",
-          height: "500px",
-          margin: "20px",
-        }}
-        src="/static/images/node.png"
-      /> */}
-        <Graph
-            id="graph-id" // id is mandatory
-            data={data}
-            config={myConfig}
-            onClickNode={onClickNode}
-            onClickLink={onClickLink}
-        />
-        <node_graph />
-        {/* <CardContent>
+      <Divider />
+
+      <Graph
+        id="graph-id" // id is mandatory
+        data={data}
+        config={myConfig}
+        onClickNode={onClickNode}
+        onClickLink={onClickLink}
+      />
+      <node_graph />
+      {/* <CardContent>
         <Box
           sx={{
             height: 400,
@@ -221,22 +263,22 @@ export const Sales = (props) => {
           <Bar data={data} options={options} />
         </Box>
       </CardContent> */}
-        <Divider />
-        <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              p: 2,
-            }}
+      <Divider />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          p: 2,
+        }}
+      >
+        <Button
+          color="primary"
+          endIcon={<ArrowRightIcon fontSize="small" />}
+          size="small"
         >
-          <Button
-              color="primary"
-              endIcon={<ArrowRightIcon fontSize="small" />}
-              size="small"
-          >
-            More Details
-          </Button>
-        </Box>
-      </Card>
+          More Details
+        </Button>
+      </Box>
+    </Card>
   );
 };
