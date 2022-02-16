@@ -22,43 +22,44 @@ import { Users as UsersIcon } from "../icons/users";
 import { XCircle as XCircleIcon } from "../icons/x-circle";
 import { Logo } from "./logo";
 import { NavItem } from "./nav-item";
+import { Cryptocurrency } from "src/pages/cryptocurrency";
 
 const items = [
   {
     href: "/",
     icon: <ChartBarIcon fontSize="small" />,
-    title: "Dashboard",
+    title: "Overview",
+  },
+  {
+    href: "/cryptocurrency",
+    icon: <UsersIcon fontSize="small" />,
+    title: "Cryptocurrency Dashboard",
+  },
+  {
+    href: "/token",
+    icon: <UserIcon fontSize="small" />,
+    title: "Token Dashboard",
   },
   {
     href: "/nodelist",
-    icon: <UsersIcon fontSize="small" />,
-    title: "Node list",
+    icon: <UserIcon fontSize="small" />,
+    title: "Node List",
   },
   // {
-  //   href: "/transactiondetail",
-  //   icon: <UsersIcon fontSize="small" />,
-  //   title: "Transaction Detail",
+  //   href: "/login",
+  //   icon: <LockIcon fontSize="small" />,
+  //   title: "Login",
   // },
-  {
-    href: "/account",
-    icon: <UserIcon fontSize="small" />,
-    title: "Account",
-  },
-  {
-    href: "/login",
-    icon: <LockIcon fontSize="small" />,
-    title: "Login",
-  },
-  {
-    href: "/register",
-    icon: <UserAddIcon fontSize="small" />,
-    title: "Register",
-  },
-  {
-    href: "/settings",
-    icon: <CogIcon fontSize="small" />,
-    title: "Settings",
-  },
+  // {
+  //   href: "/register",
+  //   icon: <UserAddIcon fontSize="small" />,
+  //   title: "Register",
+  // },
+  // {
+  //   href: "/settings",
+  //   icon: <CogIcon fontSize="small" />,
+  //   title: "Settings",
+  // },
 ];
 
 export const DashboardSidebar = (props) => {

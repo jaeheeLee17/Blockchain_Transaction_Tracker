@@ -15,7 +15,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import { Bell as BellIcon } from "../icons/bell";
-import { UserCircle as UserCircleIcon } from "../icons/user-circle";
+// import { UserCircle as UserCircleIcon } from "../icons/user-circle";
 import { Users as UsersIcon } from "../icons/users";
 import { useState } from "react";
 
@@ -92,7 +92,7 @@ export const DashboardNavbar = (props) => {
               placeholder="Search"
               variant="outlined"
             />
-            <SearchIcon onClick={onClick} fontSize="small" />
+            <SearchIcon onClick={(onClick, onKeyPress)} fontSize="small" />
           </Box>
 
           <Box sx={{ flexGrow: 1 }} />
@@ -108,16 +108,6 @@ export const DashboardNavbar = (props) => {
               </Badge>
             </IconButton>
           </Tooltip>
-          {/* <Avatar
-            sx={{
-              height: 40,
-              width: 40,
-              ml: 1,
-            }}
-            src="/static/images/avatars/avatar_1.png"
-          >
-            <UserCircleIcon fontSize="small" />
-          </Avatar> */}
         </Toolbar>
       </DashboardNavbarRoot>
     </>

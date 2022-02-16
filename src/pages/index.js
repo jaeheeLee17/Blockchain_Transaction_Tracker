@@ -3,7 +3,7 @@ import { Box, Container, Grid } from "@mui/material";
 import { Budget, Ether_price } from "../components/dashboard/ether_price";
 import { LatestOrders } from "../components/dashboard/latest-orders";
 // import { LatestProducts } from '../components/dashboard/latest-products';
-import { Node_connect } from "../components/dashboard/node_connect";
+import { Sales } from "../components/dashboard/node_connect";
 import { TasksProgress } from "../components/dashboard/tasks-progress";
 import { Transactions } from "../components/dashboard/transactions";
 import { TotalProfit } from "../components/dashboard/total-profit";
@@ -47,15 +47,10 @@ const Dashboard = () => (
             <Node_info />
           </Grid>
 
-          <Grid item lg={8} md={12} xl={9} xs={12}>
-            <Node_connect />
-          </Grid>
+          <Grid item lg={8} md={12} xl={9} xs={12}></Grid>
           <Grid item lg={4} md={6} xl={3} xs={12}>
             <Transaction_ratio_graph sx={{ height: "100%" }} />
           </Grid>
-          {/* <Grid item lg={4} md={6} xl={3} xs={12}> */}
-          {/* <LatestProducts sx={{ height: '100%' }} /> */}
-          {/* </Grid> */}
           <Grid item lg={12} md={12} xl={9} xs={12}>
             <LatestOrders />
           </Grid>

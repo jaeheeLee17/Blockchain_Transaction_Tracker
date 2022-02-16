@@ -13,15 +13,14 @@ import {
 } from "@mui/material";
 // import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import { Link } from "react-router-dom";
-import Transactiondetail from "src/pages/transactiondetail";
+// import Transactiondetail from "src/pages/transactiondetail";
 import axios from "axios";
 
 export const Sales = (props) => {
   axios
     .get("http://localhost:3000/eth/db/TxFrom", {
       params: {
-        source: "0x56c6169317390A2d21c13a2a5d957e0d2a594628",
+        source: "0x5599b4EAdDd319e2F462b27fC8378B0BFaD309CA",
       },
     })
     .then((res) => {
@@ -281,7 +280,6 @@ export const Sales = (props) => {
         id="graph-id" // id is mandatory
         data={data}
         config={myConfig}
-        onClickNode={onClickNode}
         onClickLink={onClickLink}
         onClickNode={onClickNode}
       />
