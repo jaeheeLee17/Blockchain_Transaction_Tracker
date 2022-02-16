@@ -15,23 +15,21 @@ import {
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import { Link } from "react-router-dom";
 import Transactiondetail from "src/pages/transactiondetail";
-import axios from 'axios';
-
+import axios from "axios";
 
 export const Sales = (props) => {
-
   axios
-      .get("http://localhost:3000/eth/db/TxFrom", {
-        params: {
-            source:"0x56c6169317390A2d21c13a2a5d957e0d2a594628"
-        },
-      })
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((error) => {
-        console.dir(error);
-      });
+    .get("http://localhost:3000/eth/db/TxFrom", {
+      params: {
+        source: "0x56c6169317390A2d21c13a2a5d957e0d2a594628",
+      },
+    })
+    .then((res) => {
+      console.log(res.data);
+    })
+    .catch((error) => {
+      console.dir(error);
+    });
 
   const data = {
     links: [
