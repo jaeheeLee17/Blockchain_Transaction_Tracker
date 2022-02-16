@@ -13,6 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 import { Overview } from "./overview";
+import { Logs } from "./Logs";
+import { Status } from "./Status";
 
 class TransactionTab extends Component {
   render() {
@@ -21,12 +23,27 @@ class TransactionTab extends Component {
       return (
         <div>
           <Card>
-            <button onClick={() => setCurrent(1)}>
-              <CardHeader title="Overview" />
-            </button>
-            <button onClick={() => setCurrent(2)}>
-              <CardHeader title="Status" />
-            </button>
+            <Button
+              onClick={() => setCurrent(1)}
+              color="primary"
+              variant="outlined"
+            >
+              Overview
+            </Button>
+            <Button
+              onClick={() => setCurrent(2)}
+              color="primary"
+              variant="outlined"
+            >
+              Logs
+            </Button>
+            <Button
+              onClick={() => setCurrent(3)}
+              color="primary"
+              variant="outlined"
+            >
+              Status
+            </Button>
             <Content current={current}></Content>
           </Card>
         </div>
@@ -35,7 +52,7 @@ class TransactionTab extends Component {
     const Content = (props) => {
       return (
         <div>
-          <h1>{props.current}절입니다.</h1>
+          {/* <h1>{props.current}절입니다.</h1> */}
           <Verse current={props.current}></Verse>
         </div>
       );
@@ -43,33 +60,17 @@ class TransactionTab extends Component {
 
     const Verse = (props) => {
       if (props.current === 1) {
-        return (
-          <div>
-            <Overview />
-          </div>
-        );
+        return <Overview />;
       } else if (props.current === 2) {
-        return <p>테스트 2절</p>;
+        return <Logs />;
+      } else if (props.current === 3) {
+        return <Status />;
       }
     };
     return (
-      <Nav>
-        <Nav.Item>
-          <Nav.Link>
-            <Card>
-              <CardHeader title="Overview" />
-            </Card>
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link>
-            <Tab />
-            <Card>
-              <CardHeader title="Status" />
-            </Card>
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
+      <div>
+        <Tab />
+      </div>
     );
   }
 }

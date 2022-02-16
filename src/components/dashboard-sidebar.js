@@ -34,11 +34,11 @@ const items = [
     icon: <UsersIcon fontSize="small" />,
     title: "Node list",
   },
-  {
-    href: "/transactiondetail",
-    icon: <UsersIcon fontSize="small" />,
-    title: "Transaction Detail",
-  },
+  // {
+  //   href: "/transactiondetail",
+  //   icon: <UsersIcon fontSize="small" />,
+  //   title: "Transaction Detail",
+  // },
   {
     href: "/account",
     icon: <UserIcon fontSize="small" />,

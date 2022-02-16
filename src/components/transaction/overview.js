@@ -16,7 +16,7 @@ export const Overview = (props) => (
   <form {...props}>
     <Card>
       {/* 메뉴 탭 생성 overview, Logs, Status, ... */}
-      <TransactionTab />
+      {/* <TransactionTab /> */}
       {/* <CardHeader title="Overview" /> */}
       <Divider />
       <CardContent>

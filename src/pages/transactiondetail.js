@@ -2,7 +2,7 @@ import Head from "next/head";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Box, Container, Typography } from "@mui/material";
 import { Overview } from "src/components/transaction/overview";
-// import TransactionTab from "src/components/transaction/transactionTab";
+import TransactionTab from "src/components/transaction/transactionTab";
 
 const Transactiondetail = () => (
   <>
@@ -29,8 +29,7 @@ const Transactiondetail = () => (
         }}
       >
         <Container maxWidth="sx">
-          {/* <TransactionTab /> */}
-          <Overview />
+          <TransactionTab />
         </Container>
       </Box>
     </Box>
