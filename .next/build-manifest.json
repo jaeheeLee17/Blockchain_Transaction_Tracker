@@ -30,10 +30,10 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/nodelist": [
+    "/transactiondetail": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/nodelist.js"
+      "static/chunks/pages/transactiondetail.js"
     ]
   },
   "ampFirstPages": []

@@ -13,11 +13,15 @@ import {
 } from "@mui/material";
 // import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import { Link } from "react-router-dom";
+import Transactiondetail from "src/pages/transactiondetail";
 
 export const Sales = (props) => {
   const styledNode = styled.button`
+  
   @: hover {
     background-color: #a99fee;
+    color: blue;
   }
 }`;
 
@@ -113,57 +117,6 @@ export const Sales = (props) => {
     ],
   };
 
-  // the graph configuration, just override the ones you need
-  // const myConfig = {
-  //   automaticRearrangeAfterDropNode: false,
-  //   collapsible: false,
-  //   height: 400,
-  //   highlightDegree: 1,
-  //   highlightOpacity: 0.2,
-  //   linkHighlightBehavior: true,
-  //   maxZoom: 8,
-  //   minZoom: 0.1,
-  //   nodeHighlightBehavior: true,
-  //   panAndZoom: false,
-  //   staticGraph: false,
-  //   width: 800,
-  //   node: {
-  //     color: "#4caf50",
-  //     fontColor: "black",
-  //     fontSize: 12,
-  //     fontWeight: "normal",
-  //     highlightColor: "red",
-  //     highlightFontSize: 12,
-  //     highlightFontWeight: "bold",
-  //     highlightStrokeColor: "SAME",
-  //     highlightStrokeWidth: 1.5,
-  //     labelProperty: "name",
-  //     mouseCursor: "pointer",
-  //     opacity: 1,
-  //     renderLabel: true,
-  //     size: 450,
-  //     strokeColor: "none",
-  //     strokeWidth: 1.5,
-  //     svg: "",
-  //     symbolType: "circle",
-  //   },
-  //   link: {
-  //     color: "#4caf50",
-  //     fontColor: "red",
-  //     fontSize: 10,
-  //     highlightColor: "blue",
-  //     highlightFontWeight: "bold",
-  //     labelProperty: (link) => `from ${link.source} to ${link.target}`,
-  //     opacity: 1,
-  //     renderLabel: false,
-  //     semanticStrokeWidth: false,
-  //     strokeWidth: 4,
-  //   },
-  //   d3: {
-  //     gravity: -400,
-  //     linkLength: 300,
-  //   },
-  // };
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
     collapsible: false,
@@ -237,15 +190,16 @@ export const Sales = (props) => {
   const onClickLink = function (source, target) {
     window.alert(`Clicked link between ${source} and ${target}`);
   };
-  const onMouseHover = (props) => {};
+
+  const onChangePage = (e) => {
+    window.location.href = "/transactiondetail";
+  };
 
   return (
     <Card {...props}>
       <CardHeader title="Node connection graph" />
       {/* 거래량에 따른 그래프 형태 변화 선택 기능 */}
-
       <Divider />
-
       <Graph
         id="graph-id" // id is mandatory
         data={data}
@@ -253,7 +207,7 @@ export const Sales = (props) => {
         onClickNode={onClickNode}
         onClickLink={onClickLink}
       />
-      <node_graph />
+      {/* <node_graph /> */}
       {/* <CardContent>
         <Box
           sx={{
@@ -276,6 +230,7 @@ export const Sales = (props) => {
           color="primary"
           endIcon={<ArrowRightIcon fontSize="small" />}
           size="small"
+          onClick={onChangePage}
         >
           More Details
         </Button>

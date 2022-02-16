@@ -12,6 +12,7 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
+import { Overview } from "./overview";
 
 class TransactionTab extends Component {
   render() {
@@ -19,9 +20,15 @@ class TransactionTab extends Component {
       const [current, setCurrent] = useState(1);
       return (
         <div>
-          <button onClick={() => setCurrent(1)}>1절</button>
-          <button onClick={() => setCurrent(2)}>2절</button>
-          <Content current={current}></Content>
+          <Card>
+            <button onClick={() => setCurrent(1)}>
+              <CardHeader title="Overview" />
+            </button>
+            <button onClick={() => setCurrent(2)}>
+              <CardHeader title="Status" />
+            </button>
+            <Content current={current}></Content>
+          </Card>
         </div>
       );
     };
@@ -37,39 +44,25 @@ class TransactionTab extends Component {
     const Verse = (props) => {
       if (props.current === 1) {
         return (
-          <p>
-            동해물과 백두산이 마르고 닳도록 <br />
-            하느님이 보우하사 우리나라 만세
-          </p>
+          <div>
+            <Overview />
+          </div>
         );
       } else if (props.current === 2) {
-        return (
-          <p>
-            남산 위에 저 소나무 철갑을 두른 듯 <br />
-            바람 서리 불변함은 우리 기상일세
-          </p>
-        );
+        return <p>테스트 2절</p>;
       }
     };
     return (
       <Nav>
         <Nav.Item>
-          <Nav.Link
-            onClick={() => {
-              setTab(1);
-            }}
-          >
+          <Nav.Link>
             <Card>
               <CardHeader title="Overview" />
             </Card>
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link
-            onClick={() => {
-              setTab(2);
-            }}
-          >
+          <Nav.Link>
             <Tab />
             <Card>
               <CardHeader title="Status" />
