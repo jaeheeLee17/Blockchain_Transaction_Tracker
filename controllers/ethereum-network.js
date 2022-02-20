@@ -15,29 +15,41 @@ const web3 = new Web3(new Web3.providers.HttpProvider(
   process.env.API_URL + process.env.INFURA_PROJECT_ID)
 );
 
-// 특정 범위의 거래 블록 정보를 불러온 후 DB에 저장
+// low부터 high까지 숫자 배열 생성
+function _range(low, high) {
+  let numberArray = [];
+  for (let i = low; i < high; i++) {
+    numberArray.push(i);
+  }
+  return numberArray;
+}
+
+// 특정 개수의 최신 거래 블록 정보를 불러온 후 DB에 저장
 const getBlockInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {startBlockNum, endBlockNum} = req.query;
-    for (let i = startBlockNum; i < endBlockNum; i++) {
-      const blockInfo = await web3.eth.getBlock(i);
-      if (blockInfo.transactions[0] != null) {
-        console.log("blockNumber: " + blockInfo.number,
-          "\nblockHash: " + blockInfo.hash,
-          "\nblockSize: " + blockInfo.size,
-          "\nparentBlockHash: " + blockInfo.parentHash,
-          "\ntransactions: " + blockInfo.transactions,
-          "\n-----------------------------------------------");
-        await ethBlocks.create({
-          blockNumber: blockInfo.number,
-          blockHash: blockInfo.hash,
-          blockSize: blockInfo.size,
-          parentBlockHash: blockInfo.parentHash,
-          transactions: blockInfo.transactions,
-        });
+    const {searchNum} = req.query;
+    const latestBlockNum = await web3.eth.getBlockNumber();
+    const blockNumbers = _range(latestBlockNum - searchNum + 1, latestBlockNum + 1);
+    const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
+    const filteredBlockInfo = [];
+    for (let i = 0; i < blockInfo.length; i++) {
+      if (blockInfo[i].transactions[0] !== null) {
+        const blockData = {
+          blockNumber: blockInfo[i].number,
+          blockHash: blockInfo[i].hash,
+          blockSize: blockInfo[i].size,
+          parentBlockHash: blockInfo[i].parentHash,
+          transactions: blockInfo[i].transactions,
+        }
+        filteredBlockInfo.push(blockData);
       }
     }
+    await Promise.all(filteredBlockInfo).then((data) => {
+      ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    });
     return cwr.createWebResp(res, header, 200, {
       message: "Transaction Blocks loading Completed, database updated!",
     });
@@ -53,28 +65,29 @@ const getTransactionInfo = async (req, res) => {
   try {
     const {BlockNum} = req.query;
     const blockInfo = await web3.eth.getBlock(BlockNum);
-    if (blockInfo.transactions[0] != null) {
+    if (blockInfo.transactions[0] !== null) {
       const transactionsCount = await web3.eth.getBlockTransactionCount(BlockNum);
-      for (let i = 0; i < transactionsCount; i++) {
-        const transactionInfos = await web3.eth.getTransaction(blockInfo.transactions[i]);
-        if (transactionInfos.to != null) {
-          console.log("blockNumber: " + transactionInfos.blockNumber,
-            "\ntransactionHash: " + blockInfo.transactions[i],
-            "\ntransactionIndex: " + transactionInfos.transactionIndex,
-            "\nfrom: " + transactionInfos.from,
-            "\nto: " + transactionInfos.to,
-            "\nvalue: " + web3.utils.fromWei(transactionInfos.value, 'ether'),
-            "\n-----------------------------------------------");
-          await ethTransactions.create({
-            blockNumber: transactionInfos.blockNumber,
-            transactionHash: blockInfo.transactions[i],
-            transactionIndex: transactionInfos.transactionIndex,
-            from: transactionInfos.from,
-            to: transactionInfos.to,
-            value: web3.utils.fromWei(transactionInfos.value, 'ether'),
-          });
+      const blockNumbers = _range(0, transactionsCount);
+      const transactionInfos = await Promise.all(blockNumbers.map(n => web3.eth.getTransaction(blockInfo.transactions[n])));
+      const filteredTxInfos = [];
+      for (let i = 0; i < transactionInfos.length; i++) {
+        if (transactionInfos[i].to !== null) {
+          const transactionData = {
+            blockNumber: transactionInfos[i].blockNumber,
+            transactionHash: transactionInfos[i].hash,
+            transactionIndex: transactionInfos[i].transactionIndex,
+            from: transactionInfos[i].from,
+            to: transactionInfos[i].to,
+            value: web3.utils.fromWei(String(transactionInfos[i].value), 'ether'),
+          }
+          filteredTxInfos.push(transactionData);
         }
       }
+      await Promise.all(filteredTxInfos).then((data) => {
+        ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+          console.log(err);
+        });
+      });
     }
     return cwr.createWebResp(res, header, 200, {
       message: "Transactions loading Completed, database updated!",
@@ -89,7 +102,7 @@ const getTransactionInfo = async (req, res) => {
 const getTxlistWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {walletAddress, startBlockNum, endBlockNum, page, offset, sort, isError} = req.query;
+    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc', isError} = req.query;
     const txlist = await etherScan.account.txlist(
       walletAddress,
       startBlockNum,
@@ -105,48 +118,48 @@ const getTxlistWithAddress = async (req, res) => {
         }
         return filteredTxlist;
       }, []);
+      const selectedTxlist = [];
       for (let i = 0; i < filteredTxlist.length; i++) {
         if (filteredTxlist[i].to !== '') {
-          console.log("blockNumber: " + filteredTxlist[i].blockNumber,
-            "\ntransactionHash: " + filteredTxlist[i].hash,
-            "\ntransactionIndex: " + filteredTxlist[i].transactionIndex,
-            "\nfrom: " + filteredTxlist[i].from,
-            "\nto: " + filteredTxlist[i].to,
-            "\nvalue: " + web3.utils.fromWei(String(filteredTxlist[i].value), 'ether'),
-            "\n-----------------------------------------------");
-          await ethTransactions.create({
+          const txData = {
             blockNumber: filteredTxlist[i].blockNumber,
             transactionHash: filteredTxlist[i].hash,
             transactionIndex: filteredTxlist[i].transactionIndex,
             from: filteredTxlist[i].from,
             to: filteredTxlist[i].to,
             value: web3.utils.fromWei(String(filteredTxlist[i].value), 'ether'),
-          });
+          };
+          selectedTxlist.push(txData);
         }
       }
+      await Promise.all(selectedTxlist).then((data) => {
+        ethTransactions.insertMany(data, {upsert: true}).catch(err => {
+          console.log(err);
+        });
+      });
       return cwr.createWebResp(res, header, 200, {
         message: "Filtered transaction list loading Completed, database updated!",
       });
     }
+    const selectedTxlist = [];
     for (let i = 0; i < txlist.result.length; i++) {
       if (txlist.result[i].to !== '') {
-        console.log("blockNumber: " + txlist.result[i].blockNumber,
-          "\ntransactionHash: " + txlist.result[i].hash,
-          "\ntransactionIndex: " + txlist.result[i].transactionIndex,
-          "\nfrom: " + txlist.result[i].from,
-          "\nto: " + txlist.result[i].to,
-          "\nvalue: " + web3.utils.fromWei(String(txlist.result[i].value), 'ether'),
-          "\n-----------------------------------------------");
-        await ethTransactions.create({
+        const txData = {
           blockNumber: txlist.result[i].blockNumber,
           transactionHash: txlist.result[i].hash,
           transactionIndex: txlist.result[i].transactionIndex,
           from: txlist.result[i].from,
           to: txlist.result[i].to,
           value: web3.utils.fromWei(String(txlist.result[i].value), 'ether'),
-        });
+        };
+        selectedTxlist.push(txData);
       }
     }
+    await Promise.all(selectedTxlist).then((data) => {
+      ethTransactions.insertMany(data, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    })
     return cwr.createWebResp(res, header, 200, {
       message: "Transaction list loading Completed, database updated!",
     });
@@ -229,7 +242,7 @@ const getTokenBalanceList = async (req, res) => {
 const getTokenTxListWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
-    const {walletAddress, contractAddress, startBlockNum, endBlockNum, sort} = req.query;
+    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.query;
     const tokenTxList = await etherScan.account.tokentx(
       walletAddress,
       contractAddress,
@@ -237,31 +250,29 @@ const getTokenTxListWithAddress = async (req, res) => {
       endBlockNum,
       sort
     );
+    const selectedTokenTx = [];
     for (let i = 0; i < tokenTxList.result.length; i++) {
-      console.log("blockNumber: " + tokenTxList.result[i].blockNumber,
-        "\ntransactionHash: " + tokenTxList.result[i].hash,
-        "\ntransactionIndex: " + tokenTxList.result[i].transactionIndex,
-        "\ncontractAddress: " + tokenTxList.result[i].contractAddress,
-        "\nfrom: " + tokenTxList.result[i].from,
-        "\nto: " + tokenTxList.result[i].to,
-        "\nvalue: " + web3.utils.fromWei(String(tokenTxList.result[i].value), 'ether'),
-        "\ntokenName: " + tokenTxList.result[i].tokenName,
-        "\ntokenSymbol: " + tokenTxList.result[i].tokenSymbol,
-        "\ntokenNumber: " + tokenTxList.result[i].tokenDecimal,
-        "\n-----------------------------------------------");
-      await ethTokens.create({
-        blockNumber: tokenTxList.result[i].blockNumber,
-        transactionHash: tokenTxList.result[i].hash,
-        transactionIndex: tokenTxList.result[i].transactionIndex,
-        contractAddress: tokenTxList.result[i].contractAddress,
-        from: tokenTxList.result[i].from,
-        to: tokenTxList.result[i].to,
-        value: web3.utils.fromWei(String(tokenTxList.result[i].value), 'ether'),
-        tokenName: tokenTxList.result[i].tokenName,
-        tokenSymbol: tokenTxList.result[i].tokenSymbol,
-        tokenNumber: tokenTxList.result[i].tokenDecimal,
-      });
+      if (tokenTxList.result.to !== '') {
+        const tokenTx = {
+          blockNumber: tokenTxList.result[i].blockNumber,
+          transactionHash: tokenTxList.result[i].hash,
+          transactionIndex: tokenTxList.result[i].transactionIndex,
+          contractAddress: tokenTxList.result[i].contractAddress,
+          from: tokenTxList.result[i].from,
+          to: tokenTxList.result[i].to,
+          value: web3.utils.fromWei(String(tokenTxList.result[i].value), 'ether'),
+          tokenName: tokenTxList.result[i].tokenName,
+          tokenSymbol: tokenTxList.result[i].tokenSymbol,
+          tokenNumber: tokenTxList.result[i].tokenDecimal,
+        };
+        selectedTokenTx.push(tokenTx);
+      }
     }
+    await Promise.all(selectedTokenTx).then((data) => {
+      ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    })
     return cwr.createWebResp(res, header, 200, {
       message: "Token transaction list loading Completed, database updated!",
     });
