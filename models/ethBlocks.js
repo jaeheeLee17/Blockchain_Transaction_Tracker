@@ -8,7 +8,8 @@ const ethBlockSchema = new Schema({
   },
   blockHash: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   blockSize: {
     type: Number,

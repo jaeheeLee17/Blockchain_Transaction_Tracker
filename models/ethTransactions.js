@@ -8,7 +8,8 @@ const EthTransactionSchema = new Schema({
   },
   transactionHash: {
     type: String,
-    required: true
+    required: true,
+    unique: true,
   },
   transactionIndex: {
     type: Number,
