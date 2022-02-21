@@ -28,9 +28,8 @@ function _range(low, high) {
 const getBlockInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {searchNum} = req.query;
-    const latestBlockNum = await web3.eth.getBlockNumber();
-    const blockNumbers = _range(latestBlockNum - searchNum + 1, latestBlockNum + 1);
+    const {startBlockNum, endBlockNum} = req.query;
+    const blockNumbers = _range(startBlockNum, endBlockNum + 1);
     const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
     const filteredBlockInfo = [];
     for (let i = 0; i < blockInfo.length; i++) {
@@ -84,7 +83,7 @@ const getTransactionInfo = async (req, res) => {
         }
       }
       await Promise.all(filteredTxInfos).then((data) => {
-        ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+        ethTransactions.insertMany(data, {upsert: true}).catch(err => {
           console.log(err);
         });
       });
@@ -102,7 +101,7 @@ const getTransactionInfo = async (req, res) => {
 const getTxlistWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc', isError} = req.query;
+    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc'} = req.query;
     const txlist = await etherScan.account.txlist(
       walletAddress,
       startBlockNum,
@@ -111,36 +110,36 @@ const getTxlistWithAddress = async (req, res) => {
       offset,
       sort,
     );
-    if (isError) {
-      const filteredTxlist = txlist.result.reduce((filteredTxlist, tx) => {
-        if (tx.isError === isError) {
-          filteredTxlist.push(tx);
-        }
-        return filteredTxlist;
-      }, []);
-      const selectedTxlist = [];
-      for (let i = 0; i < filteredTxlist.length; i++) {
-        if (filteredTxlist[i].to !== '') {
-          const txData = {
-            blockNumber: filteredTxlist[i].blockNumber,
-            transactionHash: filteredTxlist[i].hash,
-            transactionIndex: filteredTxlist[i].transactionIndex,
-            from: filteredTxlist[i].from,
-            to: filteredTxlist[i].to,
-            value: web3.utils.fromWei(String(filteredTxlist[i].value), 'ether'),
-          };
-          selectedTxlist.push(txData);
-        }
-      }
-      await Promise.all(selectedTxlist).then((data) => {
-        ethTransactions.insertMany(data, {upsert: true}).catch(err => {
-          console.log(err);
-        });
-      });
-      return cwr.createWebResp(res, header, 200, {
-        message: "Filtered transaction list loading Completed, database updated!",
-      });
-    }
+    // if (isError) {
+    //   const filteredTxlist = txlist.result.reduce((filteredTxlist, tx) => {
+    //     if (tx.isError === isError) {
+    //       filteredTxlist.push(tx);
+    //     }
+    //     return filteredTxlist;
+    //   }, []);
+    //   const selectedTxlist = [];
+    //   for (let i = 0; i < filteredTxlist.length; i++) {
+    //     if (filteredTxlist[i].to !== '') {
+    //       const txData = {
+    //         blockNumber: filteredTxlist[i].blockNumber,
+    //         transactionHash: filteredTxlist[i].hash,
+    //         transactionIndex: filteredTxlist[i].transactionIndex,
+    //         from: filteredTxlist[i].from,
+    //         to: filteredTxlist[i].to,
+    //         value: web3.utils.fromWei(String(filteredTxlist[i].value), 'ether'),
+    //       };
+    //       selectedTxlist.push(txData);
+    //     }
+    //   }
+    //   await Promise.all(selectedTxlist).then((data) => {
+    //     ethTransactions.insertMany(data, {upsert: true}).catch(err => {
+    //       console.log(err);
+    //     });
+    //   });
+    //   return cwr.createWebResp(res, header, 200, {
+    //     message: "Filtered transaction list loading Completed, database updated!",
+    //   });
+    // }
     const selectedTxlist = [];
     for (let i = 0; i < txlist.result.length; i++) {
       if (txlist.result[i].to !== '') {
@@ -219,7 +218,7 @@ const getTokenBalanceList = async (req, res) => {
     for (let tokenAddress of tokenAddresses) {
       const contract = new web3.eth.Contract(StandardABI, tokenAddress);
       const unit_convert_num = 10 ** (await contract.methods.decimals().call());
-      const tokenBalance = (await contract.methods.balanceOf(walletAddress).call()) / unit_convert_num;
+      const tokenBalance = ((await contract.methods.balanceOf(walletAddress).call()) / unit_convert_num).toString();
       const tokenName = await contract.methods.name().call();
       const tokenSymbol = await contract.methods.symbol().call();
       const tokenData = {
@@ -269,7 +268,7 @@ const getTokenTxListWithAddress = async (req, res) => {
       }
     }
     await Promise.all(selectedTokenTx).then((data) => {
-      ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+      ethTokens.insertMany(data, {upsert: true}).catch(err => {
         console.log(err);
       });
     })
