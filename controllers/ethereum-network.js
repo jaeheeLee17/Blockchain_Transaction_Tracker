@@ -19,7 +19,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(
 const getBlockInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {startBlockNum, endBlockNum} = req.query;
+    const {startBlockNum, endBlockNum} = req.body;
     const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
       (v, i) => Number(startBlockNum) + i);
     const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
@@ -54,7 +54,7 @@ const getBlockInfo = async (req, res) => {
 const getTransactionInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {BlockNum} = req.query;
+    const {BlockNum} = req.body;
     const blockInfo = await web3.eth.getBlock(BlockNum);
     if (blockInfo.transactions[0] !== null) {
       const transactionsCount = await web3.eth.getBlockTransactionCount(BlockNum);
@@ -93,7 +93,7 @@ const getTransactionInfo = async (req, res) => {
 const getTxlistWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc'} = req.query;
+    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc'} = req.body;
     const txlist = await etherScan.account.txlist(
       walletAddress,
       startBlockNum,
@@ -233,7 +233,7 @@ const getTokenBalanceList = async (req, res) => {
 const getTokenTxListWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
-    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.query;
+    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.body;
     const tokenTxList = await etherScan.account.tokentx(
       walletAddress,
       contractAddress,
