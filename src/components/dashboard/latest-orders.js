@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { v4 as uuid } from "uuid";
 import PerfectScrollbar from "react-perfect-scrollbar";
+import ScrollBar from "react-perfect-scrollbar";
 import {
   Box,
   Button,
@@ -102,7 +103,7 @@ const orders = [
 export const LatestOrders = (props) => {
   return (
     <Card {...props}>
-      <CardHeader title="Transactions" />
+      <CardHeader title="Latest Transactions" />
       <CardContent>
         <PerfectScrollbar>
           <Box sx={{ minWidth: 800 }}>
@@ -114,10 +115,9 @@ export const LatestOrders = (props) => {
                   <TableCell>Block</TableCell>
                   <TableCell>Age</TableCell>
                   <TableCell>From</TableCell>
-                  <TableCell></TableCell>
+                  {/* <TableCell></TableCell> */}
                   <TableCell>To</TableCell>
                   <TableCell>Value</TableCell>
-
                   {/* <TableCell sortDirection="desc">
                     <Tooltip enterDelay={300} title="Sort">
                       <TableSortLabel active direction="desc">

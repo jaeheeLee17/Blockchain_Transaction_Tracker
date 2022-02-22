@@ -47,13 +47,15 @@ const Dashboard = () => (
             <Node_info />
           </Grid>
 
-          <Grid item lg={8} md={12} xl={9} xs={12}></Grid>
+          <Grid item lg={8} md={12} xl={9} xs={12}>
+            <LatestOrders />
+          </Grid>
           <Grid item lg={4} md={6} xl={3} xs={12}>
             <Transaction_ratio_graph sx={{ height: "100%" }} />
           </Grid>
-          <Grid item lg={12} md={12} xl={9} xs={12}>
+          {/* <Grid item lg={12} md={12} xl={9} xs={12}>
             <LatestOrders />
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </Box>
