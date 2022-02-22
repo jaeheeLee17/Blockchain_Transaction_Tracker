@@ -15,21 +15,13 @@ const web3 = new Web3(new Web3.providers.HttpProvider(
   process.env.API_URL + process.env.INFURA_PROJECT_ID)
 );
 
-// low부터 high까지 숫자 배열 생성
-function _range(low, high) {
-  let numberArray = [];
-  for (let i = low; i < high; i++) {
-    numberArray.push(i);
-  }
-  return numberArray;
-}
-
-// 특정 개수의 최신 거래 블록 정보를 불러온 후 DB에 저장
+// 특정 범위의 거래 블록 정보를 불러온 후 DB에 저장
 const getBlockInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {startBlockNum, endBlockNum} = req.query;
-    const blockNumbers = _range(startBlockNum, endBlockNum + 1);
+    const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
+      (v, i) => Number(startBlockNum) + i);
     const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
     const filteredBlockInfo = [];
     for (let i = 0; i < blockInfo.length; i++) {
@@ -66,7 +58,7 @@ const getTransactionInfo = async (req, res) => {
     const blockInfo = await web3.eth.getBlock(BlockNum);
     if (blockInfo.transactions[0] !== null) {
       const transactionsCount = await web3.eth.getBlockTransactionCount(BlockNum);
-      const blockNumbers = _range(0, transactionsCount);
+      const blockNumbers = Array.from({length: transactionsCount}, (v, i) => i);
       const transactionInfos = await Promise.all(blockNumbers.map(n => web3.eth.getTransaction(blockInfo.transactions[n])));
       const filteredTxInfos = [];
       for (let i = 0; i < transactionInfos.length; i++) {
