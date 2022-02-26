@@ -167,12 +167,12 @@ const getTokenBalanceList = async (req, res) => {
       endBlockNum,
       sort
     );
-    const tokenAddresses = [];
-    for (let i = 0; i < tokenTxList.result.length; i++) {
-      if (tokenAddresses.includes(tokenTxList.result[i].contractAddress) === false) {
-        tokenAddresses.push(tokenTxList.result[i].contractAddress);
-      }
-    }
+    const tokenArr = await Promise.all(tokenTxList.result.map(token => {
+      return token.contractAddress;
+    }));
+    const tokenAddresses = tokenArr.filter((token, index) => {
+      return tokenArr.indexOf(token) === index;
+    });
     const tokenList = [];
     for (let tokenAddress of tokenAddresses) {
       const contract = new web3.eth.Contract(StandardABI, tokenAddress);
