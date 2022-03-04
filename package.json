@@ -1,0 +1,19 @@
+{
+  "name": "block_chaingers",
+  "version": "1.0.0",
+  "main": "index.js",
+  "proxy": "http://localhost:5000",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "back": "cd Blockchain_Transaction_Tracker-backend_dev && node ./bin/www",
+    "front": "cd Blockchain_Transaction_Tracker-frontend_dev && yarn dev",
+    "start": "concurrently --kill-others-on-fail \"yarn back\" \"yarn front\""
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "concurrently": "^7.0.0",
+    "next": "^12.1.0"
+  }
+}
