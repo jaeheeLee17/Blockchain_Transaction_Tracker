@@ -19,7 +19,7 @@ const getTxTo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {destination} = req.query;
-    const TxToList = await ethTransactions.find({"to": destination.toLowerCase()});
+    const TxToList = await ethTransactions.find({"to": destination});
     return cwr.createWebResp(res, header, 200, TxToList);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
@@ -31,7 +31,7 @@ const getTokenTxFrom = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {source} = req.query;
-    const TokenTxFromList = await ethTokens.find({"from": source.toLowerCase()});
+    const TokenTxFromList = await ethTokens.find({"from": source});
     return cwr.createWebResp(res, header, 200, TokenTxFromList);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
@@ -43,7 +43,7 @@ const getTokenTxTo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {destination} = req.query;
-    const TokenTxToList = await ethTokens.find({"to": destination.toLowerCase()});
+    const TokenTxToList = await ethTokens.find({"to": destination});
     return cwr.createWebResp(res, header, 200, TokenTxToList);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
