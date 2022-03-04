@@ -1,5 +1,5 @@
 import { Graph } from "react-d3-graph";
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -8,38 +8,83 @@ import {
   CardHeader,
   Divider,
   useTheme,
+  TextField,
+  InputAdornment,
+  SvgIcon,
+  Typography,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
 import { DashboardLayout } from "../components/dashboard-layout";
+import { Search as SearchIcon } from "../icons/search";
 
 export const Cryptocurrency = (props) => {
-  axios
-    .get("http://localhost:5000/eth/db/TxFrom", {
-      params: {
-        source: "0x9f58989539B8c90cdDE06Cb568e41e3DeB73df90",
-      },
-    })
-    .then((res) => {
-      console.log(res.data);
-    })
-    .catch((error) => {
-      console.dir(error);
-    });
+  // axios
+  //   .get("http://localhost:5000/eth/network/etherBalance", {
+  //     params: {
+  //       walletAddress: "0x791C0cE70179E11389c1e9747280f91Bd81FBb31",
+  //     },
+  //   })
+  //   .then((res) => {
+  //     console.log(res.data);
+  //   })
+  //   .catch((error) => {
+  //     console.dir(error);
+  //   });
 
-  axios
-      .get("http://localhost:5000/eth/network/etherBalance", {
-        params: {
-          walletAddress: "0x791C0cE70179E11389c1e9747280f91Bd81FBb31",
-        },
-      })
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((error) => {
-        console.dir(error);
-      });
+  const [walletAddress, setWalletAddress] = useState("");
 
+  const onClickLink = function (source, target) {
+    window.alert(`Clicked link between ${source} and ${target}`);
+  };
+
+  const onChangePage = (e) => {
+    window.location.href = "/transactiondetail";
+  };
+
+  const onClickNode = function (e) {
+    window.location.href = "/transactiondetail";
+  };
+  const onChangeAddress = (e) => setWalletAddress(e.target.value);
+
+  const nextNodes = [{ id: 0 }];
+  const nextLinks = [];
+  const onKeyPress = (e) => {
+    if (e.key === "Enter") {
+      axios
+        .get("http://localhost:5000/eth/db/TxFrom", {
+          params: {
+            source: walletAddress,
+          },
+        })
+        .then((res) => {
+          const list = res.data.data;
+
+          for (let i = 0; i < list.length; i++) {
+            const n = {
+              id: i + 1,
+              name: "node" + (i + 1),
+              blockNumber: list[i].blockNumber,
+              transactionHash: list[i].transactionHash,
+              transactionIndex: list[i].transactionIndex,
+              from: list[i].from,
+              to: list[i].to,
+              value: list[i].value,
+            };
+
+            const s = {
+              source: 0,
+              target: i + 1,
+            };
+            nextNodes.push(n);
+            nextLinks.push(s);
+          }
+        })
+        .catch((error) => {
+          console.dir(error);
+        });
+    }
+  };
   const data = {
     links: [
       {
@@ -201,6 +246,13 @@ export const Cryptocurrency = (props) => {
       },
     ],
   };
+  const data1 = {
+    links: nextLinks,
+    nodes: nextNodes,
+  };
+
+  console.log(data);
+  console.log(nextNodes);
 
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
@@ -269,23 +321,44 @@ export const Cryptocurrency = (props) => {
     },
   };
 
-  const onClickLink = function (source, target) {
-    window.alert(`Clicked link between ${source} and ${target}`);
-  };
-
-  const onChangePage = (e) => {
-    window.location.href = "/transactiondetail";
-  };
-
-  const onClickNode = function (e) {
-    window.location.href = "/transactiondetail";
-  };
-
   return (
     <Card {...props}>
-      <CardHeader title="Node connection graph" />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          py: 8,
+        }}
+      ></Box>
       {/* 거래량에 따른 그래프 형태 변화 선택 기능 */}
-      <Divider />
+      <Typography sx={{ m: 1 }} variant="h4">
+        Cryptocurrency Dashboard
+      </Typography>
+      <Box sx={{ mt: 3 }}>
+        <Card>
+          <CardContent>
+            <Box sx={{ maxWidth: 500 }}>
+              {/* 검색창 */}
+              <TextField
+                onChange={onChangeAddress}
+                onKeyPress={onKeyPress}
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SvgIcon color="action" fontSize="small">
+                        <SearchIcon />
+                      </SvgIcon>
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder="Search by Address / Txn Hash / Block / Token / Ens"
+                variant="outlined"
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
       <Graph
         id="graph-id" // id is mandatory
         data={data}
