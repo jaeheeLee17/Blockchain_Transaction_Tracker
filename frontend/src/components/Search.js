@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import * as searchActions from "../components/store/modules/search/actions";
-import { get_naver_query_keyword } from "../components/store/modules/search/actions";
+import * as searchActions from "./store/modules/search/actions";
+import { get_naver_query_keyword } from "./store/modules/search/actions";
 
 const Search = (props) => {
   const { searchKeyword } = useSelector(

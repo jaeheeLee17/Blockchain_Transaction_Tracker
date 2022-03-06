@@ -2,8 +2,8 @@ import Head from "next/head";
 import NextLink from "next/link";
 import { Box, Button, Container, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import Search from "src/components/Search";
-import SearchResult from "src/components/SearchResult";
+import Search from "frontend/src/components/Search";
+import SearchResult from "frontend/src/components/SearchResult";
 
 const NotFound = () => (
   <>

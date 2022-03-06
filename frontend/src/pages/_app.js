@@ -53,7 +53,7 @@ import "react-toastify/dist/ReactToastify.css";
 const clientSideEmotionCache = createEmotionCache();
 
 // Store Configuration
-import wrapper from "src/components/store/configureStore";
+import wrapper from "frontend/src/components/store/configureStore";
 
 const App = (props) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;

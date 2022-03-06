@@ -2,7 +2,7 @@ import { call, put } from "redux-saga/effects";
 import {
   startLoading,
   finishLoading,
-} from "src/components/store/modules/loading/actions";
+} from "frontend/src/components/store/modules/loading/actions";
 
 // API를 호출하면 성공이냐 실패냐 pending(시도중)이냐 보통 이 3가지 상태로 나누게 됨
 export const createRequestActionTypes = (type) => {

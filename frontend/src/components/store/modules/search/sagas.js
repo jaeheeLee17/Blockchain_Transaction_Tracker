@@ -1,7 +1,7 @@
 import { takeLatest } from "redux-saga/effects";
-import createRequestSaga from "src/libs/createRequestSaga";
+import createRequestSaga from "frontend/src/libs/createRequestSaga";
 import * as SEARCH from "./actions";
-import * as naverSearchAPI from "src/libs/createRequestSaga";
+import * as naverSearchAPI from "frontend/src/libs/createRequestSaga";
 
 const getNaverQueryKeywordSaga = createRequestSaga(
   SEARCH.GET_NAVER_QUERY_KEYWORD,
