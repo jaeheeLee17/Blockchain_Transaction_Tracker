@@ -22,7 +22,7 @@ import { Users as UsersIcon } from "../icons/users";
 import { XCircle as XCircleIcon } from "../icons/x-circle";
 import { Logo } from "./logo";
 import { NavItem } from "./nav-item";
-import { Cryptocurrency } from "src/pages/cryptocurrency";
+import { Cryptocurrency } from "../pages/cryptocurrency";
 
 const items = [
   {
