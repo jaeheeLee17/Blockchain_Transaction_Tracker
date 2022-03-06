@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { search } from "frontend/src/components/store/modules";
+import { search } from "src/components/store/modules";
 
 export class SearchInput extends Component {
   constructor() {

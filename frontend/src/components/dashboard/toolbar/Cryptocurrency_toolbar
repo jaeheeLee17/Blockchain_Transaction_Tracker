@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Search as SearchIcon } from "../../icons/search";
 
-export const CustomerListToolbar = (props) => (
+export const Cryptocurrencytoolbar = (props) => (
   <Box {...props}>
     <Box
       sx={{
@@ -22,7 +22,7 @@ export const CustomerListToolbar = (props) => (
       }}
     >
       <Typography sx={{ m: 1 }} variant="h4">
-        Node List
+        Cryptocurrency Dashboard
       </Typography>
     </Box>
     <Box sx={{ mt: 3 }}>
