@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "server": "node ./bin/www",
-    "client": "cd ../frontend && yarn start",
-    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+    "client": "cd ../frontend && yarn dev",
+    "start": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "debug": "^4.3.3",
     "dotenv": "^16.0.0",
     "etherscan-api": "^10.0.5",
