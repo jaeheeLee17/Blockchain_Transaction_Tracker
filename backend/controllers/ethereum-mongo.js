@@ -1,6 +1,7 @@
 require('dotenv').config();
 const ethTransactions = require('../models/ethTransactions');
 const ethTokens = require('../models/ethTokens');
+const eth_tx_traces = require('../models/eth_transactions_trace');
 const cwr = require('../utils/createWebResponse');
 
 const getTxFrom = async (req, res) => {
@@ -9,6 +10,18 @@ const getTxFrom = async (req, res) => {
     const {source} = req.query;
     const TxFromList = await ethTransactions.find({"from": source});
     return cwr.createWebResp(res, header, 200, TxFromList);
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'get Transactions with source address failed', e.message || e);
+  }
+}
+
+const getTxChainFrom = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const {source} = req.query;
+    const TxChainFromList = await eth_tx_traces.find({"from": source});
+    return cwr.createWebResp(res, header, 200, TxChainFromList);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transactions with source address failed', e.message || e);
@@ -53,6 +66,7 @@ const getTokenTxTo = async (req, res) => {
 
 module.exports = {
   getTxFrom,
+  getTxChainFrom,
   getTxTo,
   getTokenTxFrom,
   getTokenTxTo,
