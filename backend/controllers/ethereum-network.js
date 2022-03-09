@@ -107,6 +107,17 @@ const postTxlistChainWithAddress = async (req, res) => {
         return txReceipt;
       }
     });
+    const first_depth_tx = await Promise.all(selectedTxlist.map(txReceipt => {
+      const txData = {
+        tx: txReceipt.hash,
+        data: {
+          from: txReceipt.from,
+          to: txReceipt.to,
+          value: web3.utils.fromWei(String(txReceipt.value), 'ether')
+        }
+      };
+      return txData;
+    }));
     const to_addresses = selectedTxlist.map(txReceipt => {
       if (txReceipt.to !== walletAddress.toLowerCase()) {
         return txReceipt.to;
@@ -164,8 +175,8 @@ const postTxlistChainWithAddress = async (req, res) => {
       from: walletAddress,
       startBlockNumber: String(startBlockNum),
       endBlockNumber: String(endBlockNum),
-      to: filtered_to_addresses,
-      to_related: related_tx
+      first_depth: first_depth_tx,
+      second_depth: related_tx
     };
     eth_tx_traces.insertMany(txChain, {upsert: true}).catch(err => {
       console.log(err);

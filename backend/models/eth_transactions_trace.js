@@ -15,11 +15,29 @@ const Eth_tx_trace_schema = new Schema({
     type: String,
     required: true
   },
-  to: {
-    type: Array,
-    required: true
-  },
-  to_related: [
+  first_depth: [
+    {
+      tx: {
+        type: String,
+        required: true
+      },
+      data: {
+        from: {
+          type: String,
+          required: true
+        },
+        to: {
+          type: String,
+          required: true
+        },
+        value: {
+          type: String,
+          required: true
+        }
+      }
+    }
+  ],
+  second_depth: [
     [
       {
         tx: {
