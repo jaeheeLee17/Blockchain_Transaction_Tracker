@@ -1,6 +1,6 @@
 require('dotenv').config();
 const Web3 = require('web3');
-const ethBlocks = require('../models/ethBlocks');
+// const ethBlocks = require('../models/ethBlocks');
 const ethTransactions = require('../models/ethTransactions');
 const ethTokens = require('../models/ethTokens');
 const eth_tx_traces = require('../models/eth_transactions_trace');
