@@ -5,61 +5,18 @@ const ethTransactions = require('../models/ethTransactions');
 const ethTokens = require('../models/ethTokens');
 const eth_tx_traces = require('../models/eth_transactions_trace');
 const cwr = require('../utils/createWebResponse');
-const etherScan = require('etherscan-api').init(
-  process.env.ETHERSCAN_API_KEY,
-  process.env.ETHERSCAN_NETWORK,
-  Number(process.env.QUERY_TIMEOUT),
-);
 const {StandardABI} = require('../config/eth/standardABI');
-
-const web3 = new Web3(new Web3.providers.HttpProvider(
-  process.env.API_URL + process.env.INFURA_PROJECT_ID)
-);
-
-// 특정 범위의 거래 블록 정보를 불러온 후 DB에 저장
-// const postBlockInfo = async (req, res) => {
-//   const header = res.setHeader('Content-Type', 'application/json');
-//   try {
-//     const {startBlockNum, endBlockNum} = req.body;
-//     const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
-//       (v, i) => Number(startBlockNum) + i);
-//     const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
-//     const filteredBlockInfo = await Promise.all(blockInfo.map(block => {
-//       if (block.transactions[0] !== null) {
-//         const blockData = {
-//           blockNumber: block.number,
-//           blockHash: block.hash,
-//           blockSize: block.size,
-//           parentBlockHash: block.parentHash,
-//           transactions: block.transactions,
-//         };
-//         return blockData;
-//       }
-//     }));
-//     await Promise.all(filteredBlockInfo).then((data) => {
-//       ethBlocks.insertMany(data, {upsert: true}).catch(err => {
-//         console.log(err);
-//       });
-//     });
-//     return cwr.createWebResp(res, header, 200, {
-//       message: "Transaction Blocks loading Completed, database updated!",
-//     });
-//   } catch (e) {
-//     return cwr.errorWebResp(res, header, 500,
-//       'getBlock failed', e.message || e);
-//   }
-// }
 
 // 최신 블록에 포함된 거래 정보들을 불러온 후 DB에 저장
 const postTransactionInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {BlockNum='latest'} = req.body;
-    const blockInfo = await web3.eth.getBlock(BlockNum);
+    const blockInfo = await req.web3.eth.getBlock(BlockNum);
     if (blockInfo.transactions[0] !== null) {
-      const transactionsCount = await web3.eth.getBlockTransactionCount(BlockNum);
+      const transactionsCount = await req.web3.eth.getBlockTransactionCount(BlockNum);
       const blockNumbers = Array.from({length: transactionsCount}, (v, i) => i);
-      const transactionInfos = await Promise.all(blockNumbers.map(n => web3.eth.getTransaction(blockInfo.transactions[n])));
+      const transactionInfos = await Promise.all(blockNumbers.map(n => req.web3.eth.getTransaction(blockInfo.transactions[n])));
       const filteredTxInfos = await Promise.all(transactionInfos.map(transaction => {
         if (transaction.to !== null) {
           const transactionData = {
@@ -68,7 +25,7 @@ const postTransactionInfo = async (req, res) => {
             transactionIndex: transaction.transactionIndex,
             from: transaction.from,
             to: transaction.to,
-            value: web3.utils.fromWei(String(transaction.value), 'ether'),
+            value: req.web3.utils.fromWei(String(transaction.value), 'ether'),
           };
           return transactionData;
         }
@@ -93,7 +50,7 @@ const postTxlistChainWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc'} = req.body;
-    const txlist = await etherScan.account.txlist(
+    const txlist = await req.etherscan.account.txlist(
       walletAddress,
       startBlockNum,
       endBlockNum,
@@ -101,6 +58,7 @@ const postTxlistChainWithAddress = async (req, res) => {
       offset,
       sort,
     );
+
     const selectedTxlist = txlist.result.filter(txReceipt => {
       if (txReceipt.to !== walletAddress.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
         && txReceipt.value !== '0') {
@@ -113,7 +71,7 @@ const postTxlistChainWithAddress = async (req, res) => {
         data: {
           from: txReceipt.from,
           to: txReceipt.to,
-          value: web3.utils.fromWei(String(txReceipt.value), 'ether')
+          value: req.web3.utils.fromWei(String(txReceipt.value), 'ether')
         }
       };
       return txData;
@@ -133,7 +91,7 @@ const postTxlistChainWithAddress = async (req, res) => {
     while (address_idx < filtered_to_addresses.length) {
       let address = filtered_to_addresses[address_idx];
       if (address !== "") {
-        const relatedTxlist = await etherScan.account.txlist(
+        const relatedTxlist = await req.etherscan.account.txlist(
           address,
           startBlockNum,
           endBlockNum,
@@ -155,7 +113,7 @@ const postTxlistChainWithAddress = async (req, res) => {
               data: {
                 from: relatedTxReceipt.from,
                 to: relatedTxReceipt.to,
-                value: web3.utils.fromWei(String(relatedTxReceipt.value), 'ether')
+                value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether')
               }
             };
             return txData;
@@ -195,9 +153,10 @@ const getEtherBalance = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress} = req.query;
-    let balance = await web3.eth.getBalance(walletAddress);
-    balance = web3.utils.fromWei(balance, 'ether');
-    const addressCode = await web3.eth.getCode(walletAddress);
+    let balance = await req.web3.eth.getBalance(walletAddress);
+    balance = req.web3.utils.fromWei(balance, 'ether');
+    const addressCode = await req.web3.eth.getCode(walletAddress);
+    console.log(addressCode);
 
     // 계정 유형
     // EOA : 일반 거래에 사용되는 사용자 지갑 주소
@@ -223,7 +182,7 @@ const getTokenBalanceList = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
     const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.query;
-    const tokenTxList = await etherScan.account.tokentx(
+    const tokenTxList = await req.etherscan.account.tokentx(
       walletAddress,
       contractAddress,
       startBlockNum,
@@ -238,7 +197,7 @@ const getTokenBalanceList = async (req, res) => {
     });
     const tokenList = [];
     for (let tokenAddress of tokenAddresses) {
-      const contract = new web3.eth.Contract(StandardABI, tokenAddress);
+      const contract = new req.web3.eth.Contract(StandardABI, tokenAddress);
       const unit_convert_num = 10 ** (await contract.methods.decimals().call());
       const tokenBalance = (await contract.methods.balanceOf(walletAddress).call()) / unit_convert_num;
       const tokenName = await contract.methods.name().call();
@@ -264,7 +223,7 @@ const postTokenTxListWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json')
   try {
     const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.body;
-    const tokenTxList = await etherScan.account.tokentx(
+    const tokenTxList = await req.etherscan.account.tokentx(
       walletAddress,
       contractAddress,
       startBlockNum,
@@ -280,7 +239,7 @@ const postTokenTxListWithAddress = async (req, res) => {
           contractAddress: tokenTxReceipt.contractAddress,
           from: tokenTxReceipt.from,
           to: tokenTxReceipt.to,
-          value: web3.utils.fromWei(String(tokenTxReceipt.value), 'ether'),
+          value: req.web3.utils.fromWei(String(tokenTxReceipt.value), 'ether'),
           tokenName: tokenTxReceipt.tokenName,
           tokenSymbol: tokenTxReceipt.tokenSymbol,
           tokenNumber: tokenTxReceipt.tokenDecimal,
