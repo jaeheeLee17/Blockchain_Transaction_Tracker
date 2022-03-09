@@ -3,6 +3,7 @@ const Web3 = require('web3');
 const ethBlocks = require('../models/ethBlocks');
 const ethTransactions = require('../models/ethTransactions');
 const ethTokens = require('../models/ethTokens');
+const eth_tx_traces = require('../models/eth_transactions_trace');
 const cwr = require('../utils/createWebResponse');
 const etherScan = require('etherscan-api').init(
   process.env.ETHERSCAN_API_KEY,
@@ -16,44 +17,44 @@ const web3 = new Web3(new Web3.providers.HttpProvider(
 );
 
 // 특정 범위의 거래 블록 정보를 불러온 후 DB에 저장
-const postBlockInfo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
-  try {
-    const {startBlockNum, endBlockNum} = req.body;
-    const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
-      (v, i) => Number(startBlockNum) + i);
-    const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
-    const filteredBlockInfo = await Promise.all(blockInfo.map(block => {
-      if (block.transactions[0] !== null) {
-        const blockData = {
-          blockNumber: block.number,
-          blockHash: block.hash,
-          blockSize: block.size,
-          parentBlockHash: block.parentHash,
-          transactions: block.transactions,
-        };
-        return blockData;
-      }
-    }));
-    await Promise.all(filteredBlockInfo).then((data) => {
-      ethBlocks.insertMany(data, {upsert: true}).catch(err => {
-        console.log(err);
-      });
-    });
-    return cwr.createWebResp(res, header, 200, {
-      message: "Transaction Blocks loading Completed, database updated!",
-    });
-  } catch (e) {
-    return cwr.errorWebResp(res, header, 500,
-      'getBlock failed', e.message || e);
-  }
-}
+// const postBlockInfo = async (req, res) => {
+//   const header = res.setHeader('Content-Type', 'application/json');
+//   try {
+//     const {startBlockNum, endBlockNum} = req.body;
+//     const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
+//       (v, i) => Number(startBlockNum) + i);
+//     const blockInfo = await Promise.all(blockNumbers.map(n => web3.eth.getBlock(n)));
+//     const filteredBlockInfo = await Promise.all(blockInfo.map(block => {
+//       if (block.transactions[0] !== null) {
+//         const blockData = {
+//           blockNumber: block.number,
+//           blockHash: block.hash,
+//           blockSize: block.size,
+//           parentBlockHash: block.parentHash,
+//           transactions: block.transactions,
+//         };
+//         return blockData;
+//       }
+//     }));
+//     await Promise.all(filteredBlockInfo).then((data) => {
+//       ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+//         console.log(err);
+//       });
+//     });
+//     return cwr.createWebResp(res, header, 200, {
+//       message: "Transaction Blocks loading Completed, database updated!",
+//     });
+//   } catch (e) {
+//     return cwr.errorWebResp(res, header, 500,
+//       'getBlock failed', e.message || e);
+//   }
+// }
 
-// 특정 거래 블록에 포함된 거래 정보 불러온 후 DB에 저장
+// 최신 블록에 포함된 거래 정보들을 불러온 후 DB에 저장
 const postTransactionInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {BlockNum} = req.body;
+    const {BlockNum='latest'} = req.body;
     const blockInfo = await web3.eth.getBlock(BlockNum);
     if (blockInfo.transactions[0] !== null) {
       const transactionsCount = await web3.eth.getBlockTransactionCount(BlockNum);
@@ -87,8 +88,8 @@ const postTransactionInfo = async (req, res) => {
   }
 }
 
-// 특정 지갑 주소가 포함된 트랜젝션 목록을 불러온 후 DB에 저장
-const postTxlistWithAddress = async (req, res) => {
+// 특정 지갑 주소와 관련된 트랜젝션 목록을 불러온 후 DB에 저장
+const postTxlistChainWithAddress = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc'} = req.body;
@@ -100,30 +101,81 @@ const postTxlistWithAddress = async (req, res) => {
       offset,
       sort,
     );
-    const selectedTxlist = await Promise.all(txlist.result.map(txReceipt => {
-      if (txReceipt.to !== '') {
-        const txData = {
-          blockNumber: txReceipt.blockNumber,
-          transactionHash: txReceipt.hash,
-          transactionIndex: txReceipt.transactionIndex,
-          from: txReceipt.from,
-          to: txReceipt.to,
-          value: web3.utils.fromWei(String(txReceipt.value), 'ether'),
-        };
-        return txData;
+    const selectedTxlist = txlist.result.filter(txReceipt => {
+      if (txReceipt.to !== walletAddress.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
+        && txReceipt.value !== '0') {
+        return txReceipt;
       }
-    }));
-    await Promise.all(selectedTxlist).then((data) => {
-      ethTransactions.insertMany(data, {upsert: true}).catch(err => {
-        console.log(err);
-      });
-    })
+    });
+    const to_addresses = selectedTxlist.map(txReceipt => {
+      if (txReceipt.to !== walletAddress.toLowerCase()) {
+        return txReceipt.to;
+      } else {
+        return '';
+      }
+    });
+    const filtered_to_addresses = to_addresses.filter((addr, idx) => {
+      return to_addresses.indexOf(addr) === idx;
+    });
+    const related_tx = [];
+    let address_idx = 0;
+    while (address_idx < filtered_to_addresses.length) {
+      let address = filtered_to_addresses[address_idx];
+      if (address !== "") {
+        const relatedTxlist = await etherScan.account.txlist(
+          address,
+          startBlockNum,
+          endBlockNum,
+          page,
+          offset,
+          sort,
+        );
+        const filteredTxlist = relatedTxlist.result.filter(txReceipt => {
+          if (txReceipt.to !== address.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
+            && txReceipt.value !== '0') {
+            return txReceipt;
+          }
+        });
+        const address_related_Tx = await Promise.all(filteredTxlist.map(relatedTxReceipt => {
+          if (relatedTxReceipt.to !== '' && relatedTxReceipt.to !== undefined && relatedTxReceipt.to !== relatedTxReceipt.from &&
+            relatedTxReceipt.value !== '0') {
+            const txData = {
+              tx: relatedTxReceipt.hash,
+              data: {
+                from: relatedTxReceipt.from,
+                to: relatedTxReceipt.to,
+                value: web3.utils.fromWei(String(relatedTxReceipt.value), 'ether')
+              }
+            };
+            return txData;
+          }
+        }));
+        if (address_related_Tx.length !== 0) {
+          related_tx.push(address_related_Tx);
+          address_idx++;
+        } else {
+          const remove_idx = filtered_to_addresses.indexOf(address);
+          filtered_to_addresses.splice(remove_idx, 1);
+          filtered_to_addresses.length--;
+        }
+      }
+    }
+    const txChain = {
+      from: walletAddress,
+      startBlockNumber: String(startBlockNum),
+      endBlockNumber: String(endBlockNum),
+      to: filtered_to_addresses,
+      to_related: related_tx
+    };
+    eth_tx_traces.insertMany(txChain, {upsert: true}).catch(err => {
+      console.log(err);
+    });
     return cwr.createWebResp(res, header, 200, {
-      message: "Transaction list loading Completed, database updated!",
+      message: "Transaction trace list loading Completed, database updated!",
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
-      'get Transaction list failed', e.message || e);
+      'get Transaction trace list failed', e.message || e);
   }
 }
 
@@ -240,9 +292,9 @@ const postTokenTxListWithAddress = async (req, res) => {
 }
 
 module.exports = {
-  postBlockInfo,
+  // postBlockInfo,
   postTransactionInfo,
-  postTxlistWithAddress,
+  postTxlistChainWithAddress,
   getEtherBalance,
   getTokenBalanceList,
   postTokenTxListWithAddress,

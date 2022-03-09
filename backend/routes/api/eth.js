@@ -4,9 +4,9 @@ const DBController = require('../../controllers/ethereum-mongo');
 
 const router = express.Router();
 
-router.post('/network/block', EthController.postBlockInfo);
+// router.post('/network/block', EthController.postBlockInfo);
 router.post('/network/transaction', EthController.postTransactionInfo);
-router.post('/network/txlist', EthController.postTxlistWithAddress);
+router.post('/network/txlistchain', EthController.postTxlistChainWithAddress);
 router.post('/network/tokenTxlist', EthController.postTokenTxListWithAddress);
 
 router.get('/network/etherBalance', EthController.getEtherBalance);
