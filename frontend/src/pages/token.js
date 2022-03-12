@@ -1,3 +1,4 @@
+import Router from 'next/router';
 import { Graph } from "react-d3-graph";
 import React from "react";
 import {
@@ -9,11 +10,10 @@ import {
   Divider,
   useTheme,
 } from "@mui/material";
-import NextLink from "next/link";
-import { useRouter } from "next/router";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
 import { DashboardLayout } from "../components/dashboard-layout";
+
 
 export const Token = (props) => {
   axios
@@ -286,7 +286,10 @@ export const Token = (props) => {
   };
 
   const onClickNode = function (e) {
-    window.location.href = "/transactiondetail";
+      Router.push({
+          pathname: '/transactiondetail',
+          query: { },
+      });
   };
 
   return (
