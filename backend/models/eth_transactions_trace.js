@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const Eth_tx_trace_schema = new Schema({
   from: {
@@ -19,7 +19,8 @@ const Eth_tx_trace_schema = new Schema({
     {
       tx: {
         type: String,
-        required: true
+        required: true,
+        unique: true
       },
       data: {
         from: {
@@ -28,7 +29,7 @@ const Eth_tx_trace_schema = new Schema({
         },
         to: {
           type: String,
-          required: true
+          required: true,
         },
         value: {
           type: String,
@@ -42,7 +43,8 @@ const Eth_tx_trace_schema = new Schema({
       {
         tx: {
           type: String,
-          required: true
+          required: true,
+          unique: true
         },
         data: {
           from: {
@@ -51,7 +53,7 @@ const Eth_tx_trace_schema = new Schema({
           },
           to: {
             type: String,
-            required: true
+            required: true,
           },
           value: {
             type: String,
@@ -67,4 +69,4 @@ const Eth_tx_trace_schema = new Schema({
 
 const eth_tx_traces = mongoose.model('eth_tx_traces', Eth_tx_trace_schema);
 
-module.exports = eth_tx_traces
+module.exports = eth_tx_traces;
