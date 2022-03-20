@@ -17,6 +17,7 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
 import {DashboardLayout} from "../components/dashboard-layout";
 import {Search as SearchIcon} from "../icons/search";
+import Router from "next/router";
 
 export const Cryptocurrency = (props) => {
 
@@ -30,47 +31,60 @@ export const Cryptocurrency = (props) => {
         window.location.href = "/transactiondetail";
     };
 
-    const onClickNode = function (e) {
-        window.location.href = "/transactiondetail";
+    const onClickNode = function (nodeId, node) {
+        Router.push({
+            pathname: '/transactiondetail',
+            query: {to: node.to, from: node.from, value: node.value, tx: node.tx, address: node.address},
+        });
     };
     const onChangeAddress = (e) => setWalletAddress(e.target.value);
     const data = {links: [], nodes: [{id: walletAddress}]}
 
     const [datas, setDatas] = useState({links: [], nodes: [], status: false});
-    const nextNodes = [{id: 1, from: walletAddress}];
+    const nextNodes = [{id: 1, from: walletAddress, address: walletAddress}];
     const nextLinks = [];
 
     const onKeyPress = (e) => {
         if (e.key === "Enter") {
-            axios.post("http://localhost:5000/eth/network/txlist", {
-                walletAddress: walletAddress,
-                startBlockNum: "1",
-                endBlockNum: "latest",
-                page: "10",
-                offset: "100",
-                sort: "asc"
-                }).then(function (res) {
-                    console.log(res.data)
+            // axios
+            //     .post("http://localhost:5000/eth/network/txlistchain", {
+            //       params: {
+            //         walletAddress: "0x90992dcb0fdaeb990C73Ca1682A7e2A30337d0c8",
+            //         startBlockNum: "1",
+            //         endBlockNum: "latest",
+            //         page: "1",
+            //         offset: "100",
+            //         sort: "asc"
+            //       },
+            //     })
+            //     .then((res) => {
+            //       const list = res.data.data;
+            //       console.log(res)
+            //       console.log(res.data)
+            //     })
+            //     .catch((error) => {
+            //       console.dir(error);
+            //     });
 
-                //get
-                axios
-                    .get("http://localhost:5000/eth/db/TxTo", {
-                        params: {
-                            destination: walletAddress,
-                        },
-                    })
-                    .then((res) => {
-                        const list = res.data.data;
-                        for (let i = 0; i < list.length; i++) {
+            axios
+                .get("http://localhost:5000/eth/db/TxChainFrom", {
+                    params: {
+                        source: walletAddress,
+                    },
+                })
+                .then((res) => {
+                    if (res.data.data.length > 0) {
+                        const first = res.data.data[0].first_depth;
+                        const second = res.data.data[0].second_depth;
+                        for (let i = 0; i < first.length; i++) {
                             const n = {
                                 id: i + 2,
-                                name: "node" + (i + 1),
-                                blockNumber: list[i].blockNumber,
-                                transactionHash: list[i].transactionHash,
-                                transactionIndex: list[i].transactionIndex,
-                                from: list[i].from,
-                                to: list[i].to,
-                                value: list[i].value,
+                                name: "node" + (i + 2),
+                                tx: first[i].tx,
+                                from: first[i].data.from,
+                                to: first[i].data.to,
+                                value: first[i].data.value,
+                                address: first[i].data.to
                             };
 
                             const s = {
@@ -81,20 +95,52 @@ export const Cryptocurrency = (props) => {
                             nextLinks.push(s);
                             nextNodes.push(n);
                         }
+
+                        //second_dept
+                        for (let i = 0; i < second.length; i++) {
+                            for (let j = 0; j < first.length; j++) {
+                                if (first[j].data.to == second[i][0].data.from) {
+                                    for (let k = 0; k < second[i].length; k++) {
+                                        const secondNode = {
+                                            id: nextNodes.length + 1,
+                                            name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
+                                            tx: second[i][k].tx,
+                                            from: second[i][k].data.from,
+                                            to: second[i][k].data.to,
+                                            value: second[i][k].data.value,
+                                            address: second[i][k].data.to
+                                        };
+                                        const secondLink = {
+                                            source: j + 2,
+                                            target: nextNodes.length + 1,
+                                        };
+
+                                        nextLinks.push(secondLink);
+                                        nextNodes.push(secondNode);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+
                         setDatas({links: nextLinks, nodes: nextNodes, status: true})
-                    })
-                    .catch((error) => {
-                        console.dir(error);
-                    });
-                    //get
-                }).catch(function (error) {
-                    console.log(error)
+                        console.log(nextNodes)
+                        console.log(nextLinks)
+                    } else {
+                        setDatas({
+                            nodes: [{id: 1, from: walletAddress, address: walletAddress}],
+                            links: [],
+                            status: true
+                        })
+                        alert("no data");
+
+                    }
                 })
-
-
+                .catch((error) => {
+                    console.dir(error);
+                });
         }
     };
-
 
     const myConfig = {
         automaticRearrangeAfterDropNode: false,
@@ -131,7 +177,7 @@ export const Cryptocurrency = (props) => {
             highlightFontWeight: "normal",
             highlightStrokeColor: "SAME",
             highlightStrokeWidth: "SAME",
-            labelProperty: "from",
+            labelProperty: "address",
             mouseCursor: "pointer",
             opacity: 1,
             renderLabel: true,
@@ -211,17 +257,6 @@ export const Cryptocurrency = (props) => {
                     onClickNode={onClickNode}
                 />
             }
-            {/* <node_graph /> */}
-            {/* <CardContent>
-        <Box
-          sx={{
-            height: 400,
-            position: "relative",
-          }}
-        >
-          <Bar data={data} options={options} />
-        </Box>
-      </CardContent> */}
             <Divider/>
             <Box
                 sx={{
