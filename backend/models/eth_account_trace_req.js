@@ -19,6 +19,10 @@ const Eth_account_trace_schema = new Schema({
     type: String,
     required: true
   },
+  type: {
+    type: String,
+    required: true
+  },
   isUpdated: {
     type: Boolean,
     required: true
