@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const Erc20Token_account_trace_schema = new Schema({
+const ERC20Token_account_trace_schema = new Schema({
   address: {
     type: String,
     required: true,
@@ -19,13 +19,9 @@ const Erc20Token_account_trace_schema = new Schema({
     type: String,
     required: true
   },
-  tokenName: {
+  type: {
     type: String,
-    required: true,
-  },
-  tokenSymbol: {
-    type: String,
-    required: true,
+    required: true
   },
   isUpdated: {
     type: Boolean,
@@ -35,6 +31,6 @@ const Erc20Token_account_trace_schema = new Schema({
   timestamps: true
 })
 
-const Erc20Token_account_traces = mongoose.model('erc20Token_account_traces', Erc20Token_account_trace_schema);
+const ERC20Token_account_traces = mongoose.model('ERC20Token_account_traces', ERC20Token_account_trace_schema);
 
-module.exports = Erc20Token_account_traces;
+module.exports = ERC20Token_account_traces;
