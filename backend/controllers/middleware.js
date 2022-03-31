@@ -33,7 +33,6 @@ const web3 = async (req, res, next) => {
       network = 'mainnet';
     }
     req.network = network;
-    console.log("a");
     next();
   } catch (e) {
     return cwr.errorWebResp(res, 500, `E0000 - infuraBaseUrl`, e.message);
@@ -54,6 +53,9 @@ const ethereumEndpoint = (network, protocol) => {
 const ethereumChainIDs = {
   mainnet: 1,
   ropsten: 3,
+  rinkeby: 4,
+  goerli: 5,
+  kovan: 42,
 };
 
 module.exports = {
