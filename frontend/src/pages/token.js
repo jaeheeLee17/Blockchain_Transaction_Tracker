@@ -2,6 +2,7 @@ import Router from "next/router";
 import { Graph } from "react-d3-graph";
 import { useState } from "react";
 import React from "react";
+import { Tooltip } from "@mui/material";
 import {
   Box,
   Button,
@@ -19,7 +20,8 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Search as SearchIcon } from "../icons/search";
-import { Search } from "@mui/icons-material";
+import { CenterFocusStrong, Search } from "@mui/icons-material";
+import { maxHeight } from "@mui/system";
 
 export const Token = (props) => {
   // axios
@@ -214,79 +216,78 @@ export const Token = (props) => {
 
   const makeNodes = () => {
     axios
-        .get("http://localhost:5000/eth/db/TxChainFrom", {
-          params: {
-            source: walletAddress,
-          },
-        })
-        .then((res) => {
-          if (res.data.data.length > 0) {
-            const first = res.data.data[0].first_depth;
-            const second = res.data.data[0].second_depth;
-            for (let i = 0; i < first.length; i++) {
-              const n = {
-                id: i + 2,
-                name: "node" + (i + 2),
-                tx: first[i].tx,
-                from: first[i].data.from,
-                to: first[i].data.to,
-                value: first[i].data.value,
-                address: first[i].data.to,
-              };
+      .get("http://localhost:5000/eth/db/TxChainFrom", {
+        params: {
+          source: walletAddress,
+        },
+      })
+      .then((res) => {
+        if (res.data.data.length > 0) {
+          const first = res.data.data[0].first_depth;
+          const second = res.data.data[0].second_depth;
+          for (let i = 0; i < first.length; i++) {
+            const n = {
+              id: i + 2,
+              name: "node" + (i + 2),
+              tx: first[i].tx,
+              from: first[i].data.from,
+              to: first[i].data.to,
+              value: first[i].data.value,
+              address: first[i].data.to,
+            };
 
-              const s = {
-                source: 1,
-                target: i + 2,
-              };
+            const s = {
+              source: 1,
+              target: i + 2,
+            };
 
-              nextLinks.push(s);
-              nextNodes.push(n);
-            }
+            nextLinks.push(s);
+            nextNodes.push(n);
+          }
 
-            //second_dept
-            for (let i = 0; i < second.length; i++) {
-              for (let j = 0; j < first.length; j++) {
-                if (first[j].data.to == second[i][0].data.from) {
-                  for (let k = 0; k < second[i].length; k++) {
-                    const secondNode = {
-                      id: nextNodes.length + 1,
-                      name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
-                      tx: second[i][k].tx,
-                      from: second[i][k].data.from,
-                      to: second[i][k].data.to,
-                      value: second[i][k].data.value,
-                      address: second[i][k].data.to,
-                    };
-                    const secondLink = {
-                      source: j + 2,
-                      target: nextNodes.length + 1,
-                    };
+          //second_dept
+          for (let i = 0; i < second.length; i++) {
+            for (let j = 0; j < first.length; j++) {
+              if (first[j].data.to == second[i][0].data.from) {
+                for (let k = 0; k < second[i].length; k++) {
+                  const secondNode = {
+                    id: nextNodes.length + 1,
+                    name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
+                    tx: second[i][k].tx,
+                    from: second[i][k].data.from,
+                    to: second[i][k].data.to,
+                    value: second[i][k].data.value,
+                    address: second[i][k].data.to,
+                  };
+                  const secondLink = {
+                    source: j + 2,
+                    target: nextNodes.length + 1,
+                  };
 
-                    nextLinks.push(secondLink);
-                    nextNodes.push(secondNode);
-                  }
-                  break;
+                  nextLinks.push(secondLink);
+                  nextNodes.push(secondNode);
                 }
+                break;
               }
             }
-
-            setDatas({ links: nextLinks, nodes: nextNodes, status: true });
-            console.log(nextNodes);
-            console.log(nextLinks);
-          } else {
-            setDatas({
-              nodes: [{ id: 1, from: walletAddress, address: walletAddress }],
-              links: [],
-              status: true,
-            });
-            alert("no data");
           }
-        })
-        .catch((error) => {
-          console.dir(error);
-        });
-  };
 
+          setDatas({ links: nextLinks, nodes: nextNodes, status: true });
+          console.log(nextNodes);
+          console.log(nextLinks);
+        } else {
+          setDatas({
+            nodes: [{ id: 1, from: walletAddress, address: walletAddress }],
+            links: [],
+            status: true,
+          });
+          alert("no data");
+        }
+      })
+      .catch((error) => {
+        console.dir(error);
+      });
+  };
 
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -298,7 +299,6 @@ export const Token = (props) => {
     makeNodes();
   };
 
-
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
     collapsible: false,
@@ -306,7 +306,8 @@ export const Token = (props) => {
     focusAnimationDuration: 0.75,
     focusZoom: 1,
     freezeAllDragEvents: false,
-    height: 400,
+    height: 1000,
+    maxHeight: 1000,
     highlightDegree: 1,
     highlightOpacity: 1,
     linkHighlightBehavior: false,
@@ -316,7 +317,8 @@ export const Token = (props) => {
     panAndZoom: false,
     staticGraph: false,
     staticGraphWithDragAndDrop: false,
-    width: 1800,
+    width: 2500,
+    maxWidth: 2500,
     d3: {
       alphaTarget: 0.05,
       gravity: -100,
@@ -366,8 +368,6 @@ export const Token = (props) => {
     },
   };
 
-
-
   return (
     <Card {...props}>
       <Container maxWidth={false}>
@@ -378,15 +378,14 @@ export const Token = (props) => {
             py: 8,
             m: -4,
           }}
-        ></Box>
-        <Typography sx={{ m: 1 }} variant="h4">
+        />
+        <Typography sx={{ m: 0 }} variant="h4">
           Token Dashboard
         </Typography>
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ mt: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ maxWidth: 500 }}>
-                {/* 검색창 */}
                 <TextField
                   onChange={onChangeAddress}
                   onKeyPress={onKeyPress}
@@ -394,11 +393,11 @@ export const Token = (props) => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                          <SearchIcon
-                              onClick={onClickButton}
-                              onChange={onChangeAddress}
-                              style={{cursor:"pointer"}}
-                          />
+                        <SearchIcon
+                          onClick={onClickButton}
+                          onChange={onChangeAddress}
+                          style={{ cursor: "pointer" }}
+                        />
                       </InputAdornment>
                     ),
                   }}
@@ -411,7 +410,7 @@ export const Token = (props) => {
         </Box>
       </Container>
       <Divider />
-      <Box sx={{ maxWidth: 500, height: 800 }}>
+      <Box sx={{ maxWidth: 1000, height: 800 }}>
         <Graph
           id="graph-id" // id is mandatory
           data={data}
