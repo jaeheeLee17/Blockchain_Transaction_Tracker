@@ -18,31 +18,23 @@ import axios from "axios";
 import {DashboardLayout} from "../components/dashboard-layout";
 import {Search as SearchIcon} from "../icons/search";
 import Router from "next/router";
+import * as copyLinkRef from "immer";
 
 export const Cryptocurrency = (props) => {
 
     const [walletAddress, setWalletAddress] = useState("");
 
-    const onClickLink = function (source, target) {
-        window.alert(`Clicked link between ${source} and ${target}`);
-    };
 
     const onChangePage = (e) => {
         window.location.href = "/transactiondetail";
     };
 
-    const onClickNode = function (nodeId, node) {
-        Router.push({
-            pathname: '/transactiondetail',
-            query: {to: node.to, from: node.from, value: node.value, tx: node.tx, address: node.address},
-        });
-    };
     const onChangeAddress = (e) => setWalletAddress(e.target.value);
-    const data = {links: [], nodes: [{id: walletAddress}]}
+    const data = {links: [], nodes: [{id: walletAddress}],focusedNodeId: "nodeIdToTriggerZoomAnimation"}
 
-    const [datas, setDatas] = useState({links: [], nodes: [], status: false});
-    const nextNodes = [{id: 1, from: walletAddress, address: walletAddress}];
-    const nextLinks = [];
+    let [datas, setDatas] = useState({links: [], nodes: [], status: false});
+    let nextNodes = [{id: 1, from: walletAddress, address: walletAddress,dept:0,x:100,y:200}];
+    let nextLinks = [];
 
     const onKeyPress = (e) => {
         if (e.key === "Enter") {
@@ -84,7 +76,8 @@ export const Cryptocurrency = (props) => {
                                 from: first[i].data.from,
                                 to: first[i].data.to,
                                 value: first[i].data.value,
-                                address: first[i].data.to
+                                address: first[i].data.to,
+                                dept:1
                             };
 
                             const s = {
@@ -108,7 +101,8 @@ export const Cryptocurrency = (props) => {
                                             from: second[i][k].data.from,
                                             to: second[i][k].data.to,
                                             value: second[i][k].data.value,
-                                            address: second[i][k].data.to
+                                            address: second[i][k].data.to,
+                                            dept : 2
                                         };
                                         const secondLink = {
                                             source: j + 2,
@@ -122,6 +116,12 @@ export const Cryptocurrency = (props) => {
                                 }
                             }
                         }
+
+                        nextNodes.forEach(item => {
+                                if (item.dept == 0) item.color = "blue",item.x=1200,item.y=1000;
+                                else if (item.dept==1) item.color="pink",item.x=500,item.y=500;
+                                else item.color = "red",item.x=400,item.y=400;
+                            });
 
                         setDatas({links: nextLinks, nodes: nextNodes, status: true})
                         console.log(nextNodes)
@@ -142,9 +142,20 @@ export const Cryptocurrency = (props) => {
         }
     };
 
+    const onClickNode = function (nodeId,node) {
+        if(node.dept==0) window.open("https://ropsten.etherscan.io/address/"+node.address);
+        window.open("https://ropsten.etherscan.io/tx/"+node.tx);
+    };
+
+    const onRightClickNode = function(event, nodeId, node) {
+        navigator.clipboard.writeText(node.address).then(() => {
+            alert("주소를 복사했습니다.");
+        });
+    }
+
     const myConfig = {
         automaticRearrangeAfterDropNode: false,
-        collapsible: false,
+        collapsible: true,
         directed: false,
         focusAnimationDuration: 0.75,
         focusZoom: 1,
@@ -162,7 +173,7 @@ export const Cryptocurrency = (props) => {
         width: 1000,
         d3: {
             alphaTarget: 0.05,
-            gravity: -100,
+            gravity: -200,
             linkLength: 100,
             linkStrength: 1,
             disableLinkForce: false,
@@ -175,7 +186,7 @@ export const Cryptocurrency = (props) => {
             highlightColor: "SAME",
             highlightFontSize: 8,
             highlightFontWeight: "normal",
-            highlightStrokeColor: "SAME",
+            highlightStrokeColor: "blue",
             highlightStrokeWidth: "SAME",
             labelProperty: "address",
             mouseCursor: "pointer",
@@ -192,7 +203,7 @@ export const Cryptocurrency = (props) => {
             fontColor: "black",
             fontSize: 8,
             fontWeight: "normal",
-            highlightColor: "SAME",
+            highlightColor: "blue",
             highlightFontSize: 8,
             highlightFontWeight: "normal",
             labelProperty: "label",
@@ -200,7 +211,7 @@ export const Cryptocurrency = (props) => {
             opacity: 1,
             renderLabel: false,
             semanticStrokeWidth: false,
-            strokeWidth: 1.5,
+            strokeWidth: 2,
             markerHeight: 6,
             markerWidth: 6,
             strokeDasharray: 0,
@@ -253,8 +264,8 @@ export const Cryptocurrency = (props) => {
                     id="graph-id" // id is mandatory
                     data={datas.status === true ? datas : data}
                     config={myConfig}
-                    onClickLink={onClickLink}
                     onClickNode={onClickNode}
+                    onRightClickNode={onRightClickNode}
                 />
             }
             <Divider/>
