@@ -204,6 +204,7 @@ export const Token = (props) => {
       },
     });
   };
+
   const onChangeAddress = (e) => setWalletAddress(e.target.value);
   const data = { links: [], nodes: [{ id: walletAddress }] };
 
@@ -211,9 +212,8 @@ export const Token = (props) => {
   const nextNodes = [{ id: 1, from: walletAddress, address: walletAddress }];
   const nextLinks = [];
 
-  const onKeyPress = (e) => {
-    if (e.key === "Enter") {
-      axios
+  const makeNodes = () => {
+    axios
         .get("http://localhost:5000/eth/db/TxChainFrom", {
           params: {
             source: walletAddress,
@@ -285,8 +285,20 @@ export const Token = (props) => {
         .catch((error) => {
           console.dir(error);
         });
+  };
+
+
+  const onKeyPress = (e) => {
+    if (e.key === "Enter") {
+      makeNodes();
     }
   };
+
+  const onClickButton = (e) => {
+    makeNodes();
+  };
+
+
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
     collapsible: false,
@@ -354,82 +366,7 @@ export const Token = (props) => {
     },
   };
 
-  const onClickButton = (e) => {
-    if (e.key === "Enter") {
-      axios
-        .get("http://localhost:5000/eth/db/TxChainFrom", {
-          params: {
-            source: walletAddress,
-          },
-        })
-        .then((res) => {
-          if (res.data.data.length > 0) {
-            const first = res.data.data[0].first_depth;
-            const second = res.data.data[0].second_depth;
-            for (let i = 0; i < first.length; i++) {
-              const n = {
-                id: i + 2,
-                name: "node" + (i + 2),
-                tx: first[i].tx,
-                from: first[i].data.from,
-                to: first[i].data.to,
-                value: first[i].data.value,
-                address: first[i].data.to,
-              };
 
-              const s = {
-                source: 1,
-                target: i + 2,
-              };
-
-              nextLinks.push(s);
-              nextNodes.push(n);
-            }
-
-            //second_dept
-            for (let i = 0; i < second.length; i++) {
-              for (let j = 0; j < first.length; j++) {
-                if (first[j].data.to == second[i][0].data.from) {
-                  for (let k = 0; k < second[i].length; k++) {
-                    const secondNode = {
-                      id: nextNodes.length + 1,
-                      name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
-                      tx: second[i][k].tx,
-                      from: second[i][k].data.from,
-                      to: second[i][k].data.to,
-                      value: second[i][k].data.value,
-                      address: second[i][k].data.to,
-                    };
-                    const secondLink = {
-                      source: j + 2,
-                      target: nextNodes.length + 1,
-                    };
-
-                    nextLinks.push(secondLink);
-                    nextNodes.push(secondNode);
-                  }
-                  break;
-                }
-              }
-            }
-
-            setDatas({ links: nextLinks, nodes: nextNodes, status: true });
-            console.log(nextNodes);
-            console.log(nextLinks);
-          } else {
-            setDatas({
-              nodes: [{ id: 1, from: walletAddress, address: walletAddress }],
-              links: [],
-              status: true,
-            });
-            alert("no data");
-          }
-        })
-        .catch((error) => {
-          console.dir(error);
-        });
-    }
-  };
 
   return (
     <Card {...props}>
@@ -457,12 +394,11 @@ export const Token = (props) => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <Button
-                          onClick={onClickButton}
-                          onChange={onChangeAddress}
-                        >
-                          <SearchIcon />
-                        </Button>
+                          <SearchIcon
+                              onClick={onClickButton}
+                              onChange={onChangeAddress}
+                              style={{cursor:"pointer"}}
+                          />
                       </InputAdornment>
                     ),
                   }}
