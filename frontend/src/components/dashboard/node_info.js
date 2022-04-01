@@ -30,7 +30,7 @@ export const Node_info = (props) => {
             <Typography color="black" gutterBottom variant="overline">
               Selected Node Information
             </Typography>
-            <br />
+            {/* <br />
             {datas.map((data) => (
               <Typography color="black" variant="caption">
                 <p>Status: {data.status}</p>
@@ -38,8 +38,8 @@ export const Node_info = (props) => {
                 <p>Address: {data.address}</p>
                 <p>Best block: {data.best_block}</p>
                 <p>Version: {data.version}</p>
-              </Typography>
-            ))}
+              </Typography> */}
+            ))
           </Grid>
         </Grid>
         <Box

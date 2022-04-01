@@ -115,7 +115,7 @@ export const LatestOrders = (props) => {
                   <TableCell>Block</TableCell>
                   <TableCell>Age</TableCell>
                   <TableCell>From</TableCell>
-                  {/* <TableCell></TableCell> */}
+                  <TableCell></TableCell>
                   <TableCell>To</TableCell>
                   <TableCell>Value</TableCell>
                   {/* <TableCell sortDirection="desc">
@@ -163,6 +163,7 @@ export const LatestOrders = (props) => {
                         {order.flow}
                       </Button>
                     </TableCell>
+
                     <TableCell>{order.to}</TableCell>
                     <TableCell>{order.value}</TableCell>
                     <TableCell>{order.Txn_Fee}</TableCell>
