@@ -15,6 +15,7 @@ import {
   TableSortLabel,
   Tooltip,
   CardContent,
+  Divider,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import { SeverityPill } from "../severity-pill";
@@ -104,6 +105,7 @@ export const LatestOrders = (props) => {
   return (
     <Card {...props}>
       <CardHeader title="Latest Transactions" />
+      <Divider />
       <CardContent>
         <PerfectScrollbar>
           <Box sx={{ minWidth: 800 }}>
