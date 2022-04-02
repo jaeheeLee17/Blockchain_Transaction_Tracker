@@ -5,8 +5,9 @@ const mw = require('../../controllers/middleware')
 
 const router = express.Router();
 
-// router.post('/network/block', EthController.postBlockInfo);
 router.post('/network/transaction', mw.web3, EthController.postTransactionInfo);
+router.post('/network/ethAccountTrace', mw.etherscan, mw.web3, EthController.postEthAccountTraceRecord);
+router.post('/network/ERC20TokenAccountTrace', mw.etherscan, mw.web3, EthController.postERC20TokenAccountTraceRecord);
 router.post('/network/txlistchain', mw.etherscan, mw.web3, EthController.postTxlistChainWithAddress);
 router.post('/network/tokenTxlistchain', mw.etherscan, mw.web3, EthController.postTokenTxChainWithAddress);
 
@@ -19,5 +20,7 @@ router.get('/db/TxTo', DBController.getTxTo);
 router.get('/db/TokenTxFrom', DBController.getTokenTxFrom);
 router.get('/db/TokentxChainFrom', DBController.getTokentxChainFrom);
 router.get('/db/TokenTxTo', DBController.getTokenTxTo);
+router.get('/db/ethAccountTrace', DBController.getEthAccountRecord);
+router.get('/db/ERC20TokenAccountTrace', DBController.getERC20TokenAccountRecord);
 
 module.exports = router;
