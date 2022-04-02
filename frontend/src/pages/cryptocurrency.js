@@ -20,7 +20,8 @@ import { DashboardLayout } from "../components/dashboard-layout";
 import { Search as SearchIcon } from "../icons/search";
 import Router from "next/router";
 import * as copyLinkRef from "immer";
-import { Tooltip } from "@mui/material";
+import Tooltip, { TooltipProps, tooltipClasses } from "@mui/material/Tooltip";
+import { styled } from "@mui/material/styles";
 
 export const Cryptocurrency = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
@@ -175,6 +176,19 @@ export const Cryptocurrency = (props) => {
     });
   };
 
+  const HtmlTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: "#f5f5f9",
+      color: "rgba(0, 0, 0, 0.87)",
+      // maxWidth: 220,
+      width: 500,
+      fontSize: theme.typography.pxToRem(20),
+      border: "1px solid #dadde9",
+    },
+  }));
+
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
     collapsible: true,
@@ -304,14 +318,16 @@ export const Cryptocurrency = (props) => {
           p: 2,
         }}
       >
-        <Button
-          color="primary"
-          endIcon={<ArrowRightIcon fontSize="small" />}
-          size="small"
-          onClick={onChangePage}
-        >
-          More Details
-        </Button>
+        <HtmlTooltip title="detail">
+          <Button
+            color="primary"
+            endIcon={<ArrowRightIcon fontSize="small" />}
+            size="small"
+            onClick={onChangePage}
+          >
+            More Details
+          </Button>
+        </HtmlTooltip>
       </Box>
     </Card>
   );
