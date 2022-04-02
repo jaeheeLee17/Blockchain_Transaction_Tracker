@@ -20,11 +20,11 @@ import { DashboardLayout } from "../components/dashboard-layout";
 import { Search as SearchIcon } from "../icons/search";
 import Router from "next/router";
 import * as copyLinkRef from "immer";
+import Tooltip, { TooltipProps, tooltipClasses } from "@mui/material/Tooltip";
+import { styled } from "@mui/material/styles";
 
 export const Cryptocurrency = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
-
-
 
   const onChangePage = (e) => {
     window.location.href = "/transactiondetail";
@@ -60,7 +60,7 @@ export const Cryptocurrency = (props) => {
     makeNodes();
   };
   const makeNodes = () => {
-// axios
+    // axios
     //     .post("http://localhost:5000/eth/network/txlistchain", {
     //       params: {
     //         walletAddress: "0x90992dcb0fdaeb990C73Ca1682A7e2A30337d0c8",
@@ -81,87 +81,87 @@ export const Cryptocurrency = (props) => {
     //     });
 
     axios
-        .get("http://localhost:5000/eth/db/TxChainFrom", {
-          params: {
-            source: walletAddress,
-          },
-        })
-        .then((res) => {
-          if (res.data.data.length > 0) {
-            const first = res.data.data[0].first_depth;
-            const second = res.data.data[0].second_depth;
-            for (let i = 0; i < first.length; i++) {
-              const n = {
-                id: i + 2,
-                name: "node" + (i + 2),
-                tx: first[i].tx,
-                from: first[i].data.from,
-                to: first[i].data.to,
-                value: first[i].data.value,
-                address: first[i].data.to,
-                dept: 1,
-              };
+      .get("http://localhost:5000/eth/db/TxChainFrom", {
+        params: {
+          source: walletAddress,
+        },
+      })
+      .then((res) => {
+        if (res.data.data.length > 0) {
+          const first = res.data.data[0].first_depth;
+          const second = res.data.data[0].second_depth;
+          for (let i = 0; i < first.length; i++) {
+            const n = {
+              id: i + 2,
+              name: "node" + (i + 2),
+              tx: first[i].tx,
+              from: first[i].data.from,
+              to: first[i].data.to,
+              value: first[i].data.value,
+              address: first[i].data.to,
+              dept: 1,
+            };
 
-              const s = {
-                source: 1,
-                target: i + 2,
-              };
+            const s = {
+              source: 1,
+              target: i + 2,
+            };
 
-              nextLinks.push(s);
-              nextNodes.push(n);
-            }
+            nextLinks.push(s);
+            nextNodes.push(n);
+          }
 
-            //second_dept
-            for (let i = 0; i < second.length; i++) {
-              for (let j = 0; j < first.length; j++) {
-                if (first[j].data.to == second[i][0].data.from) {
-                  for (let k = 0; k < second[i].length; k++) {
-                    const secondNode = {
-                      id: nextNodes.length + 1,
-                      name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
-                      tx: second[i][k].tx,
-                      from: second[i][k].data.from,
-                      to: second[i][k].data.to,
-                      value: second[i][k].data.value,
-                      address: second[i][k].data.to,
-                      dept: 2,
-                    };
-                    const secondLink = {
-                      source: j + 2,
-                      target: nextNodes.length + 1,
-                    };
+          //second_dept
+          for (let i = 0; i < second.length; i++) {
+            for (let j = 0; j < first.length; j++) {
+              if (first[j].data.to == second[i][0].data.from) {
+                for (let k = 0; k < second[i].length; k++) {
+                  const secondNode = {
+                    id: nextNodes.length + 1,
+                    name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
+                    tx: second[i][k].tx,
+                    from: second[i][k].data.from,
+                    to: second[i][k].data.to,
+                    value: second[i][k].data.value,
+                    address: second[i][k].data.to,
+                    dept: 2,
+                  };
+                  const secondLink = {
+                    source: j + 2,
+                    target: nextNodes.length + 1,
+                  };
 
-                    nextLinks.push(secondLink);
-                    nextNodes.push(secondNode);
-                  }
-                  break;
+                  nextLinks.push(secondLink);
+                  nextNodes.push(secondNode);
                 }
+                break;
               }
             }
-
-            nextNodes.forEach((item) => {
-              if (item.dept == 0)
-                (item.color = "blue"), (item.x = 1200), (item.y = 1000);
-              else if (item.dept == 1)
-                (item.color = "pink"), (item.x = 500), (item.y = 500);
-              else (item.color = "red"), (item.x = 400), (item.y = 400);
-            });
-
-            setDatas({ links: nextLinks, nodes: nextNodes, status: true });
-            console.log(nextNodes);
-            console.log(nextLinks);
-          } else {
-            setDatas({
-              nodes: [{ id: 1, from: walletAddress, address: walletAddress }],
-              links: [],
-              status: true,
-            });
-            alert("no data");
           }
-        })
-        .catch((error) => {
-          console.dir(error);
-        });
+
+          nextNodes.forEach((item) => {
+            if (item.dept == 0)
+              (item.color = "blue"), (item.x = 1200), (item.y = 1000);
+            else if (item.dept == 1)
+              (item.color = "pink"), (item.x = 500), (item.y = 500);
+            else (item.color = "red"), (item.x = 400), (item.y = 400);
+          });
+
+          setDatas({ links: nextLinks, nodes: nextNodes, status: true });
+          console.log(nextNodes);
+          console.log(nextLinks);
+        } else {
+          setDatas({
+            nodes: [{ id: 1, from: walletAddress, address: walletAddress }],
+            links: [],
+            status: true,
+          });
+          alert("no data");
+        }
+      })
+      .catch((error) => {
+        console.dir(error);
+      });
   };
 
   const onClickNode = function (nodeId, node) {
@@ -175,6 +175,19 @@ export const Cryptocurrency = (props) => {
       alert("주소를 복사했습니다.");
     });
   };
+
+  const HtmlTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: "#f5f5f9",
+      color: "rgba(0, 0, 0, 0.87)",
+      // maxWidth: 220,
+      width: 500,
+      fontSize: theme.typography.pxToRem(20),
+      border: "1px solid #dadde9",
+    },
+  }));
 
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
@@ -217,7 +230,7 @@ export const Cryptocurrency = (props) => {
       mouseCursor: "pointer",
       opacity: 1,
       renderLabel: true,
-      size: 700,
+      size: 1000,
       strokeColor: "none",
       strokeWidth: 1.5,
       svg: "",
@@ -286,7 +299,7 @@ export const Cryptocurrency = (props) => {
           </Card>
         </Box>
       </Container>
-      <Box sx={{ maxWidth: 1000, height: 800 }}>
+      <Box sx={{ maxWidth: 1000, height: 1000 }}>
         {
           <Graph
             id="graph-id" // id is mandatory
@@ -305,14 +318,16 @@ export const Cryptocurrency = (props) => {
           p: 2,
         }}
       >
-        <Button
-          color="primary"
-          endIcon={<ArrowRightIcon fontSize="small" />}
-          size="small"
-          onClick={onChangePage}
-        >
-          More Details
-        </Button>
+        <HtmlTooltip title="detail">
+          <Button
+            color="primary"
+            endIcon={<ArrowRightIcon fontSize="small" />}
+            size="small"
+            onClick={onChangePage}
+          >
+            More Details
+          </Button>
+        </HtmlTooltip>
       </Box>
     </Card>
   );
