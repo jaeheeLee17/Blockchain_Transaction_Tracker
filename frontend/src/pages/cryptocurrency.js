@@ -141,10 +141,10 @@ export const Cryptocurrency = (props) => {
 
           nextNodes.forEach((item) => {
             if (item.dept == 0)
-              (item.color = "blue"), (item.x = 1200), (item.y = 1000);
+              (item.color = "#00600f"), (item.x = 1200), (item.y = 1000);
             else if (item.dept == 1)
-              (item.color = "pink"), (item.x = 500), (item.y = 500);
-            else (item.color = "red"), (item.x = 400), (item.y = 400);
+              (item.color = "#388e3c"), (item.x = 500), (item.y = 500);
+            else (item.color = "#6abf69"), (item.x = 400), (item.y = 400);
           });
 
           setDatas({ links: nextLinks, nodes: nextNodes, status: true });
