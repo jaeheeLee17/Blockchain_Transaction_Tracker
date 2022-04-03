@@ -78,7 +78,7 @@ export const DashboardNavbar = (props) => {
               marginTop: "20px",
             }}
           >
-            <TextField
+            {/* <TextField
               fullWidth
               InputProps={{
                 startAdornment: (
@@ -92,7 +92,7 @@ export const DashboardNavbar = (props) => {
               placeholder="Search"
               variant="outlined"
             />
-            <SearchIcon onClick={(onClick, onKeyPress)} fontSize="small" />
+            <SearchIcon onClick={(onClick, onKeyPress)} fontSize="small" /> */}
           </Box>
 
           <Box sx={{ flexGrow: 1 }} />
