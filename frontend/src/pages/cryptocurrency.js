@@ -87,6 +87,7 @@ export const Cryptocurrency = (props) => {
         },
       })
       .then((res) => {
+        let d1=0,d2=0,d3=0;
         if (res.data.data.length > 0) {
           const first = res.data.data[0].first_depth;
           const second = res.data.data[0].second_depth;
@@ -106,7 +107,7 @@ export const Cryptocurrency = (props) => {
               source: 1,
               target: i + 2,
             };
-
+            d1++;
             nextLinks.push(s);
             nextNodes.push(n);
           }
@@ -131,21 +132,34 @@ export const Cryptocurrency = (props) => {
                     target: nextNodes.length + 1,
                   };
 
+                  nextNodes[j].hasChild=true;
+                  d3++;
                   nextLinks.push(secondLink);
                   nextNodes.push(secondNode);
                 }
                 break;
               }
             }
+            d2++; d1--;
           }
 
-          nextNodes.forEach((item) => {
-            if (item.dept == 0)
-              (item.color = "#00600f"), (item.x = 1200), (item.y = 1000);
-            else if (item.dept == 1)
-              (item.color = "#388e3c"), (item.x = 500), (item.y = 500);
-            else (item.color = "#6abf69"), (item.x = 400), (item.y = 400);
-          });
+          console.log(d1,d2,d3)
+
+          let x1=0,y1=0,x2=0,y2=0,x3=0,y3=0;
+          for (let i = 0; i < nextNodes.length; i++) {
+            let item = nextNodes[i];
+            if (item.dept == 0) {
+              (item.color = "#00600f"), (item.x = 0), (item.y = 0);
+            } else if (item.dept == 1) {
+              if (item.hasChild == true) {//2-3연결
+                (item.color = "#388e3c"), (item.x = 1000 + x2), (item.y = 100+y2) ,x2+=40, y2+=15;
+              } else {
+                (item.color = "#388e3c"), (item.x = 800 +x1 ), (item.y = 100+y1),x1+=40, y1+=15;
+              }
+            } else {
+              (item.color = "#6abf69"), (item.x = 1200+x3), (item.y = 100+y3),x3+=40, y3+=15;
+            }
+          }
 
           setDatas({ links: nextLinks, nodes: nextNodes, status: true });
           console.log(nextNodes);
@@ -175,19 +189,11 @@ export const Cryptocurrency = (props) => {
       alert("주소를 복사했습니다.");
     });
   };
+  const onMouseOverNode = function(nodeId, node) {
+    console.log(node)
+    console.log(`Mouse over node ${nodeId} in position (${node.x}, ${node.y})`);
+  }
 
-  const HtmlTooltip = styled(({ className, ...props }) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))(({ theme }) => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: "#f5f5f9",
-      color: "rgba(0, 0, 0, 0.87)",
-      // maxWidth: 220,
-      width: 500,
-      fontSize: theme.typography.pxToRem(20),
-      border: "1px solid #dadde9",
-    },
-  }));
 
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
@@ -307,6 +313,7 @@ export const Cryptocurrency = (props) => {
             config={myConfig}
             onClickNode={onClickNode}
             onRightClickNode={onRightClickNode}
+            onMouseOverNode={onMouseOverNode}
           />
         }
       </Box>
@@ -318,7 +325,6 @@ export const Cryptocurrency = (props) => {
           p: 2,
         }}
       >
-        <HtmlTooltip title="detail">
           <Button
             color="primary"
             endIcon={<ArrowRightIcon fontSize="small" />}
@@ -327,7 +333,6 @@ export const Cryptocurrency = (props) => {
           >
             More Details
           </Button>
-        </HtmlTooltip>
       </Box>
     </Card>
   );
