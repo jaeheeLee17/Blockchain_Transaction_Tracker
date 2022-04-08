@@ -1,9 +1,9 @@
 require('dotenv').config();
-// const ethBlocks = require('../models/ethBlocks');
 const ethTransactions = require('../models/ethTransactions');
-const ethTokens = require('../models/ethTokens');
 const eth_tx_traces = require('../models/eth_transactions_trace');
 const eth_tokentx_traces = require('../models/eth_tokentx_trace');
+const eth_account_traces = require('../models/eth_account_trace_req');
+const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
 const cwr = require('../utils/createWebResponse');
 const {StandardABI} = require('../config/eth/standardABI');
 
@@ -42,6 +42,92 @@ const postTransactionInfo = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'getTransaction failed', e.message || e);
+  }
+}
+
+// 이더리움 계정 검색 정보 추가
+const postEthAccountTraceRecord = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const {walletAddress, startBlockNum, endBlockNum} = req.body;
+    const ethtraceCheck = await eth_account_traces.find({"address": walletAddress});
+    if (ethtraceCheck.length === 0) {
+      const ethTraceRequest = {
+        address: walletAddress,
+        startBlockNumber: startBlockNum,
+        endBlockNumber: endBlockNum,
+        network: req.body.endpoint,
+        type: 'ethereum',
+        isUpdated: false
+      };
+      eth_account_traces.insertMany(ethTraceRequest, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+      return cwr.createWebResp(res, header, 200, {
+        message: "Ethereum Account Record loading Completed, database updated!",
+      });
+    }
+    if (Number(ethtraceCheck[0].startBlockNumber) > Number(startBlockNum)) {
+      eth_account_traces.updateMany({"startBlockNumber": ethtraceCheck[0].startBlockNumber},
+        {"$set": {"startBlockNumber": startBlockNum, "isUpdated": true}}).catch(err => {
+        console.log(err);
+      });
+    }
+    if (Number(ethtraceCheck[0].endBlockNumber) < Number(endBlockNum)) {
+      eth_account_traces.updateMany({"endBlockNumber": ethtraceCheck[0].endBlockNumber},
+        {"$set": {"endBlockNumber": endBlockNum, "isUpdated": true}}).catch(err => {
+        console.log(err);
+      });
+    }
+    return cwr.createWebResp(res, header, 200, {
+      message: "Ethereum Account Record updating Completed, database updated!",
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Adding Ethereum Account Record failed', e.message || e);
+  }
+}
+
+// ERC20 토큰 계정 검색 정보 추가
+const postERC20TokenAccountTraceRecord = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const {walletAddress, startBlockNum, endBlockNum} = req.body;
+    const ERC20TokenTraceCheck = await ERC20Token_account_traces.find({"address": walletAddress});
+    if (ERC20TokenTraceCheck.length === 0) {
+      const ERC20TokenTraceRequest = {
+        address: walletAddress,
+        startBlockNumber: startBlockNum,
+        endBlockNumber: endBlockNum,
+        network: req.body.endpoint,
+        type: 'ERC20Token',
+        isUpdated: false
+      };
+      ERC20Token_account_traces.insertMany(ERC20TokenTraceRequest, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+      return cwr.createWebResp(res, header, 200, {
+        message: "ERC20 Token Account Record loading Completed, database updated!",
+      });
+    }
+    if (Number(ERC20TokenTraceCheck[0].startBlockNumber) > Number(startBlockNum)) {
+      ERC20Token_account_traces.updateMany({"startBlockNumber": ERC20TokenTraceCheck[0].startBlockNumber},
+        {"$set": {"startBlockNumber": startBlockNum, "isUpdated": true}}).catch(err => {
+        console.log(err);
+      });
+    }
+    if (Number(ERC20TokenTraceCheck[0].endBlockNumber) < Number(endBlockNum)) {
+      ERC20Token_account_traces.updateMany({"endBlockNumber": ERC20TokenTraceCheck[0].endBlockNumber},
+        {"$set": {"endBlockNumber": endBlockNum, "isUpdated": true}}).catch(err => {
+        console.log(err);
+      });
+    }
+    return cwr.createWebResp(res, header, 200, {
+      message: "ERC20 Token Account Record updating Completed, database updated!",
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Adding ERC20 Token Account Record failed', e.message || e);
   }
 }
 
@@ -322,6 +408,8 @@ const postTokenTxChainWithAddress = async (req, res) => {
 
 module.exports = {
   postTransactionInfo,
+  postEthAccountTraceRecord,
+  postERC20TokenAccountTraceRecord,
   postTxlistChainWithAddress,
   getEtherBalance,
   getTokenBalanceList,
