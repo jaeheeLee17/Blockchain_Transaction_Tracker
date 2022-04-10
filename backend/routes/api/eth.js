@@ -14,9 +14,8 @@ router.post('/network/tokenTxlistchain', mw.etherscan, mw.web3, EthController.po
 router.get('/network/etherBalance', mw.web3, EthController.getEtherBalance);
 router.get('/network/tokenBalanceList', mw.etherscan, mw.web3, EthController.getTokenBalanceList);
 
-router.get('/db/TxFrom', DBController.getTxFrom);
+router.get('/db/latestTransaction', DBController.getLatestTransactions);
 router.get('/db/TxChainFrom', DBController.getTxChainFrom);
-router.get('/db/TxTo', DBController.getTxTo);
 router.get('/db/TokenTxFrom', DBController.getTokenTxFrom);
 router.get('/db/TokentxChainFrom', DBController.getTokentxChainFrom);
 router.get('/db/TokenTxTo', DBController.getTokenTxTo);
