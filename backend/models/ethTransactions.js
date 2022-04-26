@@ -9,7 +9,7 @@ const EthTransactionSchema = new Schema({
   transactionHash: {
     type: String,
     required: true,
-    unique: true,
+    unique: true
   },
   transactionIndex: {
     type: Number,

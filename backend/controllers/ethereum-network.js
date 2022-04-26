@@ -17,28 +17,31 @@ const postTransactionInfo = async (req, res) => {
       const transactionsCount = await req.web3.eth.getBlockTransactionCount(BlockNum);
       const blockNumbers = Array.from({length: transactionsCount}, (v, i) => i);
       const transactionInfos = await Promise.all(blockNumbers.map(n => req.web3.eth.getTransaction(blockInfo.transactions[n])));
-      const filteredTxInfos = await Promise.all(transactionInfos.map(transaction => {
+      const filteredTxs = await Promise.all(transactionInfos.filter(transaction => {
         if (transaction.to !== null) {
-          const transactionData = {
-            blockNumber: transaction.blockNumber,
-            transactionHash: transaction.hash,
-            transactionIndex: transaction.transactionIndex,
-            from: transaction.from,
-            to: transaction.to,
-            value: req.web3.utils.fromWei(String(transaction.value), 'ether'),
-          };
-          return transactionData;
+          return transaction;
         }
+      }))
+      const filteredTxInfos = await Promise.all(filteredTxs.map(transaction => {
+        const transactionData = {
+          blockNumber: transaction.blockNumber,
+          transactionHash: transaction.hash,
+          transactionIndex: transaction.transactionIndex,
+          from: transaction.from,
+          to: transaction.to,
+          value: req.web3.utils.fromWei(String(transaction.value), 'ether'),
+        };
+        return transactionData;
       }));
       await Promise.all(filteredTxInfos).then((data) => {
         ethTransactions.insertMany(data, {upsert: true}).catch(err => {
           console.log(err);
         });
       });
+      return cwr.createWebResp(res, header, 200, {
+        message: "Transactions loading Completed, database updated!",
+      });
     }
-    return cwr.createWebResp(res, header, 200, {
-      message: "Transactions loading Completed, database updated!",
-    });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'getTransaction failed', e.message || e);
