@@ -7,17 +7,19 @@ const eth_account_traces = require('../models/eth_account_trace_req');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
 const cwr = require('../utils/createWebResponse');
 
-const getTxFrom = async (req, res) => {
+// 최근 블록체인 거래 목록 조회
+const getLatestTransactions = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {source} = req.query;
-    const TxFromList = await ethTransactions.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TxFromList);
+    const TransactionData = await ethTransactions.find().sort({blockNumber: -1, transactionIndex: -1})
+      .limit(20);
+    return cwr.createWebResp(res, header, 200, TransactionData);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
-      'get Transactions with source address failed', e.message || e);
+      'get latest Transactions failed', e.message || e);
   }
 }
+
 // source에서 시작하는 이더리움 거래 체인 목록 출력
 const getTxChainFrom = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
@@ -28,18 +30,6 @@ const getTxChainFrom = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transaction tracking lists with source address failed', e.message || e);
-  }
-}
-
-const getTxTo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
-  try {
-    const {destination} = req.query;
-    const TxToList = await ethTransactions.find({"to": destination});
-    return cwr.createWebResp(res, header, 200, TxToList);
-  } catch (e) {
-    return cwr.errorWebResp(res, header, 500,
-      'get Transactions with destination address failed', e.message || e);
   }
 }
 
@@ -106,9 +96,8 @@ const getERC20TokenAccountRecord = async (req, res) => {
 }
 
 module.exports = {
-  getTxFrom,
+  getLatestTransactions,
   getTxChainFrom,
-  getTxTo,
   getTokenTxFrom,
   getTokentxChainFrom,
   getTokenTxTo,
