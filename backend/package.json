@@ -8,6 +8,7 @@
     "start": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
   },
   "dependencies": {
+    "chart.js": "^3.7.1",
     "concurrently": "^7.0.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -19,6 +20,8 @@
     "mongoose": "^6.2.9",
     "morgan": "^1.10.0",
     "pug": "^3.0.2",
+    "react-chartjs-2": "^4.1.0",
+    "sass": "^1.51.0",
     "web3": "^1.7.1"
   }
 }
