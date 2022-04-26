@@ -60,10 +60,12 @@ export const Cryptocurrency = (props) => {
     const checkData = () => {
         axios.get("http://localhost:5000/eth/db/ethAccountTrace", {
             params: {
-                walletAddress: walletAddress,
+                walletAddress: walletAddress.toLowerCase(),
             },
         }).then((res) => {
             const resNode = res.data.data;
+            console.log(resNode)
+            console.log(resNode.length)
             if (resNode.length == 1) getTxChainFrom(walletAddress);
             else postToDB(walletAddress);
         }).catch((error) => {
@@ -75,10 +77,13 @@ export const Cryptocurrency = (props) => {
         axios
             .get("http://localhost:5000/eth/db/TxChainFrom", {
                 params: {
-                    source: address,
+                    source: address.toLowerCase(),
                 },
             })
             .then((res) => {
+                console.log(res)
+                console.log(res.data)
+
                 const txChains = res.data.data;
                 makeNodes(txChains);
             })
@@ -91,28 +96,28 @@ export const Cryptocurrency = (props) => {
         //postEthAccountTraceRecord
         //postTxlistChainWithAddress
         axios.post("http://localhost:5000/eth/network/ethAccountTrace", {
-            params: {
                 endpoint: "ropsten",
-                walletAddress: address,
-                startBlockNum: "500000",
-                endBlockNum: "12148676"
-            },
+                walletAddress: address.toLowerCase(),
+                startBlockNum: "1",
+                endBlockNum: "12160000"
         })
             .then((res) => {
-                axios.post("http://localhost:5000/eth/network/txlistchain", {
-                    params: {
+                axios.post("http://localhost:5000/eth/network/txlistchain",
+                    {
                         endpoint: "ropsten",
-                        walletAddress: address,
+                        walletAddress: address.toLowerCase(),
                         startBlockNum: "1",
                         endBlockNum: "latest",
                         page: "1",
                         offset: "100",
                         sort: "asc"
-                    },
                 }).then((res) => {
+                    console.log(res)
+                    console.log(res.data)
                     makeNodes(res.data.data)
                 })
                     .catch((error) => {
+                        console.log()
                         console.dir(error);
                     });
             })
@@ -122,9 +127,13 @@ export const Cryptocurrency = (props) => {
     };
 
     const makeNodes = (txChains) => {
+        console.log(txChains)
         if (txChains.length > 0) {
             const first = txChains[0].first_depth;
-            const second = txChains[0].second_depth;
+            let second;
+            if(txChains[0].second_depth[0]==null)   second = null;
+            else  second = txChains[0].second_depth;
+
             for (let i = 0; i < first.length; i++) {
                 const n = {
                     id: i + 2,
@@ -146,33 +155,38 @@ export const Cryptocurrency = (props) => {
             }
 
             //second_dept
-            for (let i = 0; i < second.length; i++) {
-                for (let j = 0; j < first.length; j++) {
-                    if (first[j].data.to == second[i][0].data.from) {
-                        for (let k = 0; k < second[i].length; k++) {
-                            const secondNode = {
-                                id: nextNodes.length + 1,
-                                name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
-                                tx: second[i][k].tx,
-                                from: second[i][k].data.from,
-                                to: second[i][k].data.to,
-                                value: second[i][k].data.value,
-                                address: second[i][k].data.to,
-                                dept: 2,
-                            };
-                            const secondLink = {
-                                source: j + 2,
-                                target: nextNodes.length + 1,
-                            };
+console.log(second)
+            console.log(second[0])
+            console.log(second[0].length)
+            if(second[0].length!=0) {
+    for (let i = 0; i < second.length; i++) {
+        for (let j = 0; j < first.length; j++) {
+            if (first[j].data.to == second[i][0].data.from) {
+                for (let k = 0; k < second[i].length; k++) {
+                    const secondNode = {
+                        id: nextNodes.length + 1,
+                        name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
+                        tx: second[i][k].tx,
+                        from: second[i][k].data.from,
+                        to: second[i][k].data.to,
+                        value: second[i][k].data.value,
+                        address: second[i][k].data.to,
+                        dept: 2,
+                    };
+                    const secondLink = {
+                        source: j + 2,
+                        target: nextNodes.length + 1,
+                    };
 
-                            nextNodes[j + 1].hasChild = true;
-                            nextLinks.push(secondLink);
-                            nextNodes.push(secondNode);
-                        }
-                        break;
-                    }
+                    nextNodes[j + 1].hasChild = true;
+                    nextLinks.push(secondLink);
+                    nextNodes.push(secondNode);
                 }
+                break;
             }
+        }
+    }
+}
             let d1 = 0, d2 = 0, d3 = 0;
             nextNodes.forEach((item) => {
                 if (item.dept == 1) {
