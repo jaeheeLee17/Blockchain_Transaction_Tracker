@@ -18,6 +18,9 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
 import {DashboardLayout} from "../components/dashboard-layout";
 import {Search as SearchIcon} from "../icons/search";
+import ReactTooltip from "react-tooltip";
+import * as ReactDOM from "react-dom";
+
 
 
 export const Cryptocurrency = (props) => {
@@ -64,8 +67,6 @@ export const Cryptocurrency = (props) => {
             },
         }).then((res) => {
             const resNode = res.data.data;
-            console.log(resNode)
-            console.log(resNode.length)
             if (resNode.length == 1) getTxChainFrom(walletAddress);
             else postToDB(walletAddress);
         }).catch((error) => {
@@ -96,10 +97,10 @@ export const Cryptocurrency = (props) => {
         //postEthAccountTraceRecord
         //postTxlistChainWithAddress
         axios.post("http://localhost:5000/eth/network/ethAccountTrace", {
-                endpoint: "ropsten",
-                walletAddress: address.toLowerCase(),
-                startBlockNum: "1",
-                endBlockNum: "12160000"
+            endpoint: "ropsten",
+            walletAddress: address.toLowerCase(),
+            startBlockNum: "1",
+            endBlockNum: "12160000"
         })
             .then((res) => {
                 axios.post("http://localhost:5000/eth/network/txlistchain",
@@ -111,13 +112,12 @@ export const Cryptocurrency = (props) => {
                         page: "1",
                         offset: "100",
                         sort: "asc"
-                }).then((res) => {
+                    }).then((res) => {
                     console.log(res)
                     console.log(res.data)
                     makeNodes(res.data.data)
                 })
                     .catch((error) => {
-                        console.log()
                         console.dir(error);
                     });
             })
@@ -127,12 +127,11 @@ export const Cryptocurrency = (props) => {
     };
 
     const makeNodes = (txChains) => {
-        console.log(txChains)
         if (txChains.length > 0) {
             const first = txChains[0].first_depth;
             let second;
-            if(txChains[0].second_depth[0]==null)   second = null;
-            else  second = txChains[0].second_depth;
+            if (txChains[0].second_depth[0] == null) second = null;
+            else second = txChains[0].second_depth;
 
             for (let i = 0; i < first.length; i++) {
                 const n = {
@@ -155,38 +154,38 @@ export const Cryptocurrency = (props) => {
             }
 
             //second_dept
-console.log(second)
+            console.log(second)
             console.log(second[0])
             console.log(second[0].length)
-            if(second[0].length!=0) {
-    for (let i = 0; i < second.length; i++) {
-        for (let j = 0; j < first.length; j++) {
-            if (first[j].data.to == second[i][0].data.from) {
-                for (let k = 0; k < second[i].length; k++) {
-                    const secondNode = {
-                        id: nextNodes.length + 1,
-                        name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
-                        tx: second[i][k].tx,
-                        from: second[i][k].data.from,
-                        to: second[i][k].data.to,
-                        value: second[i][k].data.value,
-                        address: second[i][k].data.to,
-                        dept: 2,
-                    };
-                    const secondLink = {
-                        source: j + 2,
-                        target: nextNodes.length + 1,
-                    };
+            if (second[0].length != 0) {
+                for (let i = 0; i < second.length; i++) {
+                    for (let j = 0; j < first.length; j++) {
+                        if (first[j].data.to == second[i][0].data.from) {
+                            for (let k = 0; k < second[i].length; k++) {
+                                const secondNode = {
+                                    id: nextNodes.length + 1,
+                                    name: "node" + (nextNodes.length + 1) + "_node" + (j + 2),
+                                    tx: second[i][k].tx,
+                                    from: second[i][k].data.from,
+                                    to: second[i][k].data.to,
+                                    value: second[i][k].data.value,
+                                    address: second[i][k].data.to,
+                                    dept: 2,
+                                };
+                                const secondLink = {
+                                    source: j + 2,
+                                    target: nextNodes.length + 1,
+                                };
 
-                    nextNodes[j + 1].hasChild = true;
-                    nextLinks.push(secondLink);
-                    nextNodes.push(secondNode);
+                                nextNodes[j + 1].hasChild = true;
+                                nextLinks.push(secondLink);
+                                nextNodes.push(secondNode);
+                            }
+                            break;
+                        }
+                    }
                 }
-                break;
             }
-        }
-    }
-}
             let d1 = 0, d2 = 0, d3 = 0;
             nextNodes.forEach((item) => {
                 if (item.dept == 1) {
@@ -200,28 +199,31 @@ console.log(second)
             for (let i = 0; i < nextNodes.length; i++) {
                 let item = nextNodes[i];
                 if (item.dept == 0) {//root지정
-                    (item.color = "#00600f"), (item.x = 600), (item.y = 330);
+                    (item.color = "#00460c"), (item.x = 200), (item.y = 400);
                 } else if (item.dept == 1) {
-                    if (item.hasChild == true) {//dept1에서 자식 있는 노드
-                        if (d2 / 2 == cnt2) x2 = 1000, y2 = 330;
-                        if (d2 / 2 <= cnt2) {
-                            (item.color = "#388e3c"), (item.x = 1000 - x2), (item.y = 330 - y2) , x2 += 40, y2 += 15;
-                        } else {
-                            (item.color = "#388e3c"), (item.x = 1000 + x2), (item.y = 330 + y2) , x2 += 40, y2 += 15;
-                        }
-                        cnt2++;
-                    } else {//dept1에서 자식 없는 노드
-                        (item.color = "#388e3c"), (item.x = 800 + x1), (item.y = 330 + y1), x1 += 40, y1 += 15;
-                        cnt1++;
-                    }
-                } else {
-                    if (d3 / 2 == cnt3) x3 = 1200, y3 = 330;
-                    if (d3 / 2 <= cnt3) {
-                        (item.color = "#6abf69"), (item.x = 1200 - x3), (item.y = 110 - y3), x3 += 40, y3 += 15;
-                    } else {
-                        (item.color = "#6abf69"), (item.x = 1200 + x3), (item.y = 110 - +y3), x3 += 40, y3 += 15;
-                    }
-                    cnt3++;
+                    (item.color = "#2a982a");
+                    (item.x = 1280), (item.y =400)
+                    // if (item.hasChild == true) {//dept1에서 자식 있는 노드
+                    //     if (d2 / 2 == cnt2) x2 = 800, y2 = 520;
+                    //     if (d2 / 2 <= cnt2) {
+                    //         (item.color = "#388e3c"), (item.x = 800 - x2), (item.y = 520 - y2) , x2 += 40, y2 += 15;
+                    //     } else {
+                    //         (item.color = "#388e3c"), (item.x = 800 + x2), (item.y = 520 + y2) , x2 += 40, y2 += 15;
+                    //     }
+                    //     cnt2++;
+                    // } else {//dept1에서 자식 없는 노드
+                    //     (item.color = "#388e3c"), (item.x = 800 + x1), (item.y = 520 + y1), x1 += 40, y1 += 15;
+                    //     cnt1++;
+                    // }
+                } else {//dept2
+                    item.color = "#62c462";
+                    // if (d3 / 2 == cnt3) x3 = 1000, y3 = 520;
+                    // if (d3 / 2 <= cnt3) {
+                    //     (item.color = "#6abf69"), (item.x = 1200 - x3), (item.y = 1000 - y3), x3 += 40, y3 += 15;
+                    // } else {
+                    //     (item.color = "#6abf69"), (item.x = 1200 + x3), (item.y = 1000 - +y3), x3 += 40, y3 += 15;
+                    // }
+                    // cnt3++;
                 }
             }
 
@@ -246,15 +248,34 @@ console.log(second)
     };
 
     const onRightClickNode = function (event, nodeId, node) {
+        console.log(event)
         navigator.clipboard.writeText(node.address).then(() => {
             alert("주소를 복사했습니다.");
         });
     };
 
+
+    const [toolContent,setToolContent]=useState([]);
     const onMouseOverNode = function (nodeId, node) {
-        console.log(node)
-        console.log(`Mouse over node ${nodeId} in position (${node.x}, ${node.y})`);
+
+        const toolId= "toolId"+nodeId;
+        const element = [{
+            toolId: toolId,
+            toolNode: {id: node.id, to: node.to, from: node.from, address: node.address, tx: node.tx, value: node.value}
+    }]
+
+        const tool = toolContent.filter(tool=>tool.toolId == toolId);
+
+        if(tool.length==1) return;
+        setToolContent([...toolContent,...element])
+
+        let g = document.getElementById(nodeId);
+        let c = g.childNodes[0];
+        c.setAttribute('data-tip',"");
+        c.setAttribute('data-for',toolId);
     }
+
+
 
     const myConfig = {
         automaticRearrangeAfterDropNode: false,
@@ -278,7 +299,7 @@ console.log(second)
         maxWidth: 2500,
         d3: {
             alphaTarget: 0.05,
-            gravity: -200,
+            gravity: -300,
             linkLength: 100,
             linkStrength: 1,
             disableLinkForce: false,
@@ -377,6 +398,16 @@ console.log(second)
                         onMouseOverNode={onMouseOverNode}
                     />
                 }
+                {toolContent.map((tool, index) => (
+                    <ReactTooltip id={tool.toolId} clickable={true}>
+                        <h3>transaction Info</h3><br/>
+                        <p>to : {tool.toolNode.to}</p>
+                        <p>from : {tool.toolNode.from}</p>
+                        <p> tx :{tool.toolNode.tx}</p>
+                        <p>value : {tool.toolNode.value}</p>
+
+                    </ReactTooltip>
+                ))}
             </Box>
             <Divider/>
             <Box
