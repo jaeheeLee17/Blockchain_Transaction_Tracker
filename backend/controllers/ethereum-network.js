@@ -7,6 +7,35 @@ const ERC20Token_account_traces = require('../models/erc20Token_account_trace_re
 const cwr = require('../utils/createWebResponse');
 const {StandardABI} = require('../config/eth/standardABI');
 
+// 최신 이더리움 가격 정보 불러오기
+const getLatestEtherPrice = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const ethPrice = await req.etherscan.stats.ethprice();
+    return cwr.createWebResp(res, header, 200, {
+      ethPrice_USD: ethPrice.result.ethusd,
+      ethPrice_BTC: ethPrice.result.ethbtc,
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Ethereum price loading failed', e.message || e);
+  }
+}
+
+// 전체 ethereum 유통량 출력
+const getEthSupplyCount = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const ethCount = await req.etherscan.stats.ethsupply();
+    return cwr.createWebResp(res, header, 200, {
+      ethCount: Math.round(ethCount.result / 1000000000000000000),
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Loading the number of ethereum supply failed', e.message || e);
+  }
+}
+
 // 최신 블록에 포함된 거래 정보들을 불러온 후 DB에 저장
 const postTransactionInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
@@ -44,7 +73,7 @@ const postTransactionInfo = async (req, res) => {
     }
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
-      'getTransaction failed', e.message || e);
+      'Transactions loading failed', e.message || e);
   }
 }
 
@@ -410,6 +439,8 @@ const postTokenTxChainWithAddress = async (req, res) => {
 }
 
 module.exports = {
+  getLatestEtherPrice,
+  getEthSupplyCount,
   postTransactionInfo,
   postEthAccountTraceRecord,
   postERC20TokenAccountTraceRecord,

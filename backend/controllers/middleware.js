@@ -1,7 +1,6 @@
 const Web3 = require('web3');
 const cwr = require('../utils/createWebResponse');
 const etherscan = async (req, res, next) => {
-
   try {
     const endpoint =
       req.body.endpoint?.trim() ||
@@ -22,7 +21,6 @@ const etherscan = async (req, res, next) => {
 
 const web3 = async (req, res, next) => {
   try {
-
     req.endpoint = req.body.endpoint?.trim() || req.query.endpoint?.trim();
     const parseEndpoint = switchBaseUrl(req.endpoint, 'rpc');
     console.log(parseEndpoint);
