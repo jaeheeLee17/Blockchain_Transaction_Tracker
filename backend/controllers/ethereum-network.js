@@ -3,6 +3,7 @@ const ethTransactions = require('../models/ethTransactions');
 const eth_tx_traces = require('../models/eth_transactions_trace');
 const eth_tokentx_traces = require('../models/eth_tokentx_trace');
 const eth_account_traces = require('../models/eth_account_trace_req');
+const ethBlocks = require('../models/ethBlocks');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
 const cwr = require('../utils/createWebResponse');
 const {StandardABI} = require('../config/eth/standardABI');
@@ -438,6 +439,47 @@ const postTokenTxChainWithAddress = async (req, res) => {
   }
 }
 
+const postBlockInfo = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const endBlockNum = await req.web3.eth.getBlockNumber()
+    let startBlockNum = endBlockNum - req.body.blockn;
+    let lastBlockNum = await ethBlocks.find({network: req.body.endpoint}).sort({blockNumber:-1}).limit(1)
+    if(lastBlockNum == "") { lastBlockNum = 0;}
+    else {lastBlockNum = lastBlockNum[0]['blockNumber'] } // 마지막으로 저장된 blockNum 찾기
+    if(startBlockNum < lastBlockNum) { startBlockNum = lastBlockNum + 1 } // DB에 데이터 없을 때 안전빵
+
+    const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
+      (v, i) => Number(startBlockNum) + i);
+
+    if(blockNumbers != "") {
+      const blockInfo = await Promise.all(blockNumbers.map(n => req.web3.eth.getBlock(n)));
+      const filteredBlockInfo = await Promise.all(blockInfo.map(block => {
+        if (block.transactions[0] !== null) {
+          const blockData = {
+            blockNumber: block.number,
+            timestamp: block.timestamp,
+            transactions: block.transactions.length,
+            network: req.body.endpoint
+          };
+          return blockData;
+        }
+      }));
+      await Promise.all(filteredBlockInfo).then((data) => {
+        ethBlocks.insertMany(data, {upsert: true}).catch(err => {
+          console.log(err);
+        });
+      });
+    }
+    return cwr.createWebResp(res, header, 200, {
+      message: "Transaction Blocks loading Completed, database updated!",
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'getBlock failed', e.message || e);
+  }
+}
+
 module.exports = {
   getLatestEtherPrice,
   getEthSupplyCount,
@@ -448,4 +490,5 @@ module.exports = {
   getEtherBalance,
   getTokenBalanceList,
   postTokenTxChainWithAddress,
+  postBlockInfo,
 };

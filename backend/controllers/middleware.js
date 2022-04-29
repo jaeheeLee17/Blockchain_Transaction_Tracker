@@ -1,5 +1,6 @@
 const Web3 = require('web3');
 const cwr = require('../utils/createWebResponse');
+const axios = require("axios");
 const etherscan = async (req, res, next) => {
   try {
     const endpoint =
@@ -23,7 +24,6 @@ const web3 = async (req, res, next) => {
   try {
     req.endpoint = req.body.endpoint?.trim() || req.query.endpoint?.trim();
     const parseEndpoint = switchBaseUrl(req.endpoint, 'rpc');
-    console.log(parseEndpoint);
     req.httpProvider = new Web3.providers.HttpProvider(parseEndpoint);
     req.web3 = new Web3(req.httpProvider);
     let network = await req.web3.eth.net.getNetworkType();
@@ -48,6 +48,32 @@ const ethereumEndpoint = (network, protocol) => {
   return undefined;
 };
 
+
+/*
+const callblock = () => {
+  network = ['mainnet','ropsten','kovan','rinkeby','goerli']
+  for(let i = 0; i < 5; i++){
+    axios.post('http://localhost:5000/eth/network/postblockinfo',
+      {
+        endpoint: network[i],
+        blockn: "6500"
+      }
+    )
+      .then(function (response) {
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }}
+
+callblock();
+setInterval(function(){
+  callblock();
+}, 600000);// 30분에 한 번씩 호출
+*/
+
+
+
 const ethereumChainIDs = {
   mainnet: 1,
   ropsten: 3,
@@ -55,6 +81,7 @@ const ethereumChainIDs = {
   goerli: 5,
   kovan: 42,
 };
+
 
 module.exports = {
   etherscan,

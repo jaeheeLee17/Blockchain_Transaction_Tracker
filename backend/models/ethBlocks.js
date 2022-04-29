@@ -6,23 +6,18 @@ const ethBlockSchema = new Schema({
     type: Number,
     required: true
   },
-  blockHash: {
-    type: String,
+  timestamp: {
+    type: Number,
     required: true,
-    unique: true
   },
-  blockSize: {
+  transactions: {
     type: Number,
     required: true
   },
-  parentBlockHash: {
+  network: {
     type: String,
     required: true
-  },
-  transactions: {
-    type: Array,
-    required: true
-  },
+  }
 }, {
   timestamps: true
 })

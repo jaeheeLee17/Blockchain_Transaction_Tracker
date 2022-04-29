@@ -95,6 +95,44 @@ const getERC20TokenAccountRecord = async (req, res) => {
   }
 }
 
+const ratio = async (req, res) => { //30분 정각 단위로 데이터 끊어서 보내줌.
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const now = new Date();
+    const nowtime = Math.round(now.setDate(now.getDate()) / 1000); //현재 시각
+    const before = nowtime-(nowtime % 1800); // 현재 시각에서부터 가장 최근 30분 단위 시간
+    const starttime = Math.round(now.setDate(now.getDate() - req.query.setdate)/1000); //설정한 시각
+    const beforeday = starttime - (starttime % 1800) //before로부터 하루 전
+    let total = 0;
+    let list = [];
+
+    console.log(beforeday, before)
+
+    const result = await ethBlocks.aggregate([
+      { $match: {timestamp: {$gte: beforeday, $lt: before}}},
+      {
+        $group: {
+          "_id" : "$network",
+          "total": {"$sum": "$transactions"}
+        }
+      }
+    ])
+    console.log(result);
+    for(let i = 0; i <5; i++){
+      total += result[i].total;
+    }
+
+    for(let j = 0; j < 5; j++){
+      list.push({'network': result[j]._id, 'transactions': result[j].total, 'ratio': result[j].total/total})
+    }
+
+    return cwr.createWebResp(res, header, 200, list);
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'failed', e.message || e);
+  }
+}
+
 module.exports = {
   getLatestTransactions,
   getTxChainFrom,
@@ -103,4 +141,5 @@ module.exports = {
   getTokenTxTo,
   getEthAccountRecord,
   getERC20TokenAccountRecord,
+  ratio,
 }
