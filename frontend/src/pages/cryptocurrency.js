@@ -19,7 +19,6 @@ import axios from "axios";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Search as SearchIcon } from "../icons/search";
 import ReactTooltip from "react-tooltip";
-import * as ReactDOM from "react-dom";
 
 export const Cryptocurrency = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
@@ -73,6 +72,7 @@ export const Cryptocurrency = (props) => {
       .catch((error) => {
         console.dir(error);
       });
+
   };
 
   const getTxChainFrom = (address) => {

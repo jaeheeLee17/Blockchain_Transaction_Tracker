@@ -2,17 +2,8 @@ import Head from "next/head";
 import { Box, Container, Grid } from "@mui/material";
 import { Budget, Ether_price } from "../components/dashboard/ether_price";
 import { LatestTransaction } from "../components/dashboard/latest-transaction";
-// import { LatestProducts } from '../components/dashboard/latest-products';
-import { Sales } from "../components/dashboard/node_connect";
-import { TasksProgress } from "../components/dashboard/tasks-progress";
 import { Transactions } from "../components/dashboard/transactions";
-import { TotalProfit } from "../components/dashboard/total-profit";
-import { Transaction_ratio_graph } from "../components/dashboard/transaction_ratio_graph";
 import { DashboardLayout } from "../components/dashboard-layout";
-import { Status } from "../components/dashboard/status";
-import { Node_info } from "../components/dashboard/node_info";
-import { Node_ex } from "../components/dashboard/node_ex.js";
-import styled from "styled-components";
 import { Gas } from "src/components/dashboard/gas";
 
 const Dashboard = () => (
