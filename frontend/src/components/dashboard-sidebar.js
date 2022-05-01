@@ -45,6 +45,11 @@ const items = [
     icon: <UserIcon fontSize="small" />,
     title: "Node List",
   },
+  {
+    href: "/nodelist",
+    icon: <UserIcon fontSize="small" />,
+    title: "Account",
+  },
   // {
   //   href: "/login",
   //   icon: <LockIcon fontSize="small" />,

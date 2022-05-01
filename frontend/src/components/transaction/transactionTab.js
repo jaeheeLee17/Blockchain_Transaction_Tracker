@@ -23,14 +23,15 @@ class TransactionTab extends Component {
       return (
         <div>
           <Card>
-            <Button
+            {/* <Button
               onClick={() => setCurrent(1)}
               color="primary"
               variant="outlined"
             >
               Overview
-            </Button>
-            <Button
+            </Button> */}
+            <CardHeader title="Overview" />
+            {/* <Button
               onClick={() => setCurrent(2)}
               color="primary"
               variant="outlined"
@@ -43,7 +44,7 @@ class TransactionTab extends Component {
               variant="outlined"
             >
               Status
-            </Button>
+            </Button> */}
             <Content current={current}></Content>
           </Card>
         </div>
