@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { Box, Container, Grid } from "@mui/material";
 import { Budget, Ether_price } from "../components/dashboard/ether_price";
-import { LatestOrders } from "../components/dashboard/latest-orders";
+import { LatestTransaction } from "../components/dashboard/latest-transaction";
 // import { LatestProducts } from '../components/dashboard/latest-products';
 import { Sales } from "../components/dashboard/node_connect";
 import { TasksProgress } from "../components/dashboard/tasks-progress";
@@ -13,6 +13,7 @@ import { Status } from "../components/dashboard/status";
 import { Node_info } from "../components/dashboard/node_info";
 import { Node_ex } from "../components/dashboard/node_ex.js";
 import styled from "styled-components";
+import { Gas } from "src/components/dashboard/gas";
 
 const Dashboard = () => (
   <>
@@ -40,18 +41,22 @@ const Dashboard = () => (
           <Grid item xl={3} lg={3} sm={6} xs={12}>
             <TotalProfit sx={{ height: "100%" }} />
           </Grid> */}
-          <Grid item lg={3} sm={6} xl={3} xs={12}>
+          {/* <Grid item lg={3} sm={6} xl={3} xs={12}>
             <Status />
           </Grid>
           <Grid item lg={3} sm={6} xl={3} xs={12}>
             <Node_info />
+          </Grid> */}
+          <Grid item lg={12} md={12} xl={12} xs={12}>
+            <LatestTransaction />
           </Grid>
           <Grid item lg={12} md={12} xl={12} xs={12}>
-            <LatestOrders />
+            <Gas sx={{ height: "100%" }} />
           </Grid>
-          <Grid item lg={12} md={12} xl={12} xs={12}>
+          {/* <Grid item lg={12} md={12} xl={12} xs={12}>
             <Transaction_ratio_graph sx={{ height: "100%" }} />
-          </Grid>
+          </Grid> */}
+
           {/* <Grid item lg={12} md={12} xl={9} xs={12}>
             <LatestOrders />
           </Grid> */}

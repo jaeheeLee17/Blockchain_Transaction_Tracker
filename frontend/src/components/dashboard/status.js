@@ -17,30 +17,11 @@ export const Status = (props) => (
       <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
         <Grid item>
           <Typography color="black" gutterBottom variant="overline">
-            status
+            Gas
           </Typography>
           <br />
 
-          <Typography color="black" variant="caption">
-            {/* <ion-icon name="ellipse-outline"></ion-icon> */}
-            <div>
-              {/* <div
-                style={{
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "50%",
-                  backgroundColor: "green",
-                }}
-              > */}
-              <p>Run</p>
-              {/* </div> */}
-
-              <p>Starting</p>
-              <p>updating</p>
-              <p>Stop</p>
-              <p>Error</p>
-            </div>
-          </Typography>
+          <Typography color="black" variant="caption"></Typography>
         </Grid>
       </Grid>
       <Box
