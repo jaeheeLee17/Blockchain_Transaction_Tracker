@@ -14,6 +14,7 @@ router.post('/network/postblockinfo', mw.etherscan, mw.web3, EthController.postB
 
 router.get('/network/ethPrice', mw.etherscan, EthController.getLatestEtherPrice);
 router.get('/network/ethCount', mw.etherscan, EthController.getEthSupplyCount);
+router.get('/network/gasPriceStats', EthController.getGasPriceStats);
 router.get('/network/etherBalance', mw.web3, EthController.getEtherBalance);
 router.get('/network/tokenBalanceList', mw.etherscan, mw.web3, EthController.getTokenBalanceList);
 

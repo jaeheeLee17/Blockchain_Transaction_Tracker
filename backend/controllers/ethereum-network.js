@@ -7,6 +7,7 @@ const ethBlocks = require('../models/ethBlocks');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
 const cwr = require('../utils/createWebResponse');
 const {StandardABI} = require('../config/eth/standardABI');
+const axios = require("axios");
 
 // 최신 이더리움 가격 정보 불러오기
 const getLatestEtherPrice = async (req, res) => {
@@ -34,6 +35,25 @@ const getEthSupplyCount = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'Loading the number of ethereum supply failed', e.message || e);
+  }
+}
+
+// ETH Gas Station 기준 Gas Price의 Low, Average, High 통계 데이터 출력
+const getGasPriceStats = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const response = await axios.get(
+      'https://ethgasstation.info/json/ethgasAPI.json',
+    )
+    const prices_stat = {
+      low: (response.data.safeLow.toString() / 10) + ' gwei',
+      average: (response.data.average.toString() / 10) + ' gwei',
+      high: (response.data.fast.toString() / 10) + ' gwei',
+    };
+    return cwr.createWebResp(res, header, 200, prices_stat);
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Loading the statistic of gas price failed', e.message || e);
   }
 }
 
@@ -483,6 +503,7 @@ const postBlockInfo = async (req, res) => {
 module.exports = {
   getLatestEtherPrice,
   getEthSupplyCount,
+  getGasPriceStats,
   postTransactionInfo,
   postEthAccountTraceRecord,
   postERC20TokenAccountTraceRecord,
