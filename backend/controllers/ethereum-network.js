@@ -57,6 +57,35 @@ const getGasPriceStats = async (req, res) => {
   }
 }
 
+const getTransactionsPerBlock = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  try {
+    const blockNum = req.body.blockNum
+    const blockInfo = await req.web3.eth.getBlock(blockNum);
+    return cwr.createWebResp(res, header, 200, {
+      transactions: blockInfo.transactions.length
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'blockInfo loading failed', e.message || e);
+  }
+}
+
+// transaction의 주소를 입력받아 관련 정보 출력
+const getTransactionInfo = async (req, res) => {
+  const header = res.setHeader('Content-Type', 'application/json');
+  const addr = req.query.addr;
+  try {
+    const transactionInfo = await req.web3.eth.getTransaction(addr);
+    return cwr.createWebResp(res, header, 200, {
+      transactionInfo
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Loading the number of ethereum supply failed', e.message || e);
+  }
+}
+
 // 최신 블록에 포함된 거래 정보들을 불러온 후 DB에 저장
 const postTransactionInfo = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
@@ -512,4 +541,6 @@ module.exports = {
   getTokenBalanceList,
   postTokenTxChainWithAddress,
   postBlockInfo,
+  getTransactionsPerBlock,
+  getTransactionInfo
 };
