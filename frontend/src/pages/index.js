@@ -5,6 +5,7 @@ import { LatestTransaction } from "../components/dashboard/latest-transaction";
 import { Transactions } from "../components/dashboard/transactions";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Gas } from "src/components/dashboard/gas";
+import { Graph } from "src/components/dashboard/graph";
 
 const Dashboard = () => (
   <>
@@ -44,6 +45,7 @@ const Dashboard = () => (
           <Grid item lg={12} md={12} xl={12} xs={12}>
             <Gas sx={{ height: "100%" }} />
           </Grid>
+
           {/* <Grid item lg={12} md={12} xl={12} xs={12}>
             <Transaction_ratio_graph sx={{ height: "100%" }} />
           </Grid> */}

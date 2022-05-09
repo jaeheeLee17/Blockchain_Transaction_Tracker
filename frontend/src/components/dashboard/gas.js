@@ -1,4 +1,3 @@
-
 import {
   Box,
   Card,
@@ -11,34 +10,45 @@ import {
 import LaptopMacIcon from "@mui/icons-material/LaptopMac";
 import PhoneIcon from "@mui/icons-material/Phone";
 import TabletIcon from "@mui/icons-material/Tablet";
+import { Low } from "./low";
+import { Average } from "./average";
+import { High } from "./high";
 
 export const Gas = (props) => {
   return (
     <Card {...props}>
       <CardHeader title="Gas Price" />
       <Divider />
-      <CardContent>
+      <CardContent
+        sx={{
+          display: "flex",
+          justifyContent: "left",
+        }}
+      >
         <Box
           sx={{
-            height: 300,
-            position: "relative",
-          }}
-        ></Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            pt: 2,
+            p: 5,
+            textAlign: "center",
+            color: "success.dark",
           }}
         >
-          <Box
-            sx={{
-              p: 1,
-              textAlign: "center",
-            }}
-          >
-            <Typography variant="h4">ss</Typography>
-          </Box>
+          <Low />
+        </Box>
+        <Box
+          sx={{
+            p: 5,
+            textAlign: "center",
+          }}
+        >
+          <Average />
+        </Box>
+        <Box
+          sx={{
+            p: 5,
+            textAlign: "center",
+          }}
+        >
+          <High />
         </Box>
       </CardContent>
     </Card>

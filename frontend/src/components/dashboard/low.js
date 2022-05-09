@@ -11,13 +11,13 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import MoneyIcon from "@mui/icons-material/Money";
 // import Icon from "react-native-vector-icons/Ionicons";
 
-export const Status = (props) => (
+export const Low = (props) => (
   <Card sx={{ height: "100%" }} {...props}>
     <CardContent>
       <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
         <Grid item>
           <Typography color="black" gutterBottom variant="overline">
-            Gas
+            Low
           </Typography>
           <br />
 
