@@ -19,12 +19,16 @@ import axios from "axios";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Search as SearchIcon } from "../icons/search";
 import ReactTooltip from "react-tooltip";
+import Web3 from "web3";
+import Link from "next/link"
+import Router from "next/router";
+
 
 export const Cryptocurrency = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
 
   const onChangePage = (e) => {
-    window.location.href = "/transactiondetail";
+    window.location.href = "/transactionNodeDetail";
   };
 
   const onChangeAddress = (e) => setWalletAddress(e.target.value);
@@ -53,10 +57,19 @@ export const Cryptocurrency = (props) => {
     }
   };
 
+  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
   const onClickButton = () => {
-    checkData();
+    if(web3.utils.isAddress(walletAddress)){
+      checkData();
+    }else{
+      alert("invaild address");
+      setWalletAddress("");
+      return;
+    }
+
   };
 
+  //data db에 있나 확인
   const checkData = () => {
     axios
       .get("http://localhost:5000/eth/db/ethAccountTrace", {
@@ -65,9 +78,10 @@ export const Cryptocurrency = (props) => {
         },
       })
       .then((res) => {
+        console.log(res)
         const resNode = res.data.data;
-        if (resNode.length == 1) getTxChainFrom(walletAddress);
-        else postToDB(walletAddress);
+        if (resNode.length == 1) getTxChainFrom(walletAddress); //있으면 db에서 데이터 가져옴
+        else postToDB(walletAddress); //없으면 db에 data 저장
       })
       .catch((error) => {
         console.dir(error);
@@ -75,6 +89,7 @@ export const Cryptocurrency = (props) => {
 
   };
 
+  //db에서 있는 데이터 가져옴
   const getTxChainFrom = (address) => {
     axios
       .get("http://localhost:5000/eth/db/TxChainFrom", {
@@ -94,6 +109,7 @@ export const Cryptocurrency = (props) => {
       });
   };
 
+  //db에 data 쌓는 부분
   const postToDB = (address) => {
     //postEthAccountTraceRecord
     //postTxlistChainWithAddress
@@ -116,6 +132,7 @@ export const Cryptocurrency = (props) => {
             sort: "asc",
           })
           .then((res) => {
+            console.log("한대 팼다")
             console.log(res);
             console.log(res.data);
             makeNodes(res.data.data);
@@ -129,6 +146,7 @@ export const Cryptocurrency = (props) => {
       });
   };
 
+  //노드 data 생성 부분
   const makeNodes = (txChains) => {
     if (txChains.length > 0) {
       const first = txChains[0].first_depth;
@@ -157,9 +175,6 @@ export const Cryptocurrency = (props) => {
       }
 
       //second_dept
-      console.log(second);
-      console.log(second[0]);
-      console.log(second[0].length);
       if (second[0].length != 0) {
         for (let i = 0; i < second.length; i++) {
           for (let j = 0; j < first.length; j++) {
@@ -256,9 +271,14 @@ export const Cryptocurrency = (props) => {
   };
 
   const onClickNode = function (nodeId, node) {
-    if (node.dept == 0)
-      window.open("https://ropsten.etherscan.io/address/" + node.address);
-    window.open("https://ropsten.etherscan.io/tx/" + node.tx);
+    Router.push({
+      pathname: "/transactionNodeDetail",
+      query: {data: node.tx},
+    });
+
+    // if (node.dept == 0)
+    //   window.open("https://ropsten.etherscan.io/address/" + node.address);
+    // window.open("https://ropsten.etherscan.io/tx/" + node.tx);
   };
 
   const onRightClickNode = function (event, nodeId, node) {
@@ -286,7 +306,7 @@ export const Cryptocurrency = (props) => {
     ];
 
     const tool = toolContent.filter((tool) => tool.toolId == toolId);
-
+    if(datas.status==false) return;
     if (tool.length == 1) return;
     setToolContent([...toolContent, ...element]);
 
@@ -384,6 +404,7 @@ export const Cryptocurrency = (props) => {
             <CardContent>
               <Box sx={{ maxWidth: 500 }}>
                 <TextField
+                    value={walletAddress}
                   onChange={onChangeAddress}
                   onKeyPress={onKeyPress}
                   fullWidth
@@ -423,7 +444,7 @@ export const Cryptocurrency = (props) => {
             <br />
             <p>to : {tool.toolNode.to}</p>
             <p>from : {tool.toolNode.from}</p>
-            <p> tx :{tool.toolNode.tx}</p>
+            <p>tx : {tool.toolNode.tx}</p>
             <p>value : {tool.toolNode.value}</p>
           </ReactTooltip>
         ))}
