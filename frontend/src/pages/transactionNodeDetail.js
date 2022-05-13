@@ -16,28 +16,24 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ArrowLeft} from "@mui/icons-material";
 import useNavigate from "react-router-dom";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
 const TransactionNodeDetail = (props) => {
 
   const router = useRouter();
   const hash = router.query.data;
   const [detail,setDetail]=useState([{
-    blockHash:"",
-    blockNumber:"",
-    from: "",
-    gas: "",
-    gasPrice: "",
-    hash: "",
-    input: "",
-    nonce: "",
-    r: "",
-    s: "",
-    to: "",
-    transactionIndex: "",
-    type: "",
-    v: "",
-    value: ""
+    blockHash: "",
+    blockNumber: "",
+    date:"",
+    from:"",
+    gasPrice_ether:"",
+    to:"",
+    transactionHash:"",
+    transactionIndex:"",
+    value_ether: "",
   }])
+  const [data,setData]=useState([])
 
   useEffect(() => {
     axios
@@ -48,24 +44,21 @@ const TransactionNodeDetail = (props) => {
           },
         })
         .then((res) => {
-          const transactionInfo = res.data.data.transactionInfo;
+          const transactionInfo = res.data.data;
           const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
+          console.log(transactionInfo)
+          console.log(result)
           setDetail({
             blockHash: result[0],
             blockNumber: result[1],
-            from: result[2],
-            gas: result[3],
-            gasPrice: result[4],
-            hash: result[5],
-            input: result[6],
-            nonce: result[7],
-            r: result[8],
-            s: result[9],
-            to: result[10],
-            transactionIndex: result[11],
-            type: result[12],
-            v: result[13],
-            value: result[14]
+            transactionHash:result[2],
+            transactionIndex:result[3],
+            from: result[4],
+            to:result[5],
+            value_ether: result[6],
+            gasPrice_ether: result[7],
+              date:result[8],
+
           });
 
         })
@@ -73,6 +66,10 @@ const TransactionNodeDetail = (props) => {
           console.dir(error);
         });
   },[])
+
+  function onChangePage() {
+    window.open("https://ropsten.etherscan.io/tx/" + hash);
+  }
 
   return (
     <>
@@ -119,14 +116,16 @@ const TransactionNodeDetail = (props) => {
                       xs={12}
                     >
                       <div>
-                        <b>hash : </b>
-                        {detail.hash}
+                        <b>Transaction hash : </b>
+                        {hash}
                         <br />
                         <b>blockHash : </b>
                         {detail.blockHash}
                         <br />
                         <b>blockNumber: </b>
                         {detail.blockNumber}
+                        <br /><br />
+                        <Divider />
                         <br />
                         <b>from: </b>
                         {detail.from}
@@ -136,17 +135,13 @@ const TransactionNodeDetail = (props) => {
                         <br /><br />
                         <Divider />
                         <br />
-                        <b>gas: </b>
-                        {detail.gas}
-                        <br />
                         <b>gasPrice: </b>
-                        {detail.gasPrice}
+                        {detail.gasPrice_ether}gwei
                         <br /><br />
-
                         <Divider />
                         <br />
                         <b>Value: </b>
-                        {detail.value}
+                        {detail.value_ether}ether
                         <br />
                       </div>
                     </Grid>
@@ -168,14 +163,30 @@ const TransactionNodeDetail = (props) => {
             </form>
           </Container>
         </Box>
-        <Button
-            color="primary"
-            startIcon={<ArrowLeft fontSize="small" />}
-            size="small"
-            onClick={() => router.back()}
+        {/*<Button*/}
+        {/*    color="primary"*/}
+        {/*    startIcon={<ArrowLeft fontSize="small" />}*/}
+        {/*    size="small"*/}
+        {/*    onClick={() => router.back()}*/}
+        {/*>*/}
+        {/*  Back to Graph*/}
+        {/*</Button>*/}
+        <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              p: 2,
+            }}
         >
-          Back to Graph
-        </Button>
+          <Button
+              color="primary"
+              endIcon={<ArrowRightIcon fontSize="small" />}
+              size="small"
+              onClick={onChangePage}
+          >
+            More Details
+          </Button>
+        </Box>
       </Box>
     </>
   );

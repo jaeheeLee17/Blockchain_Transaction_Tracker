@@ -78,7 +78,7 @@ export const Cryptocurrency = (props) => {
         },
       })
       .then((res) => {
-        console.log(res)
+        console.log("checkData")
         const resNode = res.data.data;
         if (resNode.length == 1) getTxChainFrom(walletAddress); //있으면 db에서 데이터 가져옴
         else postToDB(walletAddress); //없으면 db에 data 저장
@@ -98,9 +98,7 @@ export const Cryptocurrency = (props) => {
         },
       })
       .then((res) => {
-        console.log(res);
-        console.log(res.data);
-
+        console.log("getTxChainFrom")
         const txChains = res.data.data;
         makeNodes(txChains);
       })
@@ -111,6 +109,7 @@ export const Cryptocurrency = (props) => {
 
   //db에 data 쌓는 부분
   const postToDB = (address) => {
+    //modal 창 하나 띄우면 더 좋을듯 ..
     //postEthAccountTraceRecord
     //postTxlistChainWithAddress
     axios
@@ -121,6 +120,7 @@ export const Cryptocurrency = (props) => {
         endBlockNum: "12160000",
       })
       .then((res) => {
+        console.log("POSTtOdb")
         axios
           .post("http://localhost:5000/eth/network/txlistchain", {
             endpoint: "ropsten",
@@ -132,10 +132,8 @@ export const Cryptocurrency = (props) => {
             sort: "asc",
           })
           .then((res) => {
-            console.log("한대 팼다")
-            console.log(res);
-            console.log(res.data);
-            makeNodes(res.data.data);
+            console.log("db 저장 성공 get tx chain from 호출")
+            getTxChainFrom(address);
           })
           .catch((error) => {
             console.dir(error);
@@ -275,10 +273,6 @@ export const Cryptocurrency = (props) => {
       pathname: "/transactionNodeDetail",
       query: {data: node.tx},
     });
-
-    // if (node.dept == 0)
-    //   window.open("https://ropsten.etherscan.io/address/" + node.address);
-    // window.open("https://ropsten.etherscan.io/tx/" + node.tx);
   };
 
   const onRightClickNode = function (event, nodeId, node) {
@@ -301,19 +295,24 @@ export const Cryptocurrency = (props) => {
           address: node.address,
           tx: node.tx,
           value: node.value,
+          dept:node.dept
         },
       },
     ];
 
     const tool = toolContent.filter((tool) => tool.toolId == toolId);
-    if(datas.status==false) return;
+    if (datas.status == false) return;
     if (tool.length == 1) return;
     setToolContent([...toolContent, ...element]);
 
+    let gg =  document.getElementById("1");
     let g = document.getElementById(nodeId);
     let c = g.childNodes[0];
+    let cc = gg.childNodes[0];
     c.setAttribute("data-tip", "");
     c.setAttribute("data-for", toolId);
+    cc.setAttribute("data-tip", "");
+    cc.setAttribute("data-for", "root");
   };
 
   const myConfig = {
@@ -438,16 +437,27 @@ export const Cryptocurrency = (props) => {
             onMouseOverNode={onMouseOverNode}
           />
         }
-        {toolContent.map((tool, index) => (
-          <ReactTooltip id={tool.toolId} clickable={true}>
+        {
+          <ReactTooltip id={"root"} clickable={true}>
             <h3>transaction Info</h3>
-            <br />
-            <p>to : {tool.toolNode.to}</p>
-            <p>from : {tool.toolNode.from}</p>
-            <p>tx : {tool.toolNode.tx}</p>
-            <p>value : {tool.toolNode.value}</p>
+            <br/>
+            <p>source : {walletAddress}</p>
           </ReactTooltip>
-        ))}
+        }
+        {
+          toolContent.map((tool) =>
+              (
+                  <ReactTooltip id={tool.toolId} clickable={true}>
+                    <h3>transaction Info</h3>
+                    <br/>
+                    <p>to : {tool.toolNode.to}</p>
+                    <p>from : {tool.toolNode.from}</p>
+                    <p>tx : {tool.toolNode.tx}</p>
+                    <p>value : {tool.toolNode.value}</p>
+                  </ReactTooltip>
+              )
+          )
+        }
       </Box>
       <Divider />
       <Box
