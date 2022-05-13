@@ -77,6 +77,9 @@ const getTransactionInfo = async (req, res) => {
   const addr = req.query.addr;
   try {
     const transactionInfo = await req.web3.eth.getTransaction(addr);
+    const blockInfo= await req.web3.eth.getBlock(transactionInfo.blockNumber);
+    const timestamp = new Date(1000*blockInfo.timestamp);
+
     return cwr.createWebResp(res, header, 200, {
       blockHash: transactionInfo.blockHash,
       blockNumber: transactionInfo.blockNumber,
@@ -86,10 +89,7 @@ const getTransactionInfo = async (req, res) => {
       to: transactionInfo.to,
       value_ether: req.web3.utils.fromWei(String(transactionInfo.value)),
       gasPrice_ether: req.web3.utils.fromWei(String(transactionInfo.gasPrice)),
-      maxFeePerGas_gwei: req.web3.utils.fromWei(String(transactionInfo.maxFeePerGas),'gwei'),
-      maxPriorityFeePerGas_gwei: req.web3.utils.fromWei(String(transactionInfo.maxPriorityFeePerGas),'gwei'),
-
-
+      date: timestamp
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
