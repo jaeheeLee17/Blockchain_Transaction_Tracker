@@ -39,10 +39,10 @@ const Dashboard = () => (
           <Grid item lg={12} md={12} xl={12} xs={12}>
             <LatestTransaction />
           </Grid>
-          <Grid item lg={12} md={12} xl={12} xs={12}>
+          <Grid item lg={6} md={12} xl={12} xs={12}>
             <Gas sx={{ height: "100%" }} />
           </Grid>
-          <Grid item lg={12} md={12} xl={12} xs={12}>
+          <Grid item lg={6} md={12} xl={12} xs={12}>
             <Graph sx={{ height: "100%" }} />
           </Grid>
         </Grid>
