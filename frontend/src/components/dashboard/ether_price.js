@@ -9,13 +9,16 @@ import {
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 // import MoneyIcon from "@mui/icons-material/Money";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import MoneyIcon from "@mui/icons-material/Money";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 export const Ether_price = (props) => {
   const [eth, setEth] = useState([]);
-  useEffect(() => {
-    axios
+  const [tr, setTr] = useState([]);
+
+  useEffect(async () => {
+    await axios
       .get("http://localhost:5000/eth/network/ethPrice", {})
       .then((res) => {
         const data = res.data.data;
@@ -24,67 +27,137 @@ export const Ether_price = (props) => {
       .catch((error) => {
         console.dir(error);
       });
+    await axios
+      .get("http://localhost:5000/eth/network/ethCount", {})
+      .then((res) => {
+        console.log(res.data);
+        const data = res.data.data;
+        setTr(data);
+      })
+      .catch((error) => {
+        console.dir(error);
+      });
   }, []);
+
+  // useEffect(() => {
+  //   axios
+  //     .get("http://localhost:5000/eth/network/ethCount", {})
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       const data = res.data.data;
+  //       setTr(data);
+  //     })
+  //     .catch((error) => {
+  //       console.dir(error);
+  //     });
+  // }, []);
 
   return (
     <>
-      <Card sx={{ height: "100%" }} {...props}>
-        <CardContent>
-          <Grid container spacing={3} sx={{ justifyContent: "space-between" }}>
-            <Grid item>
-              <Typography color="textSecondary" gutterBottom variant="overline">
-                ETHER PRICE
-              </Typography>
-              <Typography color="textPrimary">
-                <h2>USD</h2> <p>{eth.ethPrice_USD}</p>
-                <br />
-                <h2>BTC</h2> {eth.ethPrice_BTC}
-              </Typography>
-            </Grid>
-            <Grid item>
-              {/* <Avatar
-            sx={{
-              backgroundColor: "error.main",
-              height: 56,
-              width: 56,
-            }}
-          >
-            <MoneyIcon />
-          </Avatar> */}
-              <Avatar
-                sx={{
-                  backgroundColor: "primary.main",
-                  height: 56,
-                  width: 56,
-                }}
-              >
-                <AttachMoneyIcon />
-              </Avatar>
-            </Grid>
-          </Grid>
-          <Box
-            sx={{
-              pt: 2,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            {/* <ArrowDownwardIcon color="error" />
-            <Typography
-              color="error"
-              sx={{
-                mr: 1,
-              }}
-              variant="body2"
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: "inline-flex",
+          maxWidth: "800px",
+          maxHeight: "300px",
+        }}
+      >
+        <Card
+          sx={{ height: "250px", width: "600px", margin: 1, marginRight: 5 }}
+          {...props}
+        >
+          <CardContent>
+            <Grid
+              container
+              spacing={3}
+              sx={{ justifyContent: "space-between" }}
             >
-              12%
-            </Typography> */}
-            {/* <Typography color="textSecondary" variant="caption">
+              <Grid item>
+                <Typography
+                  color="textSecondary"
+                  gutterBottom
+                  variant="overline"
+                >
+                  ETHER PRICE
+                </Typography>
+                <Typography color="textPrimary">
+                  <h2>USD</h2> <p>{eth.ethPrice_USD}</p>
+                  <br />
+                  <h2>BTC</h2> {eth.ethPrice_BTC}
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Avatar
+                  sx={{
+                    backgroundColor: "primary.main",
+                    height: 56,
+                    width: 56,
+                  }}
+                >
+                  <AttachMoneyIcon />
+                </Avatar>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+        <Card sx={{ height: "250px", width: "600px", margin: 1 }} {...props}>
+          <CardContent>
+            <Grid
+              container
+              spacing={3}
+              sx={{ justifyContent: "space-between" }}
+            >
+              <Grid item>
+                <Typography
+                  color="textSecondary"
+                  gutterBottom
+                  variant="overline"
+                >
+                  ether count
+                  <br />
+                  <br />
+                </Typography>
+
+                <Typography color="textPrimary" variant="h4">
+                  {tr.ethCount}
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Avatar
+                  sx={{
+                    backgroundColor: "error.main",
+                    height: 56,
+                    width: 56,
+                  }}
+                >
+                  <MoneyIcon />
+                </Avatar>
+              </Grid>
+            </Grid>
+            <Box
+              sx={{
+                alignItems: "center",
+                display: "flex",
+                pt: 2,
+              }}
+            >
+              {/* <ArrowUpwardIcon color="success" />
+          <Typography
+            variant="body2"
+            sx={{
+              mr: 1,
+            }}
+          >
+            16%
+          </Typography> */}
+              {/* <Typography color="textSecondary" variant="caption">
           Since last month
         </Typography> */}
-          </Box>
-        </CardContent>
-      </Card>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
     </>
   );
 };

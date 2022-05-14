@@ -107,16 +107,7 @@ const Moretransaction = (props) => {
             justifyContent: "flex-end",
             p: 2,
           }}
-        >
-          <Button
-            color="primary"
-            endIcon={<ArrowRightIcon fontSize="small" />}
-            size="small"
-            variant="text"
-          >
-            View all
-          </Button>
-        </Box>
+        ></Box>
       </CardContent>
     </Card>
   );

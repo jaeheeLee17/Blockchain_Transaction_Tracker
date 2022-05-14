@@ -40,11 +40,11 @@ const items = [
     icon: <UserIcon fontSize="small" />,
     title: "Token Dashboard",
   },
-  {
-    href: "/nodelist",
-    icon: <UserIcon fontSize="small" />,
-    title: "Node List",
-  },
+  // {
+  //   href: "/nodelist",
+  //   icon: <UserIcon fontSize="small" />,
+  //   title: "Node List",
+  // },
   {
     href: "/nodelist",
     icon: <UserIcon fontSize="small" />,
