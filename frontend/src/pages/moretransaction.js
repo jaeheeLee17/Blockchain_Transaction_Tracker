@@ -23,11 +23,12 @@ import {
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
 const Moretransaction = (props) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [transaction, setTransaction] = useState([]);
   const [latest, setLatest] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:5000/eth/db/latestTransaction", {})
+      .get(apiUrl+"/eth/db/latestTransaction", {})
       .then((res) => {
         console.log(res.data.data);
         setTransaction(res.data.data);

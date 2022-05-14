@@ -14,12 +14,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export const Ether_price = (props) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [eth, setEth] = useState([]);
   const [tr, setTr] = useState([]);
 
   useEffect(async () => {
     await axios
-      .get("http://localhost:5000/eth/network/ethPrice", {})
+      .get(apiUrl+"/eth/network/ethPrice", {})
       .then((res) => {
         const data = res.data.data;
         setEth(data);
@@ -28,7 +29,7 @@ export const Ether_price = (props) => {
         console.dir(error);
       });
     await axios
-      .get("http://localhost:5000/eth/network/ethCount", {})
+      .get(apiUrl+"/eth/network/ethCount", {})
       .then((res) => {
         console.log(res.data);
         const data = res.data.data;

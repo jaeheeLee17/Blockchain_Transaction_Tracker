@@ -25,6 +25,7 @@ import Router from "next/router";
 
 
 export const Cryptocurrency = (props) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [walletAddress, setWalletAddress] = useState("");
 
   const onChangePage = (e) => {
@@ -34,7 +35,7 @@ export const Cryptocurrency = (props) => {
   const onChangeAddress = (e) => setWalletAddress(e.target.value);
   const data = {
     links: [],
-    nodes: [{ id: walletAddress }],
+    nodes: [{ id: walletAddress.toLowerCase() }],
     focusedNodeId: "nodeIdToTriggerZoomAnimation",
   };
 
@@ -78,9 +79,9 @@ export const Cryptocurrency = (props) => {
   //data db에 있나 확인
   const checkData = () => {
     axios
-      .get("http://localhost:5000/eth/db/ethAccountTrace", {
+      .get(apiUrl+"/eth/db/ethAccountTrace", {
         params: {
-          walletAddress: walletAddress.toLowerCase(),
+          walletAddress: walletAddress
         },
       })
       .then((res) => {
@@ -98,9 +99,9 @@ export const Cryptocurrency = (props) => {
   //db에서 있는 데이터 가져옴
   const getTxChainFrom = (address) => {
     axios
-      .get("http://localhost:5000/eth/db/TxChainFrom", {
+      .get(apiUrl+"/eth/db/TxChainFrom", {
         params: {
-          source: address.toLowerCase(),
+          source: address
         },
       })
       .then((res) => {
@@ -119,18 +120,18 @@ export const Cryptocurrency = (props) => {
     //postEthAccountTraceRecord
     //postTxlistChainWithAddress
     axios
-      .post("http://localhost:5000/eth/network/ethAccountTrace", {
+      .post(apiUrl+"/eth/network/ethAccountTrace", {
         endpoint: "ropsten",
-        walletAddress: address.toLowerCase(),
+        walletAddress: address,
         startBlockNum: "1",
         endBlockNum: "12160000",
       })
       .then((res) => {
         console.log("POSTtOdb")
         axios
-          .post("http://localhost:5000/eth/network/txlistchain", {
+          .post(apiUrl+"eth/network/txlistchain", {
             endpoint: "ropsten",
-            walletAddress: address.toLowerCase(),
+            walletAddress: address,
             startBlockNum: "1",
             endBlockNum: "latest",
             page: "1",
@@ -166,7 +167,7 @@ export const Cryptocurrency = (props) => {
           from: first[i].data.from,
           to: first[i].data.to,
           value: first[i].data.value,
-          address: first[i].data.to,
+          address: (first[i].data.to),
           dept: 1,
         };
 

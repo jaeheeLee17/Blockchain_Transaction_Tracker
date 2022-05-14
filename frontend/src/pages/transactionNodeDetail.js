@@ -10,16 +10,14 @@ import {
   CardContent,
   Grid, Button,
 } from "@mui/material";
-import { Overview } from "../components/transaction/overview";
-import TransactionTab from "../components/transaction/transactionTab";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { ArrowLeft} from "@mui/icons-material";
-import useNavigate from "react-router-dom";
+
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
 const TransactionNodeDetail = (props) => {
-
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const router = useRouter();
   const hash = router.query.data;
   const [detail,setDetail]=useState([{
@@ -37,7 +35,7 @@ const TransactionNodeDetail = (props) => {
 
   useEffect(() => {
     axios
-        .get("http://localhost:5000/eth/network/getTransactionInfo", {
+        .get(apiUrl+"/eth/network/getTransactionInfo", {
           params: {
             addr: hash,
             endpoint:"ropsten"
