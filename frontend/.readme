@@ -5,4 +5,3 @@
 yarn install
 yarn add d3@^5.5.0      # if you don't have d3 already
 yarn add react-d3-graph
-yarn add recharts
