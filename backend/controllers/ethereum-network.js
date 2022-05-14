@@ -60,7 +60,7 @@ const getGasPriceStats = async (req, res) => {
 const getTransactionsPerBlock = async (req, res) => {
   const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const blockNum = req.body.blockNum
+    const blockNum = req.query.blockNum
     const blockInfo = await req.web3.eth.getBlock(blockNum);
     return cwr.createWebResp(res, header, 200, {
       transactions: blockInfo.transactions.length
