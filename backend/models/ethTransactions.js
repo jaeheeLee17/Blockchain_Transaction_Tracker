@@ -27,6 +27,14 @@ const EthTransactionSchema = new Schema({
     type: String,
     required: true
   },
+  gasPrice: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    required: true
+  }
 }, {
   timestamps: true
 })
