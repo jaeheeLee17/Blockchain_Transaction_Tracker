@@ -42,6 +42,10 @@ const Eth_tokentx_trace_schema = new Schema({
         value: {
           type: String,
           required: true
+        },
+        date: {
+          type: Date,
+          required: true
         }
       }
     }
@@ -73,6 +77,10 @@ const Eth_tokentx_trace_schema = new Schema({
           },
           value: {
             type: String,
+            required: true
+          },
+          date: {
+            type: Date,
             required: true
           }
         }

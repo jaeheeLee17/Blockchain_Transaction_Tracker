@@ -27,10 +27,6 @@ const ethTokenSchema = new Schema({
     type: String,
     required: true
   },
-  value: {
-    type: String,
-    required: true
-  },
   tokenName: {
     type: String,
     required: true
@@ -43,6 +39,18 @@ const ethTokenSchema = new Schema({
     type: String,
     required: true
   },
+  value: {
+    type: String,
+    required: true
+  },
+  gasPrice: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    required: true
+  }
 }, {
   timestamps: true
 })
