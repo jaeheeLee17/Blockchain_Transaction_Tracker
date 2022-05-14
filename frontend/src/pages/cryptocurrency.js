@@ -53,7 +53,13 @@ export const Cryptocurrency = (props) => {
 
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
-      checkData();
+      if(web3.utils.isAddress(walletAddress)){
+        checkData();
+      }else{
+        alert("invaild address");
+        setWalletAddress("");
+        return;
+      }
     }
   };
 
@@ -268,12 +274,16 @@ export const Cryptocurrency = (props) => {
     }
   };
 
-  const onClickNode = function (nodeId, node) {
-    Router.push({
-      pathname: "/transactionNodeDetail",
-      query: {data: node.tx},
-    });
-  };
+    const onClickNode = function (nodeId, node) {
+        if (node.dept == 0) {
+            return;
+        } else {
+            Router.push({
+                pathname: "/transactionNodeDetail",
+                query: {data: node.tx},
+            });
+        }
+    };
 
   const onRightClickNode = function (event, nodeId, node) {
     console.log(event);
@@ -305,14 +315,10 @@ export const Cryptocurrency = (props) => {
     if (tool.length == 1) return;
     setToolContent([...toolContent, ...element]);
 
-    let gg =  document.getElementById("1");
     let g = document.getElementById(nodeId);
     let c = g.childNodes[0];
-    let cc = gg.childNodes[0];
     c.setAttribute("data-tip", "");
     c.setAttribute("data-for", toolId);
-    cc.setAttribute("data-tip", "");
-    cc.setAttribute("data-for", "root");
   };
 
   const myConfig = {
@@ -447,7 +453,7 @@ export const Cryptocurrency = (props) => {
         {
           toolContent.map((tool) =>
               (
-                  <ReactTooltip id={tool.toolId} clickable={true}>
+                  <ReactTooltip id={tool.toolId} clickable={true} key ={tool.toolId}>
                     <h3>transaction Info</h3>
                     <br/>
                     <p>to : {tool.toolNode.to}</p>
