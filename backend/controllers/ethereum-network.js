@@ -1,5 +1,7 @@
 require('dotenv').config();
 const ethTransactions = require('../models/ethTransactions');
+const ethTokens = require('../models/ethTokens');
+const ethCounts = require('../models/ethCounts');
 const eth_tx_traces = require('../models/eth_transactions_trace');
 const eth_tokentx_traces = require('../models/eth_tokentx_trace');
 const eth_account_traces = require('../models/eth_account_trace_req');
@@ -11,7 +13,6 @@ const axios = require("axios");
 
 // 최신 이더리움 가격 정보 불러오기
 const getLatestEtherPrice = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const ethPrice = await req.etherscan.stats.ethprice();
     return cwr.createWebResp(res, header, 200, {
@@ -24,14 +25,26 @@ const getLatestEtherPrice = async (req, res) => {
   }
 }
 
-// 전체 ethereum 유통량 출력
-const getEthSupplyCount = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
+// 전체 ethereum 유통량 조회 후 DB에 저장
+const postEthSupplyCount = async (req, res) => {
   try {
     const ethCount = await req.etherscan.stats.ethsupply();
-    return cwr.createWebResp(res, header, 200, {
-      ethCount: Math.round(ethCount.result / 1000000000000000000),
-    });
+    const ethCountCheck = await ethCounts.find();
+    if (ethCountCheck.length !== 0) {
+      const ethSupplyData = {
+        ethCount: Math.round(ethCount.result / 1000000000000000000),
+      };
+      ethCounts.updateMany({"ethCount": ethCountCheck[0].ethCount},
+        {"$set": {"ethCount": ethSupplyData.ethCount}}).catch(err => {
+        console.log(err);
+      });
+    } else {
+      ethTransactions.insertMany(ethSupplyData, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    }
+    return cwr.createWebResp(res, header, 200,
+      'Loading the number of ethereum supply success!');
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'Loading the number of ethereum supply failed', e.message || e);
@@ -40,7 +53,6 @@ const getEthSupplyCount = async (req, res) => {
 
 // ETH Gas Station 기준 Gas Price의 Low, Average, High 통계 데이터 출력
 const getGasPriceStats = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const response = await axios.get(
       'https://ethgasstation.info/json/ethgasAPI.json',
@@ -58,7 +70,6 @@ const getGasPriceStats = async (req, res) => {
 }
 
 const getTransactionsPerBlock = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const blockNum = req.query.blockNum
     const blockInfo = await req.web3.eth.getBlock(blockNum);
@@ -73,11 +84,10 @@ const getTransactionsPerBlock = async (req, res) => {
 
 // transaction의 주소를 입력받아 관련 정보 출력
 const getTransactionInfo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   const addr = req.query.addr;
   try {
     const transactionInfo = await req.web3.eth.getTransaction(addr);
-    const blockInfo= await req.web3.eth.getBlock(transactionInfo.blockNumber);
+    const blockInfo = await req.web3.eth.getBlock(transactionInfo.blockNumber);
     const timestamp = new Date(1000*blockInfo.timestamp);
 
     return cwr.createWebResp(res, header, 200, {
@@ -99,7 +109,6 @@ const getTransactionInfo = async (req, res) => {
 
 // 최신 블록에 포함된 거래 정보들을 불러온 후 DB에 저장
 const postTransactionInfo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {BlockNum='latest'} = req.body;
     const blockInfo = await req.web3.eth.getBlock(BlockNum);
@@ -113,6 +122,7 @@ const postTransactionInfo = async (req, res) => {
         }
       }))
       const filteredTxInfos = await Promise.all(filteredTxs.map(transaction => {
+        const timestamp = new Date(1000 * blockInfo.timestamp);
         const transactionData = {
           blockNumber: transaction.blockNumber,
           transactionHash: transaction.hash,
@@ -120,6 +130,8 @@ const postTransactionInfo = async (req, res) => {
           from: transaction.from,
           to: transaction.to,
           value: req.web3.utils.fromWei(String(transaction.value), 'ether'),
+          gasPrice: req.web3.utils.fromWei(String(transaction.gasPrice), 'gwei'),
+          date: timestamp
         };
         return transactionData;
       }));
@@ -138,9 +150,50 @@ const postTransactionInfo = async (req, res) => {
   }
 }
 
+// 특정 지갑 주소 관련 ERC20 토큰 거래 정보 조회 후 DB에 저장
+const postTokenTxInfo = async (req, res) => {
+  try {
+    const {walletAddress, contractAddress='', startBlockNum='1', endBlockNum='latest', sort='desc'} = req.body;
+    const tokenTxlist = await req.etherscan.account.tokentx(
+      walletAddress,
+      contractAddress,
+      startBlockNum,
+      endBlockNum,
+      sort,
+    );
+    const tokenTxInfo = await Promise.all(tokenTxlist.result.map(tokenTx => {
+      const timestamp = new Date(1000 * tokenTx.timeStamp);
+      const tokenTxData = {
+        blockNumber: tokenTx.blockNumber,
+        transactionHash: tokenTx.hash,
+        transactionIndex: tokenTx.transactionIndex,
+        contractAddress: tokenTx.contractAddress,
+        from: tokenTx.from,
+        to: tokenTx.to,
+        tokenName: tokenTx.tokenName,
+        tokenSymbol: tokenTx.tokenSymbol,
+        tokenNumber: tokenTx.tokenDecimal,
+        value: req.web3.utils.fromWei(String(tokenTx.value), 'ether'),
+        gasPrice: req.web3.utils.fromWei(String(tokenTx.gasPrice), 'gwei'),
+        date: timestamp
+      };
+      return tokenTxData;
+    }));
+    ethTokens.insertMany(tokenTxInfo, {upsert: true}).catch(err => {
+      console.log(err);
+    });
+    return cwr.createWebResp(res, header, 200,
+      'ERC20 Token Transactions with wallet address loading success!');
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'ERC20 Token Transactions with wallet address loading failed', e.message || e);
+  }
+
+
+}
+
 // 이더리움 계정 검색 정보 추가
 const postEthAccountTraceRecord = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress, startBlockNum, endBlockNum} = req.body;
     const ethtraceCheck = await eth_account_traces.find({"address": walletAddress});
@@ -183,7 +236,6 @@ const postEthAccountTraceRecord = async (req, res) => {
 
 // ERC20 토큰 계정 검색 정보 추가
 const postERC20TokenAccountTraceRecord = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress, startBlockNum, endBlockNum} = req.body;
     const ERC20TokenTraceCheck = await ERC20Token_account_traces.find({"address": walletAddress});
@@ -226,9 +278,8 @@ const postERC20TokenAccountTraceRecord = async (req, res) => {
 
 // 특정 지갑 주소와 관련된 트랜젝션 목록을 불러온 후 DB에 저장
 const postTxlistChainWithAddress = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
-    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='asc'} = req.body;
+    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
     const txlist = await req.etherscan.account.txlist(
       walletAddress,
       startBlockNum,
@@ -253,12 +304,14 @@ const postTxlistChainWithAddress = async (req, res) => {
       );
     }));
     const first_depth_tx = await Promise.all(uniqueTxlist.map(txReceipt => {
+      const timestamp = new Date(1000 * txReceipt.timeStamp);
       const txData = {
         tx: txReceipt.hash,
         data: {
           from: txReceipt.from,
           to: txReceipt.to,
-          value: req.web3.utils.fromWei(String(txReceipt.value), 'ether')
+          value: req.web3.utils.fromWei(String(txReceipt.value), 'ether'),
+          date: timestamp
         }
       };
       return txData;
@@ -292,12 +345,14 @@ const postTxlistChainWithAddress = async (req, res) => {
         const address_related_Tx = await Promise.all(filteredTxlist.map(relatedTxReceipt => {
           if (relatedTxReceipt.to !== '' && relatedTxReceipt.to !== undefined && relatedTxReceipt.to !== relatedTxReceipt.from &&
             relatedTxReceipt.value !== '0') {
+            const timestamp = new Date(1000 * relatedTxReceipt.timeStamp);
             const txData = {
               tx: relatedTxReceipt.hash,
               data: {
                 from: relatedTxReceipt.from,
                 to: relatedTxReceipt.to,
-                value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether')
+                value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether'),
+                date: timestamp
               }
             };
             return txData;
@@ -328,7 +383,6 @@ const postTxlistChainWithAddress = async (req, res) => {
 
 // 특정 지갑 주소의 암호화폐 보유량 조회
 const getEtherBalance = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const {walletAddress} = req.query;
     let balance = await req.web3.eth.getBalance(walletAddress);
@@ -357,7 +411,6 @@ const getEtherBalance = async (req, res) => {
 
 // 특정 지갑 주소가 보유한 ERC20 토큰 목록 조회
 const getTokenBalanceList = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json')
   try {
     const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.query;
     const tokenTxList = await req.etherscan.account.tokentx(
@@ -398,9 +451,8 @@ const getTokenBalanceList = async (req, res) => {
 
 // 특정 지갑 주소가 보유한 ERC20 토큰의 거래 목록 조회 후 DB에 저장
 const postTokenTxChainWithAddress = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json')
   try {
-    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='asc'} = req.body;
+    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='desc'} = req.body;
     const tokenTxlist = await req.etherscan.account.tokentx(
       walletAddress,
       contractAddress,
@@ -423,6 +475,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       );
     }));
     const first_layer_tokentx = await Promise.all(uniqueTokenTxlist.map(tokentxReceipt => {
+      const timestamp = new Date(1000 * tokentxReceipt.timeStamp);
       const tokentxData = {
         tx: tokentxReceipt.hash,
         data: {
@@ -430,7 +483,8 @@ const postTokenTxChainWithAddress = async (req, res) => {
           to: tokentxReceipt.to,
           tokenName: tokentxReceipt.tokenName,
           tokenSymbol: tokentxReceipt.tokenSymbol,
-          value: req.web3.utils.fromWei(String(tokentxReceipt.value), 'ether')
+          value: req.web3.utils.fromWei(String(tokentxReceipt.value), 'ether'),
+          date: timestamp
         }
       };
       return tokentxData;
@@ -463,6 +517,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
         const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
           if (relatedTokenTxReceipt.to !== '' && relatedTokenTxReceipt.to !== undefined &&
             relatedTokenTxReceipt.to !== relatedTokenTxReceipt.from && relatedTokenTxReceipt.value !== '0') {
+            const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
             const tokentxData = {
               tx: relatedTokenTxReceipt.hash,
               data: {
@@ -470,7 +525,8 @@ const postTokenTxChainWithAddress = async (req, res) => {
                 to: relatedTokenTxReceipt.to,
                 tokenName: relatedTokenTxReceipt.tokenName,
                 tokenSymbol: relatedTokenTxReceipt.tokenSymbol,
-                value: req.web3.utils.fromWei(String(relatedTokenTxReceipt.value), 'ether')
+                value: req.web3.utils.fromWei(String(relatedTokenTxReceipt.value), 'ether'),
+                date: timestamp
               }
             };
             return tokentxData;
@@ -500,19 +556,18 @@ const postTokenTxChainWithAddress = async (req, res) => {
 }
 
 const postBlockInfo = async (req, res) => {
-  const header = res.setHeader('Content-Type', 'application/json');
   try {
     const endBlockNum = await req.web3.eth.getBlockNumber()
     let startBlockNum = endBlockNum - req.body.blockn;
     let lastBlockNum = await ethBlocks.find({network: req.body.endpoint}).sort({blockNumber:-1}).limit(1)
-    if(lastBlockNum == "") { lastBlockNum = 0;}
+    if(lastBlockNum === "") { lastBlockNum = 0;}
     else {lastBlockNum = lastBlockNum[0]['blockNumber'] } // 마지막으로 저장된 blockNum 찾기
     if(startBlockNum < lastBlockNum) { startBlockNum = lastBlockNum + 1 } // DB에 데이터 없을 때 안전빵
 
     const blockNumbers = Array.from({length: Number(endBlockNum) - Number(startBlockNum) + 1},
       (v, i) => Number(startBlockNum) + i);
 
-    if(blockNumbers != "") {
+    if(blockNumbers !== "") {
       const blockInfo = await Promise.all(blockNumbers.map(n => req.web3.eth.getBlock(n)));
       const filteredBlockInfo = await Promise.all(blockInfo.map(block => {
         if (block.transactions[0] !== null) {
@@ -542,16 +597,17 @@ const postBlockInfo = async (req, res) => {
 
 module.exports = {
   getLatestEtherPrice,
-  getEthSupplyCount,
+  postEthSupplyCount,
   getGasPriceStats,
+  getTransactionsPerBlock,
+  getTransactionInfo,
   postTransactionInfo,
+  postTokenTxInfo,
   postEthAccountTraceRecord,
   postERC20TokenAccountTraceRecord,
   postTxlistChainWithAddress,
   getEtherBalance,
   getTokenBalanceList,
   postTokenTxChainWithAddress,
-  postBlockInfo,
-  getTransactionsPerBlock,
-  getTransactionInfo
+  postBlockInfo
 };
