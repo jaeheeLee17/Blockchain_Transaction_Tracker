@@ -30,16 +30,16 @@ const postEthSupplyCount = async (req, res) => {
   try {
     const ethCount = await req.etherscan.stats.ethsupply();
     const ethCountCheck = await ethCounts.find();
+    const ethSupplyData = {
+      ethCount: Math.round(ethCount.result / 1000000000000000000),
+    };
     if (ethCountCheck.length !== 0) {
-      const ethSupplyData = {
-        ethCount: Math.round(ethCount.result / 1000000000000000000),
-      };
       ethCounts.updateMany({"ethCount": ethCountCheck[0].ethCount},
         {"$set": {"ethCount": ethSupplyData.ethCount}}).catch(err => {
         console.log(err);
       });
     } else {
-      ethTransactions.insertMany(ethSupplyData, {upsert: true}).catch(err => {
+      ethCounts.insertMany(ethSupplyData, {upsert: true}).catch(err => {
         console.log(err);
       });
     }
