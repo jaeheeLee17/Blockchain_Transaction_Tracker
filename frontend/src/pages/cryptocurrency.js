@@ -55,6 +55,7 @@ export const Cryptocurrency = (props) => {
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
       if(web3.utils.isAddress(walletAddress)){
+        setDatas({ links: [], nodes: [], status: false });
         checkData();
       }else{
         alert("invaild address");
@@ -67,6 +68,7 @@ export const Cryptocurrency = (props) => {
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
   const onClickButton = () => {
     if(web3.utils.isAddress(walletAddress)){
+      setDatas({ links: [], nodes: [], status: false });
       checkData();
     }else{
       alert("invaild address");
@@ -98,8 +100,9 @@ export const Cryptocurrency = (props) => {
 
   //db에서 있는 데이터 가져옴
   const getTxChainFrom = (address) => {
+    console.log(address)
     axios
-      .get(apiUrl+"/eth/db/TxChainFrom", {
+      .get(apiUrl+"/eth/db/txChainFrom", {
         params: {
           source: address
         },
@@ -107,6 +110,11 @@ export const Cryptocurrency = (props) => {
       .then((res) => {
         console.log("getTxChainFrom")
         const txChains = res.data.data;
+        console.log(res.data.data)
+        if(txChains.length===0 || txChains[0].first_depth.length===0){
+          alert("no data");
+          return;
+        }
         makeNodes(txChains);
       })
       .catch((error) => {
@@ -129,7 +137,7 @@ export const Cryptocurrency = (props) => {
       .then((res) => {
         console.log("POSTtOdb")
         axios
-          .post(apiUrl+"eth/network/txlistchain", {
+          .post(apiUrl+"/eth/network/txlistchain", {
             endpoint: "ropsten",
             walletAddress: address,
             startBlockNum: "1",
