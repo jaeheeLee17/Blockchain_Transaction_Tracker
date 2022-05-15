@@ -69,19 +69,6 @@ const getGasPriceStats = async (req, res) => {
   }
 }
 
-const getTransactionsPerBlock = async (req, res) => {
-  try {
-    const blockNum = req.query.blockNum
-    const blockInfo = await req.web3.eth.getBlock(blockNum);
-    return cwr.createWebResp(res, header, 200, {
-      transactions: blockInfo.transactions.length
-    });
-  } catch (e) {
-    return cwr.errorWebResp(res, header, 500,
-      'blockInfo loading failed', e.message || e);
-  }
-}
-
 // transaction의 주소를 입력받아 관련 정보 출력
 const getTransactionInfo = async (req, res) => {
   const addr = req.query.addr;
@@ -599,7 +586,6 @@ module.exports = {
   getLatestEtherPrice,
   postEthSupplyCount,
   getGasPriceStats,
-  getTransactionsPerBlock,
   getTransactionInfo,
   postTransactionInfo,
   postTokenTxInfo,

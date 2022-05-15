@@ -18,7 +18,6 @@ router.get('/network/ethPrice', mw.etherscan, EthController.getLatestEtherPrice)
 router.get('/network/gasPriceStats', EthController.getGasPriceStats);
 router.get('/network/etherBalance', mw.web3, EthController.getEtherBalance);
 router.get('/network/tokenBalanceList', mw.etherscan, mw.web3, EthController.getTokenBalanceList);
-router.get('/network/getTransactionsPerBlock', mw.web3, EthController.getTransactionsPerBlock);
 router.get('/network/getTransactionInfo', mw.web3, EthController.getTransactionInfo);
 router.get('/db/latestTransaction', DBController.getLatestTransactions);
 router.get('/db/TxChainFrom', DBController.getTxChainFrom);
