@@ -559,8 +559,8 @@ const postBlockInfo = async (req, res) => {
   try {
     const endBlockNum = await req.web3.eth.getBlockNumber()
     let startBlockNum = endBlockNum - req.body.blockn;
-    let lastBlockNum = await ethBlocks.find({network: req.body.endpoint}).sort({blockNumber:-1}).limit(1)
-    if(lastBlockNum === "") { lastBlockNum = 0;}
+    let lastBlockNum = await ethBlocks.find({network: req.body.endpoint}).sort({blockNumber:-1}).limit(1);
+    if(lastBlockNum == "") { lastBlockNum = 0;}
     else {lastBlockNum = lastBlockNum[0]['blockNumber'] } // 마지막으로 저장된 blockNum 찾기
     if(startBlockNum < lastBlockNum) { startBlockNum = lastBlockNum + 1 } // DB에 데이터 없을 때 안전빵
 
