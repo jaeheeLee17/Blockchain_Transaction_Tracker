@@ -30,16 +30,16 @@ const postEthSupplyCount = async (req, res) => {
   try {
     const ethCount = await req.etherscan.stats.ethsupply();
     const ethCountCheck = await ethCounts.find();
+    const ethSupplyData = {
+      ethCount: Math.round(ethCount.result / 1000000000000000000),
+    };
     if (ethCountCheck.length !== 0) {
-      const ethSupplyData = {
-        ethCount: Math.round(ethCount.result / 1000000000000000000),
-      };
       ethCounts.updateMany({"ethCount": ethCountCheck[0].ethCount},
         {"$set": {"ethCount": ethSupplyData.ethCount}}).catch(err => {
         console.log(err);
       });
     } else {
-      ethTransactions.insertMany(ethSupplyData, {upsert: true}).catch(err => {
+      ethCounts.insertMany(ethSupplyData, {upsert: true}).catch(err => {
         console.log(err);
       });
     }
@@ -66,19 +66,6 @@ const getGasPriceStats = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'Loading the statistic of gas price failed', e.message || e);
-  }
-}
-
-const getTransactionsPerBlock = async (req, res) => {
-  try {
-    const blockNum = req.query.blockNum
-    const blockInfo = await req.web3.eth.getBlock(blockNum);
-    return cwr.createWebResp(res, header, 200, {
-      transactions: blockInfo.transactions.length
-    });
-  } catch (e) {
-    return cwr.errorWebResp(res, header, 500,
-      'blockInfo loading failed', e.message || e);
   }
 }
 
@@ -559,8 +546,8 @@ const postBlockInfo = async (req, res) => {
   try {
     const endBlockNum = await req.web3.eth.getBlockNumber()
     let startBlockNum = endBlockNum - req.body.blockn;
-    let lastBlockNum = await ethBlocks.find({network: req.body.endpoint}).sort({blockNumber:-1}).limit(1)
-    if(lastBlockNum === "") { lastBlockNum = 0;}
+    let lastBlockNum = await ethBlocks.find({network: req.body.endpoint}).sort({blockNumber:-1}).limit(1);
+    if(lastBlockNum == "") { lastBlockNum = 0;}
     else {lastBlockNum = lastBlockNum[0]['blockNumber'] } // 마지막으로 저장된 blockNum 찾기
     if(startBlockNum < lastBlockNum) { startBlockNum = lastBlockNum + 1 } // DB에 데이터 없을 때 안전빵
 
@@ -599,7 +586,6 @@ module.exports = {
   getLatestEtherPrice,
   postEthSupplyCount,
   getGasPriceStats,
-  getTransactionsPerBlock,
   getTransactionInfo,
   postTransactionInfo,
   postTokenTxInfo,
