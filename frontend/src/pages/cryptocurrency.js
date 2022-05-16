@@ -111,11 +111,11 @@ export const Cryptocurrency = (props) => {
       .then((res) => {
         console.log("getTxChainFrom")
         const txChains = res.data.data;
-        console.log(res.data.data)
         if(txChains.length===0 || txChains[0].first_depth.length===0){
           alert("no data");
           return;
         }
+        console.log(txChains)
         makeNodes(txChains);
       })
       .catch((error) => {
@@ -162,6 +162,7 @@ export const Cryptocurrency = (props) => {
 
   //노드 data 생성 부분
   const makeNodes = (txChains) => {
+    console.log("make node")
     if (txChains.length > 0) {
       const first = txChains[0].first_depth;
       let second;
@@ -189,10 +190,11 @@ export const Cryptocurrency = (props) => {
       }
 
       //second_dept
+      console.log(second)
       if (second[0].length != 0) {
         for (let i = 0; i < second.length; i++) {
           for (let j = 0; j < first.length; j++) {
-            if (first[j].data.to == second[i][0].data.from) {
+            if (second[i].length!=0 && first[j].data.to == second[i][0].data.from) {
               for (let k = 0; k < second[i].length; k++) {
                 const secondNode = {
                   id: nextNodes.length + 1,
@@ -217,7 +219,9 @@ export const Cryptocurrency = (props) => {
             }
           }
         }
+        console.log("3")
       }
+
       let d1 = 0,
         d2 = 0,
         d3 = 0;
@@ -238,6 +242,7 @@ export const Cryptocurrency = (props) => {
         cnt1 = 0,
         cnt2 = 0,
         cnt3 = 0;
+
       for (let i = 0; i < nextNodes.length; i++) {
         let item = nextNodes[i];
         if (item.dept == 0) {
@@ -270,7 +275,7 @@ export const Cryptocurrency = (props) => {
           // cnt3++;
         }
       }
-
+  console.log("!")
       setDatas({ links: nextLinks, nodes: nextNodes, status: true });
       console.log(nextNodes);
       console.log(nextLinks);
@@ -290,7 +295,7 @@ export const Cryptocurrency = (props) => {
         } else {
             Router.push({
                 pathname: "/transactionNodeDetail",
-                query: {data: node.tx},
+                query: {data: node.tx, net: network},
             });
         }
     };
