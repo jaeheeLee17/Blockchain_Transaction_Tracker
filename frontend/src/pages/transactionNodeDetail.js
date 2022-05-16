@@ -32,13 +32,14 @@ const TransactionNodeDetail = (props) => {
     value_ether: "",
   }])
   const [data,setData]=useState([])
+  const [network, setNetwork] = React.useState('mainnet');
 
   useEffect(() => {
     axios
         .get(apiUrl+"/eth/network/getTransactionInfo", {
           params: {
             addr: hash,
-            endpoint:"ropsten"
+            endpoint: network
           },
         })
         .then((res) => {
@@ -66,7 +67,11 @@ const TransactionNodeDetail = (props) => {
   },[])
 
   function onChangePage() {
-    window.open("https://ropsten.etherscan.io/tx/" + hash);
+    if (network === 'mainnet') {
+      window.open(`https://etherscan.io/tx/` + hash);
+    } else {
+      window.open(`https://${network}.etherscan.io/tx/` + hash);
+    }
   }
 
   return (
