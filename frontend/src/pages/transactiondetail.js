@@ -17,7 +17,7 @@ import axios from "axios";
 
 const Transactiondetail = (props) => {
   const router = useRouter();
-  const data = JSON.parse(router.query.data);
+  const data = router.query;
 
   return (
     <>

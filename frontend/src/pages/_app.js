@@ -53,7 +53,6 @@ import "react-toastify/dist/ReactToastify.css";
 const clientSideEmotionCache = createEmotionCache();
 
 // Store Configuration
-import wrapper from "../components/store/configureStore";
 
 const App = (props) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
@@ -77,4 +76,4 @@ const App = (props) => {
   );
 };
 
-export default wrapper.withRedux(App);
+export default App;

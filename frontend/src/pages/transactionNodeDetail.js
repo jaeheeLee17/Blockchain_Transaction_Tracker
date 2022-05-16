@@ -1,5 +1,5 @@
 import Head from "next/head";
-import Router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { DashboardLayout } from "../components/dashboard-layout";
 import {
   Box,
@@ -20,18 +20,17 @@ const TransactionNodeDetail = (props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const router = useRouter();
   const hash = router.query.data;
-  const [detail,setDetail]=useState([{
+  const [detail, setDetail] = useState([{
     blockHash: "",
     blockNumber: "",
-    date:"",
-    from:"",
-    gasPrice_ether:"",
-    to:"",
-    transactionHash:"",
-    transactionIndex:"",
+    transactionHash: "",
+    transactionIndex: "",
+    from: "",
+    to: "",
     value_ether: "",
+    gasPrice_ether: "",
+    date: ""
   }])
-  const [data,setData]=useState([])
 
   useEffect(() => {
     axios
@@ -44,21 +43,17 @@ const TransactionNodeDetail = (props) => {
         .then((res) => {
           const transactionInfo = res.data.data;
           const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
-          console.log(transactionInfo)
-          console.log(result)
-          setDetail({
+          setDetail([{
             blockHash: result[0],
             blockNumber: result[1],
-            transactionHash:result[2],
-            transactionIndex:result[3],
+            transactionHash: result[2],
+            transactionIndex: result[3],
             from: result[4],
-            to:result[5],
+            to: result[5],
             value_ether: result[6],
             gasPrice_ether: result[7],
-              date:result[8],
-
-          });
-
+            date: result[8],
+          }]);
         })
         .catch((error) => {
           console.dir(error);
@@ -153,7 +148,7 @@ const TransactionNodeDetail = (props) => {
                         flexDirection: "column",
                       }}
                       xs={12}
-                    ></Grid>
+                    > </Grid>
                   </Grid>
                 </CardContent>
                 <Divider />

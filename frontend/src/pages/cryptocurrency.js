@@ -416,7 +416,7 @@ export const Cryptocurrency = (props) => {
           }}
         />
         <Typography sx={{ m: 0 }} variant="h4">
-          Cryptocurrency Dashboard
+          Address Dashboard
         </Typography>
         <Box sx={{ mt: 1 }}>
           <Card>

@@ -110,7 +110,15 @@ export const LatestTransaction = (props) => {
                           as={"/transactiondetail"}
                           href={{
                             pathname: "/transactiondetail",
-                            query: { data: JSON.stringify(tr) },
+                            query: {
+                              transactionHash: tr.transactionHash,
+                              createdAt:tr.createdAt,
+                              updatedAt:tr.updatedAt,
+                              blockNumber:tr.blockNumber,
+                              from:tr.from,
+                              to:tr.to,
+                              value:tr.value
+                            },
                           }}
                         >
                           <a>{tr.transactionHash.substring(0, 20) + "..."}</a>
