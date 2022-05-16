@@ -122,6 +122,7 @@ const postTransactionInfo = async (req, res) => {
         };
         return transactionData;
       }));
+
       await Promise.all(filteredTxInfos).then((data) => {
         ethTransactions.insertMany(data, {upsert: true}).catch(err => {
           console.log(err);
