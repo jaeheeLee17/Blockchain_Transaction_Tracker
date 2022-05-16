@@ -1,4 +1,4 @@
-import { Doughnut } from "react-chartjs-2";
+
 import {
   Box,
   Card,
@@ -82,7 +82,7 @@ export const Transaction_ratio_graph = (props) => {
             position: "relative",
           }}
         >
-          <Doughnut data={data} options={options} />
+          {/*<Doughnut data={data} options={options} />*/}
         </Box>
         <Box
           sx={{

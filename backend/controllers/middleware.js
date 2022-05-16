@@ -1,6 +1,12 @@
 const Web3 = require('web3');
 const cwr = require('../utils/createWebResponse');
 const axios = require("axios");
+const header = async (res) => {
+  const Header = res.setHeader('Content-Type', 'application/json');
+  return Header;
+}
+global.header = header;
+
 const etherscan = async (req, res, next) => {
   try {
     const endpoint =

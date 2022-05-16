@@ -11,7 +11,6 @@ import {
   Typography,
 } from "@mui/material";
 import TransactionTab from "./transactionTab";
-import { Node_connect } from "../dashboard/node_connect";
 import { transition } from "d3";
 
 export const Overview = (props) => (

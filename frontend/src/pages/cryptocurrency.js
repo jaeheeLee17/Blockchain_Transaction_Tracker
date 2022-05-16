@@ -18,18 +18,24 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
 import { DashboardLayout } from "../components/dashboard-layout";
 import { Search as SearchIcon } from "../icons/search";
+import ReactTooltip from "react-tooltip";
+import Web3 from "web3";
+import Link from "next/link"
+import Router from "next/router";
+
 
 export const Cryptocurrency = (props) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [walletAddress, setWalletAddress] = useState("");
 
   const onChangePage = (e) => {
-    window.location.href = "/transactiondetail";
+    window.location.href = "/transactionNodeDetail";
   };
 
   const onChangeAddress = (e) => setWalletAddress(e.target.value);
   const data = {
     links: [],
-    nodes: [{ id: walletAddress }],
+    nodes: [{ id: walletAddress.toLowerCase() }],
     focusedNodeId: "nodeIdToTriggerZoomAnimation",
   };
 
@@ -48,45 +54,67 @@ export const Cryptocurrency = (props) => {
 
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
-      checkData();
+      if(web3.utils.isAddress(walletAddress)){
+        setDatas({ links: [], nodes: [], status: false });
+        checkData();
+      }else{
+        alert("invaild address");
+        setWalletAddress("");
+        return;
+      }
     }
   };
 
+  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
   const onClickButton = () => {
-    checkData();
+    if(web3.utils.isAddress(walletAddress)){
+      setDatas({ links: [], nodes: [], status: false });
+      checkData();
+    }else{
+      alert("invaild address");
+      setWalletAddress("");
+      return;
+    }
+
   };
 
+  //data db에 있나 확인
   const checkData = () => {
     axios
-      .get("http://localhost:5000/eth/db/ethAccountTrace", {
+      .get(apiUrl+"/eth/db/ethAccountTrace", {
         params: {
-          walletAddress: walletAddress.toLowerCase(),
+          walletAddress: walletAddress
         },
       })
       .then((res) => {
+        console.log("checkData")
         const resNode = res.data.data;
-        console.log(resNode);
-        console.log(resNode.length);
-        if (resNode.length == 1) getTxChainFrom(walletAddress);
-        else postToDB(walletAddress);
+        if (resNode.length == 1) getTxChainFrom(walletAddress); //있으면 db에서 데이터 가져옴
+        else postToDB(walletAddress); //없으면 db에 data 저장
       })
       .catch((error) => {
         console.dir(error);
       });
+
   };
 
+  //db에서 있는 데이터 가져옴
   const getTxChainFrom = (address) => {
+    console.log(address)
     axios
-      .get("http://localhost:5000/eth/db/TxChainFrom", {
+      .get(apiUrl+"/eth/db/TxChainFrom", {
         params: {
-          source: address.toLowerCase(),
+          source: address
         },
       })
       .then((res) => {
-        console.log(res);
-        console.log(res.data);
-
+        console.log("getTxChainFrom")
         const txChains = res.data.data;
+        console.log(res.data.data)
+        if(txChains.length===0 || txChains[0].first_depth.length===0){
+          alert("no data");
+          return;
+        }
         makeNodes(txChains);
       })
       .catch((error) => {
@@ -94,21 +122,24 @@ export const Cryptocurrency = (props) => {
       });
   };
 
+  //db에 data 쌓는 부분
   const postToDB = (address) => {
+    //modal 창 하나 띄우면 더 좋을듯 ..
     //postEthAccountTraceRecord
     //postTxlistChainWithAddress
     axios
-      .post("http://localhost:5000/eth/network/ethAccountTrace", {
+      .post(apiUrl+"/eth/network/ethAccountTrace", {
         endpoint: "ropsten",
-        walletAddress: address.toLowerCase(),
+        walletAddress: address,
         startBlockNum: "1",
         endBlockNum: "12160000",
       })
       .then((res) => {
+        console.log("POSTtOdb")
         axios
-          .post("http://localhost:5000/eth/network/txlistchain", {
+          .post(apiUrl+"/eth/network/txlistchain", {
             endpoint: "ropsten",
-            walletAddress: address.toLowerCase(),
+            walletAddress: address,
             startBlockNum: "1",
             endBlockNum: "latest",
             page: "1",
@@ -116,12 +147,10 @@ export const Cryptocurrency = (props) => {
             sort: "asc",
           })
           .then((res) => {
-            console.log(res);
-            console.log(res.data);
-            makeNodes(res.data.data);
+            console.log("db 저장 성공 get tx chain from 호출")
+            getTxChainFrom(address);
           })
           .catch((error) => {
-            console.log();
             console.dir(error);
           });
       })
@@ -130,8 +159,8 @@ export const Cryptocurrency = (props) => {
       });
   };
 
+  //노드 data 생성 부분
   const makeNodes = (txChains) => {
-    console.log(txChains);
     if (txChains.length > 0) {
       const first = txChains[0].first_depth;
       let second;
@@ -146,7 +175,7 @@ export const Cryptocurrency = (props) => {
           from: first[i].data.from,
           to: first[i].data.to,
           value: first[i].data.value,
-          address: first[i].data.to,
+          address: (first[i].data.to),
           dept: 1,
         };
 
@@ -159,9 +188,6 @@ export const Cryptocurrency = (props) => {
       }
 
       //second_dept
-      console.log(second);
-      console.log(second[0]);
-      console.log(second[0].length);
       if (second[0].length != 0) {
         for (let i = 0; i < second.length; i++) {
           for (let j = 0; j < first.length; j++) {
@@ -215,50 +241,32 @@ export const Cryptocurrency = (props) => {
         let item = nextNodes[i];
         if (item.dept == 0) {
           //root지정
-          (item.color = "#00600f"), (item.x = 600), (item.y = 330);
+          (item.color = "#00460c"), (item.x = 200), (item.y = 400);
         } else if (item.dept == 1) {
-          if (item.hasChild == true) {
-            //dept1에서 자식 있는 노드
-            if (d2 / 2 == cnt2) (x2 = 1000), (y2 = 330);
-            if (d2 / 2 <= cnt2) {
-              (item.color = "#388e3c"),
-                (item.x = 1000 - x2),
-                (item.y = 330 - y2),
-                (x2 += 40),
-                (y2 += 15);
-            } else {
-              (item.color = "#388e3c"),
-                (item.x = 1000 + x2),
-                (item.y = 330 + y2),
-                (x2 += 40),
-                (y2 += 15);
-            }
-            cnt2++;
-          } else {
-            //dept1에서 자식 없는 노드
-            (item.color = "#388e3c"),
-              (item.x = 800 + x1),
-              (item.y = 330 + y1),
-              (x1 += 40),
-              (y1 += 15);
-            cnt1++;
-          }
+          item.color = "#2a982a";
+          (item.x = 1280), (item.y = 400);
+          // if (item.hasChild == true) {//dept1에서 자식 있는 노드
+          //     if (d2 / 2 == cnt2) x2 = 800, y2 = 520;
+          //     if (d2 / 2 <= cnt2) {
+          //         (item.color = "#388e3c"), (item.x = 800 - x2), (item.y = 520 - y2) , x2 += 40, y2 += 15;
+          //     } else {
+          //         (item.color = "#388e3c"), (item.x = 800 + x2), (item.y = 520 + y2) , x2 += 40, y2 += 15;
+          //     }
+          //     cnt2++;
+          // } else {//dept1에서 자식 없는 노드
+          //     (item.color = "#388e3c"), (item.x = 800 + x1), (item.y = 520 + y1), x1 += 40, y1 += 15;
+          //     cnt1++;
+          // }
         } else {
-          if (d3 / 2 == cnt3) (x3 = 1200), (y3 = 330);
-          if (d3 / 2 <= cnt3) {
-            (item.color = "#6abf69"),
-              (item.x = 1200 - x3),
-              (item.y = 110 - y3),
-              (x3 += 40),
-              (y3 += 15);
-          } else {
-            (item.color = "#6abf69"),
-              (item.x = 1200 + x3),
-              (item.y = 110 - +y3),
-              (x3 += 40),
-              (y3 += 15);
-          }
-          cnt3++;
+          //dept2
+          item.color = "#62c462";
+          // if (d3 / 2 == cnt3) x3 = 1000, y3 = 520;
+          // if (d3 / 2 <= cnt3) {
+          //     (item.color = "#6abf69"), (item.x = 1200 - x3), (item.y = 1000 - y3), x3 += 40, y3 += 15;
+          // } else {
+          //     (item.color = "#6abf69"), (item.x = 1200 + x3), (item.y = 1000 - +y3), x3 += 40, y3 += 15;
+          // }
+          // cnt3++;
         }
       }
 
@@ -276,20 +284,50 @@ export const Cryptocurrency = (props) => {
   };
 
   const onClickNode = function (nodeId, node) {
-    if (node.dept == 0)
-      window.open("https://ropsten.etherscan.io/address/" + node.address);
-    window.open("https://ropsten.etherscan.io/tx/" + node.tx);
+    if (node.dept == 0) {
+      return;
+    } else {
+      Router.push({
+        pathname: "/transactionNodeDetail",
+        query: {data: node.tx},
+      });
+    }
   };
 
   const onRightClickNode = function (event, nodeId, node) {
+    console.log(event);
     navigator.clipboard.writeText(node.address).then(() => {
       alert("주소를 복사했습니다.");
     });
   };
 
+  const [toolContent, setToolContent] = useState([]);
   const onMouseOverNode = function (nodeId, node) {
-    console.log(node);
-    console.log(`Mouse over node ${nodeId} in position (${node.x}, ${node.y})`);
+    const toolId = "toolId" + nodeId;
+    const element = [
+      {
+        toolId: toolId,
+        toolNode: {
+          id: node.id,
+          to: node.to,
+          from: node.from,
+          address: node.address,
+          tx: node.tx,
+          value: node.value,
+          dept:node.dept
+        },
+      },
+    ];
+
+    const tool = toolContent.filter((tool) => tool.toolId == toolId);
+    if (datas.status == false) return;
+    if (tool.length == 1) return;
+    setToolContent([...toolContent, ...element]);
+
+    let g = document.getElementById(nodeId);
+    let c = g.childNodes[0];
+    c.setAttribute("data-tip", "");
+    c.setAttribute("data-for", toolId);
   };
 
   const myConfig = {
@@ -314,7 +352,7 @@ export const Cryptocurrency = (props) => {
     maxWidth: 2500,
     d3: {
       alphaTarget: 0.05,
-      gravity: -200,
+      gravity: -300,
       linkLength: 100,
       linkStrength: 1,
       disableLinkForce: false,
@@ -380,6 +418,7 @@ export const Cryptocurrency = (props) => {
             <CardContent>
               <Box sx={{ maxWidth: 500 }}>
                 <TextField
+                  value={walletAddress}
                   onChange={onChangeAddress}
                   onKeyPress={onKeyPress}
                   fullWidth
@@ -412,6 +451,27 @@ export const Cryptocurrency = (props) => {
             onRightClickNode={onRightClickNode}
             onMouseOverNode={onMouseOverNode}
           />
+        }
+        {
+          <ReactTooltip id={"root"} clickable={true}>
+            <h3>transaction Info</h3>
+            <br/>
+            <p>source : {walletAddress}</p>
+          </ReactTooltip>
+        }
+        {
+          toolContent.map((tool) =>
+            (
+              <ReactTooltip id={tool.toolId} clickable={true} key ={tool.toolId}>
+                <h3>transaction Info</h3>
+                <br/>
+                <p>to : {tool.toolNode.to}</p>
+                <p>from : {tool.toolNode.from}</p>
+                <p>tx : {tool.toolNode.tx}</p>
+                <p>value : {tool.toolNode.value}</p>
+              </ReactTooltip>
+            )
+          )
         }
       </Box>
       <Divider />
