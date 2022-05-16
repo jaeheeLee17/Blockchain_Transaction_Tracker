@@ -12,7 +12,7 @@ import {
   InputAdornment,
   SvgIcon,
   Typography,
-  Container,
+  Container, FormControl, InputLabel, Select, MenuItem,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
@@ -80,6 +80,7 @@ export const Cryptocurrency = (props) => {
 
   //data db에 있나 확인
   const checkData = () => {
+    console.log(network)
     axios
       .get(apiUrl+"/eth/db/ethAccountTrace", {
         params: {
@@ -129,7 +130,7 @@ export const Cryptocurrency = (props) => {
     //postTxlistChainWithAddress
     axios
       .post(apiUrl+"/eth/network/ethAccountTrace", {
-        endpoint: "ropsten",
+        endpoint: network,
         walletAddress: address,
         startBlockNum: "1",
         endBlockNum: "12160000",
@@ -138,7 +139,7 @@ export const Cryptocurrency = (props) => {
         console.log("POSTtOdb")
         axios
           .post(apiUrl+"/eth/network/txlistchain", {
-            endpoint: "ropsten",
+            endpoint: network,
             walletAddress: address,
             startBlockNum: "1",
             endBlockNum: "latest",
@@ -330,6 +331,11 @@ export const Cryptocurrency = (props) => {
     c.setAttribute("data-for", toolId);
   };
 
+  const [network, setNetwork] = React.useState('mainnet');
+
+  const handleChange = (event) => {
+    setNetwork(event.target.value);
+  };
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
     collapsible: true,
@@ -416,8 +422,34 @@ export const Cryptocurrency = (props) => {
         <Box sx={{ mt: 1 }}>
           <Card>
             <CardContent>
-              <Box sx={{ maxWidth: 500 }}>
+              <Box sx={{
+                flexGrow: 1,
+                maxWidth: 1000,
+                display:"inline-flex",
+              }}>
+                <Box>
+                <FormControl sx={{ m: 1, minWidth: 120 }}>
+                  <InputLabel id="demo-simple-select-label">Network</InputLabel>
+                  <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={network}
+                      label="Network"
+                      onChange={handleChange}
+                  >
+                    <MenuItem value={"mainnet"}>mainnet</MenuItem>
+                    <MenuItem value={"ropsten"}>ropsten</MenuItem>
+                    <MenuItem value={"rinkeby"}>rinkeby</MenuItem>
+                    <MenuItem value={"goerli"}>goerli</MenuItem>
+                    <MenuItem value={"kovan"}>kovan</MenuItem>
+                  </Select>
+                </FormControl>
+                </Box>
                 <TextField
+                    sx={{
+                      width:"500px",
+                      marginTop:"8px"
+                    }}
                     value={walletAddress}
                   onChange={onChangeAddress}
                   onKeyPress={onKeyPress}
