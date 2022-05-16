@@ -14,13 +14,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export const Ether_price = (props) => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [eth, setEth] = useState([]);
   const [tr, setTr] = useState([]);
 
   useEffect(async () => {
     await axios
-      .get(apiUrl+"/eth/network/ethPrice", {})
+      .get(apiUrl + "/eth/network/ethPrice", {})
       .then((res) => {
         const data = res.data.data;
         setEth(data);
@@ -29,7 +29,7 @@ export const Ether_price = (props) => {
         console.dir(error);
       });
     await axios
-      .get(apiUrl+"/eth/db/ethCount", {})
+      .get(apiUrl + "/eth/db/ethCount", {})
       .then((res) => {
         console.log(res.data);
         const data = res.data.data;
@@ -55,17 +55,11 @@ export const Ether_price = (props) => {
 
   return (
     <>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          display: "inline-flex",
-          maxWidth: "800px",
-          maxHeight: "300px",
-        }}
-      >
+      <Box>
         <Card
-          sx={{ height: "250px", width: "600px", margin: 1, marginRight: 5 }}
+          sx={{
+            height: 300,
+          }}
           {...props}
         >
           <CardContent>
@@ -79,9 +73,12 @@ export const Ether_price = (props) => {
                   color="textSecondary"
                   gutterBottom
                   variant="overline"
+                  fontSize={15}
                 >
                   ETHER PRICE
                 </Typography>
+                <br />
+                <br />
                 <Typography color="textPrimary">
                   <h2>USD</h2> <p>{eth.ethPrice_USD}</p>
                   <br />
@@ -102,7 +99,7 @@ export const Ether_price = (props) => {
             </Grid>
           </CardContent>
         </Card>
-        <Card sx={{ height: "250px", width: "600px", margin: 1 }} {...props}>
+        {/* <Card sx={{ height: "250px", width: "600px", margin: 1 }} {...props}>
           <CardContent>
             <Grid
               container
@@ -142,22 +139,9 @@ export const Ether_price = (props) => {
                 display: "flex",
                 pt: 2,
               }}
-            >
-              {/* <ArrowUpwardIcon color="success" />
-          <Typography
-            variant="body2"
-            sx={{
-              mr: 1,
-            }}
-          >
-            16%
-          </Typography> */}
-              {/* <Typography color="textSecondary" variant="caption">
-          Since last month
-        </Typography> */}
-            </Box>
+            ></Box>
           </CardContent>
-        </Card>
+        </Card> */}
       </Box>
     </>
   );
