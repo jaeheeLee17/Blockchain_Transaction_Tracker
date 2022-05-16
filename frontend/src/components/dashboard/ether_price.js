@@ -29,7 +29,7 @@ export const Ether_price = (props) => {
         console.dir(error);
       });
     await axios
-      .get(apiUrl+"/eth/network/ethCount", {})
+      .get(apiUrl+"/eth/db/ethCount", {})
       .then((res) => {
         console.log(res.data);
         const data = res.data.data;

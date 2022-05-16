@@ -102,7 +102,7 @@ export const Cryptocurrency = (props) => {
   const getTxChainFrom = (address) => {
     console.log(address)
     axios
-      .get(apiUrl+"/eth/db/txChainFrom", {
+      .get(apiUrl+"/eth/db/TxChainFrom", {
         params: {
           source: address
         },
