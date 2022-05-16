@@ -26,7 +26,7 @@ router.get('/db/TokenTxTo', DBController.getTokenTxTo);
 router.get('/db/TokentxChainFrom', DBController.getTokentxChainFrom);
 router.get('/db/ethAccountTrace', DBController.getEthAccountRecord);
 router.get('/db/ERC20TokenAccountTrace', DBController.getERC20TokenAccountRecord);
-router.get('/db/getTransactinsPerHour', DBController.getTransactinsPerHour);
+router.get('/db/getTransactionsPerHour', DBController.getTransactinsPerHour);
 router.get('/db/ethCount', DBController.getEthSupplyCount);
 
 module.exports = router;
