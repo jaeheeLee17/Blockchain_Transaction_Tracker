@@ -133,7 +133,7 @@ export const Cryptocurrency = (props) => {
         endpoint: network,
         walletAddress: address,
         startBlockNum: "1",
-        endBlockNum: "12160000",
+        endBlockNum: "latest",
       })
       .then((res) => {
         console.log("POSTtOdb")

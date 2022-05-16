@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 import { DashboardLayout } from "../components/dashboard-layout";
 import {
   Box,
@@ -20,40 +20,46 @@ const TransactionNodeDetail = (props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const router = useRouter();
   const hash = router.query.data;
-  const [detail, setDetail] = useState([{
+  const [detail,setDetail]=useState([{
     blockHash: "",
     blockNumber: "",
-    transactionHash: "",
-    transactionIndex: "",
-    from: "",
-    to: "",
+    date:"",
+    from:"",
+    gasPrice_ether:"",
+    to:"",
+    transactionHash:"",
+    transactionIndex:"",
     value_ether: "",
-    gasPrice_ether: "",
-    date: ""
   }])
+  const [data,setData]=useState([])
+  const [network, setNetwork] = React.useState('mainnet');
 
   useEffect(() => {
     axios
         .get(apiUrl+"/eth/network/getTransactionInfo", {
           params: {
             addr: hash,
-            endpoint:"ropsten"
+            endpoint: network
           },
         })
         .then((res) => {
           const transactionInfo = res.data.data;
           const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
-          setDetail([{
+          console.log(transactionInfo)
+          console.log(result)
+          setDetail({
             blockHash: result[0],
             blockNumber: result[1],
-            transactionHash: result[2],
-            transactionIndex: result[3],
+            transactionHash:result[2],
+            transactionIndex:result[3],
             from: result[4],
-            to: result[5],
+            to:result[5],
             value_ether: result[6],
             gasPrice_ether: result[7],
-            date: result[8],
-          }]);
+              date:result[8],
+
+          });
+
         })
         .catch((error) => {
           console.dir(error);
@@ -61,7 +67,11 @@ const TransactionNodeDetail = (props) => {
   },[])
 
   function onChangePage() {
-    window.open("https://ropsten.etherscan.io/tx/" + hash);
+    if (network === 'mainnet') {
+      window.open(`https://etherscan.io/tx/` + hash);
+    } else {
+      window.open(`https://${network}.etherscan.io/tx/` + hash);
+    }
   }
 
   return (
@@ -148,7 +158,7 @@ const TransactionNodeDetail = (props) => {
                         flexDirection: "column",
                       }}
                       xs={12}
-                    > </Grid>
+                    ></Grid>
                   </Grid>
                 </CardContent>
                 <Divider />
