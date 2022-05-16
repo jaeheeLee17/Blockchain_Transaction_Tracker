@@ -332,7 +332,6 @@ export const Cryptocurrency = (props) => {
   };
 
   const [network, setNetwork] = React.useState('mainnet');
-
   const handleChange = (event) => {
     setNetwork(event.target.value);
   };
@@ -465,7 +464,7 @@ export const Cryptocurrency = (props) => {
                       </InputAdornment>
                     ),
                   }}
-                  placeholder="Search by Address / Txn Hash / Block / Token / Ens"
+                  placeholder="Search by Address"
                   variant="outlined"
                 />
               </Box>
