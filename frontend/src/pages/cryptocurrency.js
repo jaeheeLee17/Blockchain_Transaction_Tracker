@@ -131,40 +131,42 @@ export const Cryptocurrency = (props) => {
     //postEthAccountTraceRecord
     //postTxlistChainWithAddress
     axios
-      .post(apiUrl+"/eth/network/ethAccountTrace", {
-        endpoint: network,
-        walletAddress: address,
-        startBlockNum: "1",
-        endBlockNum: "latest",
-      })
-      .then((res) => {
-        console.log("POSTtOdb")
-        axios
-          .post(apiUrl+"/eth/network/txlistchain", {
-            endpoint: network,
-            walletAddress: address,
-            startBlockNum: "1",
-            endBlockNum: "latest",
-            page: "1",
-            offset: "100",
-            sort: "asc",
-          })
-          .then((res) => {
-            console.log("db 저장 성공 get tx chain from 호출")
-            setTimeout(function() {
-              getTxChainFrom(address);
-            }, 3000);
-
-          })
-          .catch((error) => {
-            console.dir(error);
-            alert("no such data at "+network+ " network");
-            return;
-          });
-      })
-      .catch((error) => {
-        console.dir(error);
-      });
+        .post(apiUrl+"/eth/network/txlistchain", {
+          endpoint: network,
+          walletAddress: address,
+          startBlockNum: "1",
+          endBlockNum: "latest",
+          page: "1",
+          offset: "100",
+          sort: "asc",
+        })
+        .then((res) => {
+          console.log("tx chain from 호출완료")
+          if(res.status===200){
+          axios
+              .post(apiUrl+"/eth/network/ethAccountTrace", {
+                endpoint: network,
+                walletAddress: address,
+                startBlockNum: "1",
+                endBlockNum: "latest",
+              })
+              .then((res) => {
+                console.log("POSTtOdb")
+                setTimeout(function() {
+                  getTxChainFrom(address);
+                }, 3000);
+              })
+              .catch((error) => {
+                console.dir(error);
+              });
+          }
+        })
+        .catch((error) => {
+          console.dir(error);
+          setWalletAddress("");
+          alert("no such data at "+network+ " network");
+          return;
+        });
   };
 
   //노드 data 생성 부분
