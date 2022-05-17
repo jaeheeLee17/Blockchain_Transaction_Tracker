@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const EthTransactionSchema = new Schema({
+  network: {
+    type: String,
+    required: true
+  },
   blockNumber: {
     type: Number,
     required: true
