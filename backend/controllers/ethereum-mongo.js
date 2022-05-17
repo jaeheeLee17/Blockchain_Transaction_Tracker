@@ -51,7 +51,7 @@ const getTokenTxTo = async (req, res) => {
     return cwr.createWebResp(res, header, 200, TokenTxFromList);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
-      'get Token Transactions with source address failed', e.message || e);
+      'get Token Transactions with destination address failed', e.message || e);
   }
 }
 

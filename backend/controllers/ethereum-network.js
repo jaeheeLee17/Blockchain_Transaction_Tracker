@@ -90,7 +90,7 @@ const getTransactionInfo = async (req, res) => {
     });
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
-      'Loading the number of ethereum supply failed', e.message || e);
+      'Loading the transaction info failed', e.message || e);
   }
 }
 
