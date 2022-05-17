@@ -111,6 +111,7 @@ const postTransactionInfo = async (req, res) => {
       const filteredTxInfos = await Promise.all(filteredTxs.map(transaction => {
         const timestamp = new Date(1000 * blockInfo.timestamp);
         const transactionData = {
+          network: req.body.endpoint,
           blockNumber: transaction.blockNumber,
           transactionHash: transaction.hash,
           transactionIndex: transaction.transactionIndex,
@@ -151,6 +152,7 @@ const postTokenTxInfo = async (req, res) => {
     const tokenTxInfo = await Promise.all(tokenTxlist.result.map(tokenTx => {
       const timestamp = new Date(1000 * tokenTx.timeStamp);
       const tokenTxData = {
+        network: req.body.endpoint,
         blockNumber: tokenTx.blockNumber,
         transactionHash: tokenTx.hash,
         transactionIndex: tokenTx.transactionIndex,
@@ -350,6 +352,7 @@ const postTxlistChainWithAddress = async (req, res) => {
       }
     }
     const txChain = {
+      network: req.body.endpoint,
       from: walletAddress,
       startBlockNumber: String(startBlockNum),
       endBlockNumber: String(endBlockNum),
@@ -524,6 +527,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       }
     }
     const tokentxChain = {
+      network: req.body.endpoint,
       from: walletAddress,
       startBlockNumber: String(startBlockNum),
       endBlockNumber: String(endBlockNum),

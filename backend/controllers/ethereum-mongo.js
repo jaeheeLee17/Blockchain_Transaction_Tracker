@@ -91,7 +91,7 @@ const getERC20TokenAccountRecord = async (req, res) => {
   }
 }
 
-const getTransactinsPerHour = async (req, res) => { //시간별 트랜잭션 생성량
+const getTransactionsPerHour = async (req, res) => { //시간별 트랜잭션 생성량
   try {
     const now = new Date();
     const nowtime = Math.round(now.setDate(now.getDate()) / 1000);
@@ -140,6 +140,6 @@ module.exports = {
   getTokenTxTo,
   getEthAccountRecord,
   getERC20TokenAccountRecord,
-  getTransactinsPerHour,
+  getTransactionsPerHour,
   getEthSupplyCount
 }
