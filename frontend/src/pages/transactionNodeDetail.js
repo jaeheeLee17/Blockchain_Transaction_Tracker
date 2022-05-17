@@ -45,8 +45,6 @@ const TransactionNodeDetail = (props) => {
         .then((res) => {
           const transactionInfo = res.data.data;
           const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
-          console.log(transactionInfo)
-          console.log(result)
           setDetail({
             blockHash: result[0],
             blockNumber: result[1],

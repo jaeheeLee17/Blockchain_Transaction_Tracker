@@ -27,7 +27,7 @@ import Router from "next/router";
 export const Cryptocurrency = (props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [walletAddress, setWalletAddress] = useState("");
-
+  const [network, setNetwork] = React.useState('mainnet');
   const onChangePage = (e) => {
     window.location.href = "/transactionNodeDetail";
   };
@@ -90,6 +90,7 @@ export const Cryptocurrency = (props) => {
       .then((res) => {
         console.log("checkData")
         const resNode = res.data.data;
+        console.log(resNode)
         if (resNode.length == 1) getTxChainFrom(walletAddress); //있으면 db에서 데이터 가져옴
         else postToDB(walletAddress); //없으면 db에 data 저장
       })
@@ -115,7 +116,8 @@ export const Cryptocurrency = (props) => {
           alert("no data");
           return;
         }
-        console.log(txChains)
+        const net = txChains[0].network;
+        if(net.length!==0) setNetwork(net);
         makeNodes(txChains);
       })
       .catch((error) => {
@@ -149,10 +151,15 @@ export const Cryptocurrency = (props) => {
           })
           .then((res) => {
             console.log("db 저장 성공 get tx chain from 호출")
-            getTxChainFrom(address);
+            setTimeout(function() {
+              getTxChainFrom(address);
+            }, 3000);
+
           })
           .catch((error) => {
             console.dir(error);
+            alert("no such data at "+network+ " network");
+            return;
           });
       })
       .catch((error) => {
@@ -219,7 +226,6 @@ export const Cryptocurrency = (props) => {
             }
           }
         }
-        console.log("3")
       }
 
       let d1 = 0,
@@ -275,8 +281,9 @@ export const Cryptocurrency = (props) => {
           // cnt3++;
         }
       }
-  console.log("!")
       setDatas({ links: nextLinks, nodes: nextNodes, status: true });
+
+
       console.log(nextNodes);
       console.log(nextLinks);
     } else {
@@ -287,6 +294,10 @@ export const Cryptocurrency = (props) => {
       });
       alert("no data");
     }
+    const g = document.getElementById("1");
+    const c = g.childNodes[0];
+    c.setAttribute("data-tip", "");
+    c.setAttribute("data-for", "root");
   };
 
     const onClickNode = function (nodeId, node) {
@@ -309,12 +320,13 @@ export const Cryptocurrency = (props) => {
 
   const [toolContent, setToolContent] = useState([]);
   const onMouseOverNode = function (nodeId, node) {
-    const toolId = "toolId" + nodeId;
+    const toolId = "toolId" + node.name;
     const element = [
       {
         toolId: toolId,
         toolNode: {
           id: node.id,
+          name:node.name,
           to: node.to,
           from: node.from,
           address: node.address,
@@ -328,6 +340,7 @@ export const Cryptocurrency = (props) => {
     const tool = toolContent.filter((tool) => tool.toolId == toolId);
     if (datas.status == false) return;
     if (tool.length == 1) return;
+
     setToolContent([...toolContent, ...element]);
 
     let g = document.getElementById(nodeId);
@@ -336,7 +349,7 @@ export const Cryptocurrency = (props) => {
     c.setAttribute("data-for", toolId);
   };
 
-  const [network, setNetwork] = React.useState('mainnet');
+
   const handleChange = (event) => {
     setNetwork(event.target.value);
   };
@@ -421,7 +434,7 @@ export const Cryptocurrency = (props) => {
           }}
         />
         <Typography sx={{ m: 0 }} variant="h4">
-          Address Dashboard
+          Address Dashboard {network}
         </Typography>
         <Box sx={{ mt: 1 }}>
           <Card>
