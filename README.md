@@ -5,4 +5,4 @@
 
 
 ## Application Developer Manual
-[Documentation](../backend/README.md)
+[Documentation](backend/README.md)
