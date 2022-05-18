@@ -28,11 +28,12 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 
 export const LatestTransaction = (props) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [transaction, setTransaction] = useState([]);
   const [latest, setLatest] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:5000/eth/db/latestTransaction", {})
+      .get(apiUrl + "/eth/db/latestTransaction", {})
       .then((res) => {
         const data = res.data.data;
         setTransaction(data);
@@ -110,7 +111,15 @@ export const LatestTransaction = (props) => {
                           as={"/transactiondetail"}
                           href={{
                             pathname: "/transactiondetail",
-                            query: { data: JSON.stringify(tr) },
+                            query: {
+                              transactionHash: tr.transactionHash,
+                              createdAt:tr.createdAt,
+                              updatedAt:tr.updatedAt,
+                              blockNumber:tr.blockNumber,
+                              from:tr.from,
+                              to:tr.to,
+                              value:tr.value
+                            },
                           }}
                         >
                           <a>{tr.transactionHash.substring(0, 20) + "..."}</a>

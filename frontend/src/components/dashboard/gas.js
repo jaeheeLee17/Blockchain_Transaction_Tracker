@@ -14,10 +14,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export const Gas = (props) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [gas, setGas] = useState([]);
   useEffect(() => {
     axios
-      .get("http://localhost:5000/eth/network/gasPriceStats", {})
+      .get(apiUrl + "/eth/network/gasPriceStats", {})
       .then((res) => {
         const data = res.data.data;
         setGas(data);
@@ -26,9 +27,32 @@ export const Gas = (props) => {
         console.dir(error);
       });
   }, []);
+
   return (
-    <Card {...props}>
-      <CardHeader title="Gas Price" />
+    <Card
+      sx={{
+        height: 300,
+      }}
+      {...props}
+    >
+      {/* <CardHeader
+        sx={{
+          height: 10,
+        }}
+        title="Gas Price"
+      /> */}
+      <Grid container spacing={3} margin={1}>
+        <Grid item>
+          <Typography
+            color="textSecondary"
+            gutterBottom
+            variant="overline"
+            fontSize={15}
+          >
+            Gas price
+          </Typography>
+        </Grid>
+      </Grid>
       <Divider />
       <CardContent
         sx={{
@@ -38,7 +62,8 @@ export const Gas = (props) => {
       >
         <Box
           sx={{
-            p: 5,
+            // p: 1,
+            mx: 3,
             textAlign: "center",
           }}
         >
@@ -53,24 +78,18 @@ export const Gas = (props) => {
                   <Typography color="black" gutterBottom variant="h5">
                     Low
                   </Typography>
-                  <Typography color="green" variant="body1">
+                  <Typography color="green" variant="subtitle1">
                     {gas.low}
                   </Typography>
                 </Grid>
               </Grid>
-              <Box
-                sx={{
-                  pt: 2,
-                  display: "flex",
-                  alignItems: "left",
-                }}
-              ></Box>
             </CardContent>
           </Card>
         </Box>
         <Box
           sx={{
-            p: 5,
+            // p: 1,
+            mx: 3,
             textAlign: "center",
           }}
         >
@@ -85,7 +104,7 @@ export const Gas = (props) => {
                   <Typography color="black" gutterBottom variant="h5">
                     Average
                   </Typography>
-                  <Typography color="skyblue" variant="body1">
+                  <Typography color="skyblue" variant="subtitle1">
                     {gas.average}
                   </Typography>
                 </Grid>
@@ -102,7 +121,7 @@ export const Gas = (props) => {
         </Box>
         <Box
           sx={{
-            p: 5,
+            mx: 3,
             textAlign: "center",
           }}
         >
@@ -117,7 +136,7 @@ export const Gas = (props) => {
                   <Typography color="black" gutterBottom variant="h5">
                     High
                   </Typography>
-                  <Typography color="red" variant="body1">
+                  <Typography color="red" variant="subtitle1">
                     {gas.high}
                   </Typography>
                 </Grid>

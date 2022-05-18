@@ -21,6 +21,7 @@ import {
   Area,
   ResponsiveContainer,
 } from "recharts";
+import { autoType } from "d3";
 
 // const data = [
 //   {
@@ -67,19 +68,30 @@ import {
 //   },
 // ];
 export const Graph = (props) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [tr, setTr] = useState([]);
+
   useEffect(() => {
     axios
-      .get("http://localhost:5000/eth/network/getTransactionsPerBlock", {
+      .get(apiUrl + "/eth/db/getTransactionsPerHour", {
         params: {
-          blockNum: 14697772,
-          endpoint: "mainnet",
+          sethour: 7,
         },
       })
       .then((res) => {
-        const data = res.data.data;
-        console.log(res.data);
-        setTr(data);
+        const transaction = res.data.data;
+        let t = [];
+        transaction.forEach((ts) => {
+          const data = {
+            starttime: `${ts.starttime.substring(0, 10)}
+
+              ${ts.starttime.substring(11, 19)}`,
+            transactions: ts.transactions,
+          };
+          t.push(data);
+        });
+        console.log(t);
+        setTr(t);
       })
       .catch((error) => {
         console.dir(error);
@@ -90,38 +102,35 @@ export const Graph = (props) => {
     <Card>
       <CardHeader title="Transaction Graph" />
       <Divider />
-
       <Box
         sx={{
           p: 5,
           textAlign: "center",
         }}
       >
-        <div style={{ width: "100%" }}>
-          <LineChart
-            width={600}
-            height={300}
-            // data={data}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis dataKey={tr.blockNum} />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="pv"
-              stroke="#8884d8"
-              activeDot={{ r: 8 }}
-            />
-          </LineChart>
-        </div>
+        <LineChart
+          width={1500}
+          height={300}
+          margin={{
+            top: 5,
+            right: 20,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey={"starttime"} />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="transactions"
+            stroke="#8884d8"
+            activeDot={{ r: 7 }}
+            data={tr}
+          />
+        </LineChart>
       </Box>
     </Card>
   );

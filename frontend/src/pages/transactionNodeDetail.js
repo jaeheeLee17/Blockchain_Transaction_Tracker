@@ -20,6 +20,7 @@ const TransactionNodeDetail = (props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const router = useRouter();
   const hash = router.query.data;
+  const network = router.query.net;
   const [detail,setDetail]=useState([{
     blockHash: "",
     blockNumber: "",
@@ -32,7 +33,6 @@ const TransactionNodeDetail = (props) => {
     value_ether: "",
   }])
   const [data,setData]=useState([])
-  const [network, setNetwork] = React.useState('mainnet');
 
   useEffect(() => {
     axios
@@ -45,8 +45,6 @@ const TransactionNodeDetail = (props) => {
         .then((res) => {
           const transactionInfo = res.data.data;
           const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
-          console.log(transactionInfo)
-          console.log(result)
           setDetail({
             blockHash: result[0],
             blockNumber: result[1],

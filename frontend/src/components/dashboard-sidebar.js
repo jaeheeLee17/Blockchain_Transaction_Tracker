@@ -23,6 +23,9 @@ import { XCircle as XCircleIcon } from "../icons/x-circle";
 import { Logo } from "./logo";
 import { NavItem } from "./nav-item";
 import { Cryptocurrency } from "../pages/cryptocurrency";
+import TokenIcon from "@mui/icons-material/Token";
+import PaidIcon from "@mui/icons-material/Paid";
+import { Paid } from "@mui/icons-material";
 
 const items = [
   {
@@ -32,12 +35,12 @@ const items = [
   },
   {
     href: "/cryptocurrency",
-    icon: <UsersIcon fontSize="small" />,
+    icon: <PaidIcon />,
     title: "Cryptocurrency Dashboard",
   },
   {
     href: "/token",
-    icon: <UserIcon fontSize="small" />,
+    icon: <TokenIcon />,
     title: "Token Dashboard",
   },
   // {
