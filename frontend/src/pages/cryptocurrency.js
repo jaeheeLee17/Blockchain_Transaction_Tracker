@@ -436,7 +436,7 @@ export const Cryptocurrency = (props) => {
           }}
         />
         <Typography sx={{ m: 0 }} variant="h4">
-          Address Dashboard {network}
+          Address Dashboard
         </Typography>
         <Box sx={{ mt: 1 }}>
           <Card>
@@ -459,7 +459,6 @@ export const Cryptocurrency = (props) => {
                     <MenuItem value={"mainnet"}>mainnet</MenuItem>
                     <MenuItem value={"ropsten"}>ropsten</MenuItem>
                     <MenuItem value={"rinkeby"}>rinkeby</MenuItem>
-                    <MenuItem value={"goerli"}>goerli</MenuItem>
                     <MenuItem value={"kovan"}>kovan</MenuItem>
                   </Select>
                 </FormControl>
