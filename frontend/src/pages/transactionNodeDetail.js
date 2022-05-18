@@ -164,14 +164,6 @@ const TransactionNodeDetail = (props) => {
             </form>
           </Container>
         </Box>
-        {/*<Button*/}
-        {/*    color="primary"*/}
-        {/*    startIcon={<ArrowLeft fontSize="small" />}*/}
-        {/*    size="small"*/}
-        {/*    onClick={() => router.back()}*/}
-        {/*>*/}
-        {/*  Back to Graph*/}
-        {/*</Button>*/}
         <Box
             sx={{
               display: "flex",

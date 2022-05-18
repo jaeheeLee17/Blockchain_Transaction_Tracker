@@ -50,7 +50,7 @@ const items = [
     //   title: "Node List",
     // },
     {
-        href: "/nodelist",
+        href: "/txInfo",
         icon: <UserIcon fontSize="small" />,
         title: "Transaction Detail",
     },
