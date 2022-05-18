@@ -3,12 +3,12 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import {
-  Box,
-  Button,
-  Divider,
-  Drawer,
-  Typography,
-  useMediaQuery,
+    Box,
+    Button,
+    Divider,
+    Drawer,
+    Typography,
+    useMediaQuery,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { ChartBar as ChartBarIcon } from "../icons/chart-bar";
@@ -26,95 +26,102 @@ import { Cryptocurrency } from "../pages/cryptocurrency";
 import TokenIcon from "@mui/icons-material/Token";
 import PaidIcon from "@mui/icons-material/Paid";
 import { Paid } from "@mui/icons-material";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
 const items = [
-  {
-    href: "/",
-    icon: <ChartBarIcon fontSize="small" />,
-    title: "Overview",
-  },
-  {
-    href: "/cryptocurrency",
-    icon: <PaidIcon />,
-    title: "Cryptocurrency Dashboard",
-  },
-  {
-    href: "/token",
-    icon: <TokenIcon />,
-    title: "Token Dashboard",
-  },
-  // {
-  //   href: "/nodelist",
-  //   icon: <UserIcon fontSize="small" />,
-  //   title: "Node List",
-  // },
-  {
-    href: "/nodelist",
-    icon: <UserIcon fontSize="small" />,
-    title: "Account",
-  },
-  // {
-  //   href: "/login",
-  //   icon: <LockIcon fontSize="small" />,
-  //   title: "Login",
-  // },
-  // {
-  //   href: "/register",
-  //   icon: <UserAddIcon fontSize="small" />,
-  //   title: "Register",
-  // },
-  // {
-  //   href: "/settings",
-  //   icon: <CogIcon fontSize="small" />,
-  //   title: "Settings",
-  // },
+    {
+        href: "/",
+        icon: <ChartBarIcon fontSize="small" />,
+        title: "Overview",
+    },
+    {
+        href: "/cryptocurrency",
+        icon: <PaidIcon />,
+        title: "ETH Transaction Info",
+    },
+    {
+        href: "/token",
+        icon: <TokenIcon />,
+        title: "ERC20 Token ",
+    },
+    // {
+    //   href: "/nodelist",
+    //   icon: <UserIcon fontSize="small" />,
+    //   title: "Node List",
+    // },
+    {
+        href: "/nodelist",
+        icon: <UserIcon fontSize="small" />,
+        title: "Transaction Detail",
+    },
+
+    {
+        href: "/walletAddress",
+        icon: <AccountBalanceWalletIcon />,
+        title: "Wallet Info",
+    },
+    // {
+    //   href: "/login",
+    //   icon: <LockIcon fontSize="small" />,
+    //   title: "Login",
+    // },
+    // {
+    //   href: "/register",
+    //   icon: <UserAddIcon fontSize="small" />,
+    //   title: "Register",
+    // },
+    // {
+    //   href: "/settings",
+    //   icon: <CogIcon fontSize="small" />,
+    //   title: "Settings",
+    // },
 ];
 
 export const DashboardSidebar = (props) => {
-  const { open, onClose } = props;
-  const router = useRouter();
-  const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"), {
-    defaultMatches: true,
-    noSsr: false,
-  });
+    const { open, onClose } = props;
+    const router = useRouter();
+    const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"), {
+        defaultMatches: true,
+        noSsr: false,
+    });
 
-  useEffect(
-    () => {
-      if (!router.isReady) {
-        return;
-      }
+    useEffect(
+        () => {
+            if (!router.isReady) {
+                return;
+            }
 
-      if (open) {
-        onClose?.();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [router.asPath]
-  );
+            if (open) {
+                onClose?.();
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [router.asPath]
+    );
 
-  const content = (
-    <>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-        }}
-      >
-        <div>
-          <Box sx={{ p: 3 }}>
-            <NextLink href="/" passHref>
-              <a>
-                <Logo
-                  sx={{
-                    height: 42,
-                    width: 42,
-                  }}
-                />
-              </a>
-            </NextLink>
-          </Box>
-          {/* <Box sx={{ px: 2 }}>
+    const content = (
+        <>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                }}
+            >
+                <div>
+                    <Box sx={{ p: 3 }}>
+                        <NextLink href="/" passHref>
+                            <a>
+                                <Logo
+                                    sx={{
+                                        height: 42,
+                                        width: 42,
+                                    }}
+                                />
+                            </a>
+                        </NextLink>
+                    </Box>
+                    {/* <Box sx={{ px: 2 }}>
             <Box
               sx={{
                 alignItems: "center",
@@ -144,74 +151,74 @@ export const DashboardSidebar = (props) => {
               />
             </Box>
           </Box> */}
-        </div>
-        <Divider
-          sx={{
-            borderColor: "#2D3748",
-            my: 3,
-          }}
-        />
-        <Box sx={{ flexGrow: 1 }}>
-          {items.map((item) => (
-            <NavItem
-              key={item.title}
-              icon={item.icon}
-              href={item.href}
-              title={item.title}
-            />
-          ))}
-        </Box>
-        <Divider sx={{ borderColor: "#2D3748" }} />
-        <Box
-          sx={{
-            px: 2,
-            py: 3,
-          }}
-        ></Box>
-      </Box>
-    </>
-  );
-
-  if (lgUp) {
-    return (
-      <Drawer
-        anchor="left"
-        open
-        PaperProps={{
-          sx: {
-            backgroundColor: "neutral.900",
-            color: "#FFFFFF",
-            width: 280,
-          },
-        }}
-        variant="permanent"
-      >
-        {content}
-      </Drawer>
+                </div>
+                <Divider
+                    sx={{
+                        borderColor: "#2D3748",
+                        my: 3,
+                    }}
+                />
+                <Box sx={{ flexGrow: 1 }}>
+                    {items.map((item) => (
+                        <NavItem
+                            key={item.title}
+                            icon={item.icon}
+                            href={item.href}
+                            title={item.title}
+                        />
+                    ))}
+                </Box>
+                <Divider sx={{ borderColor: "#2D3748" }} />
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 3,
+                    }}
+                ></Box>
+            </Box>
+        </>
     );
-  }
 
-  return (
-    <Drawer
-      anchor="left"
-      onClose={onClose}
-      open={open}
-      PaperProps={{
-        sx: {
-          backgroundColor: "neutral.900",
-          color: "#FFFFFF",
-          width: 280,
-        },
-      }}
-      sx={{ zIndex: (theme) => theme.zIndex.appBar + 100 }}
-      variant="temporary"
-    >
-      {content}
-    </Drawer>
-  );
+    if (lgUp) {
+        return (
+            <Drawer
+                anchor="left"
+                open
+                PaperProps={{
+                    sx: {
+                        backgroundColor: "neutral.900",
+                        color: "#FFFFFF",
+                        width: 280,
+                    },
+                }}
+                variant="permanent"
+            >
+                {content}
+            </Drawer>
+        );
+    }
+
+    return (
+        <Drawer
+            anchor="left"
+            onClose={onClose}
+            open={open}
+            PaperProps={{
+                sx: {
+                    backgroundColor: "neutral.900",
+                    color: "#FFFFFF",
+                    width: 280,
+                },
+            }}
+            sx={{ zIndex: (theme) => theme.zIndex.appBar + 100 }}
+            variant="temporary"
+        >
+            {content}
+        </Drawer>
+    );
 };
 
 DashboardSidebar.propTypes = {
-  onClose: PropTypes.func,
-  open: PropTypes.bool,
+    onClose: PropTypes.func,
+    open: PropTypes.bool,
 };
