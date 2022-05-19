@@ -7,6 +7,7 @@ const eth_tokentx_traces = require('../models/eth_tokentx_trace');
 const eth_account_traces = require('../models/eth_account_trace_req');
 const ethBlocks = require('../models/ethBlocks');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
+const Wallet_traces = require('../models/wallet_trace_req');
 const cwr = require('../utils/createWebResponse');
 const {StandardABI} = require('../config/eth/standardABI');
 const axios = require("axios");
@@ -262,6 +263,29 @@ const postERC20TokenAccountTraceRecord = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'Adding ERC20 Token Account Record failed', e.message || e);
+  }
+}
+
+// 지갑 주소 검색 정보 추가
+const postWalletTraceRecord = async (req, res) => {
+  try {
+    const {walletAddress} = req.body;
+    const wallettraceCheck = await eth_account_traces.find({"address": walletAddress});
+    if (wallettraceCheck.length === 0) {
+      const walletTraceRequest = {
+        address: walletAddress,
+        network: req.body.endpoint
+      };
+      Wallet_traces.insertMany(walletTraceRequest, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+      return cwr.createWebResp(res, header, 200, {
+        message: "Wallet Record loading Completed, database updated!",
+      });
+    }
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Adding Wallet Record failed', e.message || e);
   }
 }
 
@@ -595,6 +619,7 @@ module.exports = {
   postTokenTxInfo,
   postEthAccountTraceRecord,
   postERC20TokenAccountTraceRecord,
+  postWalletTraceRecord,
   postTxlistChainWithAddress,
   getEtherBalance,
   getTokenBalanceList,

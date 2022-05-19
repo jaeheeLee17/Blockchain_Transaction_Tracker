@@ -7,6 +7,7 @@ const eth_tx_traces = require('../models/eth_transactions_trace');
 const eth_tokentx_traces = require('../models/eth_tokentx_trace');
 const eth_account_traces = require('../models/eth_account_trace_req');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
+const Wallet_traces = require('../models/wallet_trace_req');
 const cwr = require('../utils/createWebResponse');
 
 // 최근 블록체인 거래 목록 조회
@@ -75,7 +76,7 @@ const getEthAccountRecord = async (req, res) => {
     return cwr.createWebResp(res, header, 200, ethAccount);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
-      'get Ethereum Account Tracking information failed', e.message || e);
+      'get Ethereum Account Record failed', e.message || e);
   }
 }
 
@@ -88,6 +89,18 @@ const getERC20TokenAccountRecord = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get ERC20Token Account Tracking information failed', e.message || e);
+  }
+}
+
+// 특정 지갑 주소 검색 정보 존재 여부 확인
+const getWalletRecord = async (req, res) => {
+  try {
+    const {walletAddress} = req.query;
+    const Wallet = await Wallet_traces.find({"address": walletAddress});
+    return cwr.createWebResp(res, header, 200, Wallet);
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'get Wallet Record failed', e.message || e);
   }
 }
 
@@ -140,6 +153,7 @@ module.exports = {
   getTokenTxTo,
   getEthAccountRecord,
   getERC20TokenAccountRecord,
+  getWalletRecord,
   getTransactionsPerHour,
   getEthSupplyCount
 }
