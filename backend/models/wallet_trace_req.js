@@ -15,6 +15,6 @@ const Wallet_trace_schema = new Schema({
   timestamps: true
 })
 
-const Wallet_traces = mongoose.model('eth_account_traces', Wallet_trace_schema);
+const Wallet_traces = mongoose.model('wallet_traces', Wallet_trace_schema);
 
 module.exports = Wallet_traces;
