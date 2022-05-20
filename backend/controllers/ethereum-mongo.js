@@ -1,6 +1,5 @@
 require('dotenv').config();
 const ethTransactions = require('../models/ethTransactions');
-const ethTokens = require('../models/ethTokens');
 const ethCounts = require('../models/ethCounts');
 const ethBlocks = require('../models/ethBlocks')
 const eth_tx_traces = require('../models/eth_transactions_trace');
@@ -8,6 +7,8 @@ const eth_tokentx_traces = require('../models/eth_tokentx_trace');
 const eth_account_traces = require('../models/eth_account_trace_req');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
 const Wallet_traces = require('../models/wallet_trace_req');
+const Wallet_transactions = require('../models/walletTxInfo');
+const Wallet_ERC20_tx = require('../models/walletTokenTxInfo');
 const cwr = require('../utils/createWebResponse');
 
 // 최근 블록체인 거래 목록 조회
@@ -22,6 +23,28 @@ const getLatestTransactions = async (req, res) => {
   }
 }
 
+const getETHTransactionsInfo = async (req, res) => {
+  try {
+    const {walletAddress} = req.query;
+    const ETHTxInfos = await Wallet_transactions.find({"address": walletAddress});
+    return cwr.createWebResp(res, header, 200, ETHTxInfos);
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'get Token Transactions with source address failed', e.message || e);
+  }
+}
+
+const getTokenTxInfo = async (req, res) => {
+  try {
+    const {walletAddress} = req.query;
+    const TokenTxInfos = await Wallet_ERC20_tx.find({"address": walletAddress});
+    return cwr.createWebResp(res, header, 200, TokenTxInfos);
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'get Token Transactions with source address failed', e.message || e);
+  }
+}
+
 // source에서 시작하는 이더리움 거래 체인 목록 출력
 const getTxChainFrom = async (req, res) => {
   try {
@@ -31,28 +54,6 @@ const getTxChainFrom = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transaction tracking lists with source address failed', e.message || e);
-  }
-}
-
-const getTokenTxFrom = async (req, res) => {
-  try {
-    const {source} = req.query;
-    const TokenTxFromList = await ethTokens.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TokenTxFromList);
-  } catch (e) {
-    return cwr.errorWebResp(res, header, 500,
-      'get Token Transactions with source address failed', e.message || e);
-  }
-}
-
-const getTokenTxTo = async (req, res) => {
-  try {
-    const {destination} = req.query;
-    const TokenTxFromList = await ethTokens.find({"to": destination});
-    return cwr.createWebResp(res, header, 200, TokenTxFromList);
-  } catch (e) {
-    return cwr.errorWebResp(res, header, 500,
-      'get Token Transactions with destination address failed', e.message || e);
   }
 }
 
@@ -147,10 +148,10 @@ const getEthSupplyCount = async (req, res) => {
 
 module.exports = {
   getLatestTransactions,
+  getETHTransactionsInfo,
+  getTokenTxInfo,
   getTxChainFrom,
-  getTokenTxFrom,
   getTokentxChainFrom,
-  getTokenTxTo,
   getEthAccountRecord,
   getERC20TokenAccountRecord,
   getWalletRecord,
