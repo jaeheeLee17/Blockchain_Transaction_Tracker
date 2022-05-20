@@ -14,6 +14,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  CardHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  PerfectScrollbar,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import { DashboardLayout } from "../components/dashboard-layout";
@@ -23,13 +30,31 @@ import Web3 from "web3";
 import Link from "next/link";
 import Router from "next/router";
 import axios from "axios";
-import { Eth_balance } from "src/components/Eth_balance";
 import Token from "@mui/icons-material/Token";
 
 export const WalletAddress = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
   const [network, setNetwork] = React.useState("mainnet");
   const onChangeAddress = (e) => setWalletAddress(e.target.value);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
+  const [eth, setEth] = useState([]);
+  const [token, setToken] = useState([]);
+  const [total, setTotal] = useState(false);
+  const [address, setAddress] = useState([]);
+  const [name, setName] = React.useState("");
+  const regHash = /^0x([A-Fa-f0-9]{64})$/;
+  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
+
+  const onClickButton = () => {
+    if (web3.utils.isAddress(walletAddress)) {
+      findAddr();
+    } else {
+      alert("invaild address");
+      setWalletAddress("");
+      return;
+    }
+  };
 
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -40,23 +65,6 @@ export const WalletAddress = (props) => {
         setWalletAddress("");
         return;
       }
-    }
-  };
-  const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
-  const [eth, setEth] = useState([]);
-  const [token, setToken] = useState([]);
-  const [total, setTotal] = useState(false);
-  const [address, setAddress] = useState([]);
-  const [name, setName] = React.useState("");
-  const regHash = /^0x([A-Fa-f0-9]{64})$/;
-  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
-  const onClickButton = () => {
-    if (web3.utils.isAddress(walletAddress)) {
-      findAddr();
-    } else {
-      alert("invaild address");
-      setWalletAddress("");
-      return;
     }
   };
 
@@ -76,16 +84,6 @@ export const WalletAddress = (props) => {
         setAddress("");
         return;
       }
-    }
-  };
-
-  const onClickBtn = () => {
-    if (regHash.test(address)) {
-      findAddr();
-    } else {
-      alert("invaild address");
-      setAddress("");
-      return;
     }
   };
 
@@ -246,7 +244,7 @@ export const WalletAddress = (props) => {
                       >
                         <b>Ether Balance : </b> {eth.balance}
                       </Typography>
-                      {/* <br /> */}
+
                       <Divider />
                       <Typography
                         // color="textSecondary"
@@ -306,6 +304,79 @@ export const WalletAddress = (props) => {
                           </Box>
                         </Box>
                       </Typography>
+                    </Box>
+                    <Divider />
+                    <Box
+                      sx={{
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                        // display: "flex",
+                        // ml: 0,
+                      }}
+                    >
+                      {/* <Typography
+                        // color="textSecondary"
+                        gutterBottom
+                        variant="subtitle1"
+                        sx={{
+                          margin: 5,
+                        }}
+                      >
+                        <b>Ether Balance : </b> {eth.balance}
+                      </Typography> */}
+                      <Box
+                        sx={{
+                          alignItems: "center",
+                          justifyContent: "flex-start",
+                          display: "inline-flex",
+                        }}
+                      >
+                        <Card>
+                          <Typography
+                            // color="textSecondary"
+                            gutterBottom
+                            variant="subtitle1"
+                            sx={{
+                              margin: 5,
+                            }}
+                          >
+                            <b>Latest ETH Transaction </b>
+                          </Typography>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell></TableCell>
+                                <TableCell>Txn Hash</TableCell>
+                                <TableCell>Create</TableCell>
+                                <TableCell>Update</TableCell>
+                                <TableCell>Block</TableCell>
+                                <TableCell></TableCell>
+                                <TableCell>Value</TableCell>
+                                <TableCell></TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell>
+                                  <Button
+                                    color="inherit"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    tx
+                                  </Button>
+                                </TableCell>
+                                <TableCell>dd</TableCell>
+                                <TableCell>dd</TableCell>
+                                <TableCell>dd</TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </Card>
+                      </Box>
                     </Box>
                   </Container>
                 )}
