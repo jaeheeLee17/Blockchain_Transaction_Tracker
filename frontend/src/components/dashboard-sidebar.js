@@ -26,6 +26,7 @@ import { Cryptocurrency } from "../pages/cryptocurrency";
 import TokenIcon from "@mui/icons-material/Token";
 import PaidIcon from "@mui/icons-material/Paid";
 import { Paid } from "@mui/icons-material";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
 const items = [
   {
@@ -36,12 +37,12 @@ const items = [
   {
     href: "/cryptocurrency",
     icon: <PaidIcon />,
-    title: "Cryptocurrency Dashboard",
+    title: "ETH Transaction Info",
   },
   {
     href: "/token",
     icon: <TokenIcon />,
-    title: "Token Dashboard",
+    title: "ERC20 Token ",
   },
   // {
   //   href: "/nodelist",
@@ -51,7 +52,13 @@ const items = [
   {
     href: "/nodelist",
     icon: <UserIcon fontSize="small" />,
-    title: "Account",
+    title: "Transaction Detail",
+  },
+
+  {
+    href: "/walletAddress",
+    icon: <AccountBalanceWalletIcon />,
+    title: "Wallet Info",
   },
   // {
   //   href: "/login",

@@ -1,12 +1,14 @@
 require('dotenv').config();
 const ethTransactions = require('../models/ethTransactions');
-const ethTokens = require('../models/ethTokens');
 const ethCounts = require('../models/ethCounts');
 const eth_tx_traces = require('../models/eth_transactions_trace');
 const eth_tokentx_traces = require('../models/eth_tokentx_trace');
 const eth_account_traces = require('../models/eth_account_trace_req');
 const ethBlocks = require('../models/ethBlocks');
 const ERC20Token_account_traces = require('../models/erc20Token_account_trace_req');
+const Wallet_traces = require('../models/wallet_trace_req');
+const Wallet_transactions = require('../models/walletTxInfo');
+const Wallet_ERC20_tx = require('../models/walletTokenTxInfo');
 const cwr = require('../utils/createWebResponse');
 const {StandardABI} = require('../config/eth/standardABI');
 const axios = require("axios");
@@ -139,8 +141,50 @@ const postTransactionInfo = async (req, res) => {
   }
 }
 
+// 특정 지갑 주소의 이더리움 거래 정보 조회 후 DB에 저장
+const postETHTxInfoWithAddress = async (req, res) => {
+  try {
+    const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
+    const txlist = await req.etherscan.account.txlist(
+      walletAddress,
+      startBlockNum,
+      endBlockNum,
+      page,
+      offset,
+      sort,
+    );
+    const ETHTransactions = await Promise.all(txlist.result.map(ETHTx => {
+      const timestamp = new Date(1000 * ETHTx.timeStamp);
+      const ETHTxData = {
+        transactionHash: ETHTx.hash,
+        blockNum: ETHTx.blockNumber,
+        date: timestamp,
+        from: ETHTx.from,
+        to: ETHTx.to,
+        value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
+      };
+      return ETHTxData;
+    }));
+    const ETHTxInfo = {
+      address: walletAddress,
+      network: req.body.endpoint,
+      transactionCount: ETHTransactions.length,
+      transactions: ETHTransactions
+    };
+    Wallet_transactions.insertMany(ETHTxInfo, {upsert: true}).catch(err => {
+      console.log(err);
+    });
+    return cwr.createWebResp(res, header, 200, {
+      message: "Transaction list with wallet address loading Completed, database updated!",
+    });
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Ethereum Transactions with wallet address loading failed', e.message || e);
+  }
+}
+
 // 특정 지갑 주소 관련 ERC20 토큰 거래 정보 조회 후 DB에 저장
-const postTokenTxInfo = async (req, res) => {
+const postTokenTxInfoWithAddress = async (req, res) => {
   try {
     const {walletAddress, contractAddress='', startBlockNum='1', endBlockNum='latest', sort='desc'} = req.body;
     const tokenTxlist = await req.etherscan.account.tokentx(
@@ -150,13 +194,11 @@ const postTokenTxInfo = async (req, res) => {
       endBlockNum,
       sort,
     );
-    const tokenTxInfo = await Promise.all(tokenTxlist.result.map(tokenTx => {
+    const tokenTransactions = await Promise.all(tokenTxlist.result.map(tokenTx => {
       const timestamp = new Date(1000 * tokenTx.timeStamp);
       const tokenTxData = {
-        network: req.body.endpoint,
-        blockNumber: tokenTx.blockNumber,
         transactionHash: tokenTx.hash,
-        transactionIndex: tokenTx.transactionIndex,
+        date: timestamp,
         contractAddress: tokenTx.contractAddress,
         from: tokenTx.from,
         to: tokenTx.to,
@@ -164,12 +206,16 @@ const postTokenTxInfo = async (req, res) => {
         tokenSymbol: tokenTx.tokenSymbol,
         tokenNumber: tokenTx.tokenDecimal,
         value: req.web3.utils.fromWei(String(tokenTx.value), 'ether'),
-        gasPrice: req.web3.utils.fromWei(String(tokenTx.gasPrice), 'gwei'),
-        date: timestamp
       };
       return tokenTxData;
     }));
-    ethTokens.insertMany(tokenTxInfo, {upsert: true}).catch(err => {
+    const tokenTxInfo = {
+      address: walletAddress,
+      network: req.body.endpoint,
+      transactionCount: tokenTransactions.length,
+      transactions: tokenTransactions
+    };
+    Wallet_ERC20_tx.insertMany(tokenTxInfo, {upsert: true}).catch(err => {
       console.log(err);
     });
     return cwr.createWebResp(res, header, 200,
@@ -263,6 +309,29 @@ const postERC20TokenAccountTraceRecord = async (req, res) => {
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'Adding ERC20 Token Account Record failed', e.message || e);
+  }
+}
+
+// 지갑 주소 검색 정보 추가
+const postWalletTraceRecord = async (req, res) => {
+  try {
+    const {walletAddress} = req.body;
+    const walletTraceCheck = await eth_account_traces.find({"address": walletAddress});
+    if (walletTraceCheck.length === 0) {
+      const walletTraceRequest = {
+        address: walletAddress,
+        network: req.body.endpoint
+      };
+      Wallet_traces.insertMany(walletTraceRequest, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+      return cwr.createWebResp(res, header, 200, {
+        message: "Wallet Record loading Completed, database updated!",
+      });
+    }
+  } catch (e) {
+    return cwr.errorWebResp(res, header, 500,
+      'Adding Wallet Record failed', e.message || e);
   }
 }
 
@@ -593,9 +662,11 @@ module.exports = {
   getGasPriceStats,
   getTransactionInfo,
   postTransactionInfo,
-  postTokenTxInfo,
+  postETHTxInfoWithAddress,
+  postTokenTxInfoWithAddress,
   postEthAccountTraceRecord,
   postERC20TokenAccountTraceRecord,
+  postWalletTraceRecord,
   postTxlistChainWithAddress,
   getEtherBalance,
   getTokenBalanceList,
