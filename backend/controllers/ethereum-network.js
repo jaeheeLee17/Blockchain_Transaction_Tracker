@@ -144,35 +144,42 @@ const postTransactionInfo = async (req, res) => {
 const postETHTxInfoWithAddress = async (req, res) => {
   try {
     const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
-    const txlist = await req.etherscan.account.txlist(
-      walletAddress,
-      startBlockNum,
-      endBlockNum,
-      page,
-      offset,
-      sort,
-    );
-    const ETHTransactions = await Promise.all(txlist.result.map(ETHTx => {
-      const timestamp = new Date(1000 * ETHTx.timeStamp);
-      const ETHTxData = {
-        transactionHash: ETHTx.hash,
-        blockNum: ETHTx.blockNumber,
-        date: timestamp,
-        from: ETHTx.from,
-        to: ETHTx.to,
-        value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
+    const ETHTxInfoCheck = await Wallet_transactions.find({"address": walletAddress});
+    if (ETHTxInfoCheck.length === 0) {
+      const txlist = await req.etherscan.account.txlist(
+        walletAddress,
+        startBlockNum,
+        endBlockNum,
+        page,
+        offset,
+        sort,
+      );
+      const ETHTransactions = await Promise.all(txlist.result.map(ETHTx => {
+        const timestamp = new Date(1000 * ETHTx.timeStamp);
+        const ETHTxData = {
+          transactionHash: ETHTx.hash,
+          blockNum: ETHTx.blockNumber,
+          date: timestamp,
+          from: ETHTx.from,
+          to: ETHTx.to,
+          value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
+        };
+        return ETHTxData;
+      }));
+      const ETHTxInfo = {
+        address: walletAddress,
+        network: req.body.endpoint,
+        transactionCount: ETHTransactions.length,
+        transactions: ETHTransactions
       };
-      return ETHTxData;
-    }));
-    const ETHTxInfo = {
-      address: walletAddress,
-      network: req.body.endpoint,
-      transactionCount: ETHTransactions.length,
-      transactions: ETHTransactions
-    };
-    Wallet_transactions.insertMany(ETHTxInfo, {upsert: true}).catch(err => {
-      console.log(err);
-    });
+      Wallet_transactions.insertMany(ETHTxInfo, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    } else {
+      return cwr.createWebResp(res, header, 200, {
+        message: "Transaction list with wallet address already exists in database!",
+      });
+    }
     return cwr.createWebResp(res, header, 200, {
       message: "Transaction list with wallet address loading Completed, database updated!",
     });
@@ -186,45 +193,50 @@ const postETHTxInfoWithAddress = async (req, res) => {
 const postTokenTxInfoWithAddress = async (req, res) => {
   try {
     const {walletAddress, contractAddress='', startBlockNum='1', endBlockNum='latest', sort='desc'} = req.body;
-    const tokenTxlist = await req.etherscan.account.tokentx(
-      walletAddress,
-      contractAddress,
-      startBlockNum,
-      endBlockNum,
-      sort,
-    );
-    const tokenTransactions = await Promise.all(tokenTxlist.result.map(tokenTx => {
-      const timestamp = new Date(1000 * tokenTx.timeStamp);
-      const tokenTxData = {
-        transactionHash: tokenTx.hash,
-        date: timestamp,
-        contractAddress: tokenTx.contractAddress,
-        from: tokenTx.from,
-        to: tokenTx.to,
-        tokenName: tokenTx.tokenName,
-        tokenSymbol: tokenTx.tokenSymbol,
-        tokenNumber: tokenTx.tokenDecimal,
-        value: req.web3.utils.fromWei(String(tokenTx.value), 'ether'),
+    const TokenTxInfoCheck = await Wallet_ERC20_tx.find({"address": walletAddress});
+    if (TokenTxInfoCheck.length === 0) {
+      const tokenTxlist = await req.etherscan.account.tokentx(
+        walletAddress,
+        contractAddress,
+        startBlockNum,
+        endBlockNum,
+        sort,
+      );
+      const tokenTransactions = await Promise.all(tokenTxlist.result.map(tokenTx => {
+        const timestamp = new Date(1000 * tokenTx.timeStamp);
+        const tokenTxData = {
+          transactionHash: tokenTx.hash,
+          date: timestamp,
+          contractAddress: tokenTx.contractAddress,
+          from: tokenTx.from,
+          to: tokenTx.to,
+          tokenName: tokenTx.tokenName,
+          tokenSymbol: tokenTx.tokenSymbol,
+          tokenNumber: tokenTx.tokenDecimal,
+          value: req.web3.utils.fromWei(String(tokenTx.value), 'ether'),
+        };
+        return tokenTxData;
+      }));
+      const tokenTxInfo = {
+        address: walletAddress,
+        network: req.body.endpoint,
+        transactionCount: tokenTransactions.length,
+        transactions: tokenTransactions
       };
-      return tokenTxData;
-    }));
-    const tokenTxInfo = {
-      address: walletAddress,
-      network: req.body.endpoint,
-      transactionCount: tokenTransactions.length,
-      transactions: tokenTransactions
-    };
-    Wallet_ERC20_tx.insertMany(tokenTxInfo, {upsert: true}).catch(err => {
-      console.log(err);
-    });
+      Wallet_ERC20_tx.insertMany(tokenTxInfo, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    } else {
+      return cwr.createWebResp(res, header, 200, {
+        message: "ERC20 Token Transactions with wallet address already exists in database!",
+      });
+    }
     return cwr.createWebResp(res, header, 200,
       'ERC20 Token Transactions with wallet address loading success!');
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'ERC20 Token Transactions with wallet address loading failed', e.message || e);
   }
-
-
 }
 
 // 이더리움 계정 검색 정보 추가
@@ -338,99 +350,106 @@ const postWalletTraceRecord = async (req, res) => {
 const postTxlistChainWithAddress = async (req, res) => {
   try {
     const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
-    const txlist = await req.etherscan.account.txlist(
-      walletAddress,
-      startBlockNum,
-      endBlockNum,
-      page,
-      offset,
-      sort,
-    );
-    // walletAddress를 출발점으로 하는 이더리움 거래가 아닌 목록 제거
-    const selectedTxlist = await Promise.all(txlist.result.filter(txReceipt => {
-      if (txReceipt.to !== walletAddress.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
-        && txReceipt.value !== '0') {
-        return txReceipt;
-      }
-    }));
-    // 목적지가 중복인 거래 목록 필터링
-    const uniqueTxlist = await Promise.all(selectedTxlist.filter((addr, idx) => {
-      return (
-        selectedTxlist.findIndex((addr2, idx) => {
-          return addr.to === addr2.to;
-        }) === idx
+    const TxlistChainCheck = await eth_tx_traces.find({"from": walletAddress});
+    if (TxlistChainCheck.length === 0) {
+      const txlist = await req.etherscan.account.txlist(
+        walletAddress,
+        startBlockNum,
+        endBlockNum,
+        page,
+        offset,
+        sort,
       );
-    }));
-    const first_depth_tx = await Promise.all(uniqueTxlist.map(txReceipt => {
-      const timestamp = new Date(1000 * txReceipt.timeStamp);
-      const txData = {
-        tx: txReceipt.hash,
-        data: {
-          from: txReceipt.from,
-          to: txReceipt.to,
-          value: req.web3.utils.fromWei(String(txReceipt.value), 'ether'),
-          date: timestamp
+      // walletAddress를 출발점으로 하는 이더리움 거래가 아닌 목록 제거
+      const selectedTxlist = await Promise.all(txlist.result.filter(txReceipt => {
+        if (txReceipt.to !== walletAddress.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
+          && txReceipt.value !== '0') {
+          return txReceipt;
         }
-      };
-      return txData;
-    }));
-    const to_addresses = uniqueTxlist.map(txReceipt => {
-      if (txReceipt.to !== walletAddress.toLowerCase()) {
-        return txReceipt.to;
-      } else {
-        return '';
-      }
-    });
-    const related_tx = [];
-    let address_idx = 0;
-    while (address_idx < to_addresses.length) {
-      let address = to_addresses[address_idx];
-      if (address !== "") {
-        const relatedTxlist = await req.etherscan.account.txlist(
-          address,
-          startBlockNum,
-          endBlockNum,
-          page,
-          offset,
-          sort,
+      }));
+      // 목적지가 중복인 거래 목록 필터링
+      const uniqueTxlist = await Promise.all(selectedTxlist.filter((addr, idx) => {
+        return (
+          selectedTxlist.findIndex((addr2, idx) => {
+            return addr.to === addr2.to;
+          }) === idx
         );
-        const filteredTxlist = await Promise.all(relatedTxlist.result.filter(txReceipt => {
-          if (txReceipt.to !== address.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
-            && txReceipt.value !== '0') {
-            return txReceipt;
+      }));
+      const first_depth_tx = await Promise.all(uniqueTxlist.map(txReceipt => {
+        const timestamp = new Date(1000 * txReceipt.timeStamp);
+        const txData = {
+          tx: txReceipt.hash,
+          data: {
+            from: txReceipt.from,
+            to: txReceipt.to,
+            value: req.web3.utils.fromWei(String(txReceipt.value), 'ether'),
+            date: timestamp
           }
-        }));
-        const address_related_Tx = await Promise.all(filteredTxlist.map(relatedTxReceipt => {
-          if (relatedTxReceipt.to !== '' && relatedTxReceipt.to !== undefined && relatedTxReceipt.to !== relatedTxReceipt.from &&
-            relatedTxReceipt.value !== '0') {
-            const timestamp = new Date(1000 * relatedTxReceipt.timeStamp);
-            const txData = {
-              tx: relatedTxReceipt.hash,
-              data: {
-                from: relatedTxReceipt.from,
-                to: relatedTxReceipt.to,
-                value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether'),
-                date: timestamp
-              }
-            };
-            return txData;
-          }
-        }));
-        related_tx.push(address_related_Tx);
-        address_idx++;
+        };
+        return txData;
+      }));
+      const to_addresses = uniqueTxlist.map(txReceipt => {
+        if (txReceipt.to !== walletAddress.toLowerCase()) {
+          return txReceipt.to;
+        } else {
+          return '';
+        }
+      });
+      const related_tx = [];
+      let address_idx = 0;
+      while (address_idx < to_addresses.length) {
+        let address = to_addresses[address_idx];
+        if (address !== "") {
+          const relatedTxlist = await req.etherscan.account.txlist(
+            address,
+            startBlockNum,
+            endBlockNum,
+            page,
+            offset,
+            sort,
+          );
+          const filteredTxlist = await Promise.all(relatedTxlist.result.filter(txReceipt => {
+            if (txReceipt.to !== address.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
+              && txReceipt.value !== '0') {
+              return txReceipt;
+            }
+          }));
+          const address_related_Tx = await Promise.all(filteredTxlist.map(relatedTxReceipt => {
+            if (relatedTxReceipt.to !== '' && relatedTxReceipt.to !== undefined && relatedTxReceipt.to !== relatedTxReceipt.from &&
+              relatedTxReceipt.value !== '0') {
+              const timestamp = new Date(1000 * relatedTxReceipt.timeStamp);
+              const txData = {
+                tx: relatedTxReceipt.hash,
+                data: {
+                  from: relatedTxReceipt.from,
+                  to: relatedTxReceipt.to,
+                  value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether'),
+                  date: timestamp
+                }
+              };
+              return txData;
+            }
+          }));
+          related_tx.push(address_related_Tx);
+          address_idx++;
+        }
       }
+      const txChain = {
+        network: req.body.endpoint,
+        from: walletAddress,
+        startBlockNumber: String(startBlockNum),
+        endBlockNumber: String(endBlockNum),
+        first_depth: first_depth_tx,
+        second_depth: related_tx
+      };
+      eth_tx_traces.insertMany(txChain, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    } else {
+      return cwr.createWebResp(res, header, 200, {
+        message: "Transaction trace list already exists in database!",
+      });
     }
-    const txChain = {
-      network: req.body.endpoint,
-      from: walletAddress,
-      startBlockNumber: String(startBlockNum),
-      endBlockNumber: String(endBlockNum),
-      first_depth: first_depth_tx,
-      second_depth: related_tx
-    };
-    eth_tx_traces.insertMany(txChain, {upsert: true}).catch(err => {
-      console.log(err);
-    });
     return cwr.createWebResp(res, header, 200, {
       message: "Transaction trace list loading Completed, database updated!",
     });
@@ -512,100 +531,107 @@ const getTokenBalanceList = async (req, res) => {
 const postTokenTxChainWithAddress = async (req, res) => {
   try {
     const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='desc'} = req.body;
-    const tokenTxlist = await req.etherscan.account.tokentx(
-      walletAddress,
-      contractAddress,
-      startBlockNum,
-      endBlockNum,
-      sort
-    );
-    // walletAddress를 출발점으로 하는 ERC20 토큰 거래가 아닌 목록 제거
-    const selectedTokenTxlist = await Promise.all(tokenTxlist.result.filter(tokentxReceipt => {
-      if (tokentxReceipt.to !== walletAddress.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
-      && tokentxReceipt.value !== '0') {
-        return tokentxReceipt;
-      }
-    }));
-    const uniqueTokenTxlist = await Promise.all(selectedTokenTxlist.filter((addr, idx) => {
-      return (
-        selectedTokenTxlist.findIndex((addr2, idx) => {
-          return addr.to === addr2.to;
-        }) === idx
+    const TokentxChainCheck = await eth_tokentx_traces.find({"from": walletAddress});
+    if (TokentxChainCheck.length === 0) {
+      const tokenTxlist = await req.etherscan.account.tokentx(
+        walletAddress,
+        contractAddress,
+        startBlockNum,
+        endBlockNum,
+        sort
       );
-    }));
-    const first_layer_tokentx = await Promise.all(uniqueTokenTxlist.map(tokentxReceipt => {
-      const timestamp = new Date(1000 * tokentxReceipt.timeStamp);
-      const tokentxData = {
-        tx: tokentxReceipt.hash,
-        data: {
-          from: tokentxReceipt.from,
-          to: tokentxReceipt.to,
-          tokenName: tokentxReceipt.tokenName,
-          tokenSymbol: tokentxReceipt.tokenSymbol,
-          value: req.web3.utils.fromWei(String(tokentxReceipt.value), 'ether'),
-          date: timestamp
-        }
-      };
-      return tokentxData;
-    }));
-    const token_to_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
-      if (tokentxReceipt.to !== walletAddress.toLowerCase()) {
-        return tokentxReceipt.to;
-      } else {
-        return '';
-      }
-    });
-    const related_tokentx = [];
-    let address_idx = 0;
-    while (address_idx < token_to_addresses.length) {
-      let address = token_to_addresses[address_idx];
-      if (address !== "") {
-        const related_tokenTxlist = await req.etherscan.account.tokentx(
-          address,
-          contractAddress,
-          startBlockNum,
-          endBlockNum,
-          sort
-        );
-        const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
-          if (tokentxReceipt.to !== address.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
+      // walletAddress를 출발점으로 하는 ERC20 토큰 거래가 아닌 목록 제거
+      const selectedTokenTxlist = await Promise.all(tokenTxlist.result.filter(tokentxReceipt => {
+        if (tokentxReceipt.to !== walletAddress.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
           && tokentxReceipt.value !== '0') {
-            return tokentxReceipt;
+          return tokentxReceipt;
+        }
+      }));
+      const uniqueTokenTxlist = await Promise.all(selectedTokenTxlist.filter((addr, idx) => {
+        return (
+          selectedTokenTxlist.findIndex((addr2, idx) => {
+            return addr.to === addr2.to;
+          }) === idx
+        );
+      }));
+      const first_layer_tokentx = await Promise.all(uniqueTokenTxlist.map(tokentxReceipt => {
+        const timestamp = new Date(1000 * tokentxReceipt.timeStamp);
+        const tokentxData = {
+          tx: tokentxReceipt.hash,
+          data: {
+            from: tokentxReceipt.from,
+            to: tokentxReceipt.to,
+            tokenName: tokentxReceipt.tokenName,
+            tokenSymbol: tokentxReceipt.tokenSymbol,
+            value: req.web3.utils.fromWei(String(tokentxReceipt.value), 'ether'),
+            date: timestamp
           }
-        }));
-        const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
-          if (relatedTokenTxReceipt.to !== '' && relatedTokenTxReceipt.to !== undefined &&
-            relatedTokenTxReceipt.to !== relatedTokenTxReceipt.from && relatedTokenTxReceipt.value !== '0') {
-            const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
-            const tokentxData = {
-              tx: relatedTokenTxReceipt.hash,
-              data: {
-                from: relatedTokenTxReceipt.from,
-                to: relatedTokenTxReceipt.to,
-                tokenName: relatedTokenTxReceipt.tokenName,
-                tokenSymbol: relatedTokenTxReceipt.tokenSymbol,
-                value: req.web3.utils.fromWei(String(relatedTokenTxReceipt.value), 'ether'),
-                date: timestamp
-              }
-            };
-            return tokentxData;
-          }
-        }));
-        related_tokentx.push(address_related_tokentx);
-        address_idx++;
+        };
+        return tokentxData;
+      }));
+      const token_to_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
+        if (tokentxReceipt.to !== walletAddress.toLowerCase()) {
+          return tokentxReceipt.to;
+        } else {
+          return '';
+        }
+      });
+      const related_tokentx = [];
+      let address_idx = 0;
+      while (address_idx < token_to_addresses.length) {
+        let address = token_to_addresses[address_idx];
+        if (address !== "") {
+          const related_tokenTxlist = await req.etherscan.account.tokentx(
+            address,
+            contractAddress,
+            startBlockNum,
+            endBlockNum,
+            sort
+          );
+          const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
+            if (tokentxReceipt.to !== address.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
+              && tokentxReceipt.value !== '0') {
+              return tokentxReceipt;
+            }
+          }));
+          const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
+            if (relatedTokenTxReceipt.to !== '' && relatedTokenTxReceipt.to !== undefined &&
+              relatedTokenTxReceipt.to !== relatedTokenTxReceipt.from && relatedTokenTxReceipt.value !== '0') {
+              const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
+              const tokentxData = {
+                tx: relatedTokenTxReceipt.hash,
+                data: {
+                  from: relatedTokenTxReceipt.from,
+                  to: relatedTokenTxReceipt.to,
+                  tokenName: relatedTokenTxReceipt.tokenName,
+                  tokenSymbol: relatedTokenTxReceipt.tokenSymbol,
+                  value: req.web3.utils.fromWei(String(relatedTokenTxReceipt.value), 'ether'),
+                  date: timestamp
+                }
+              };
+              return tokentxData;
+            }
+          }));
+          related_tokentx.push(address_related_tokentx);
+          address_idx++;
+        }
       }
+      const tokentxChain = {
+        network: req.body.endpoint,
+        from: walletAddress,
+        startBlockNumber: String(startBlockNum),
+        endBlockNumber: String(endBlockNum),
+        first_depth: first_layer_tokentx,
+        second_depth: related_tokentx
+      };
+      eth_tokentx_traces.insertMany(tokentxChain, {upsert: true}).catch(err => {
+        console.log(err);
+      });
+    } else {
+      return cwr.createWebResp(res, header, 200, {
+        message: "Token transaction trace list already exists in database!",
+      });
     }
-    const tokentxChain = {
-      network: req.body.endpoint,
-      from: walletAddress,
-      startBlockNumber: String(startBlockNum),
-      endBlockNumber: String(endBlockNum),
-      first_depth: first_layer_tokentx,
-      second_depth: related_tokentx
-    };
-    eth_tokentx_traces.insertMany(tokentxChain, {upsert: true}).catch(err => {
-      console.log(err);
-    });
     return cwr.createWebResp(res, header, 200, {
       message: "Token transaction trace list loading Completed, database updated!",
     });
