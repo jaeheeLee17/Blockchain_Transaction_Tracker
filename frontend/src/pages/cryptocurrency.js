@@ -58,7 +58,7 @@ export const Cryptocurrency = (props) => {
         setDatas({ links: [], nodes: [], status: false });
         checkData();
       }else{
-        alert("invaild address");
+        alert("invalid address");
         setWalletAddress("");
         return;
       }
@@ -71,7 +71,7 @@ export const Cryptocurrency = (props) => {
       setDatas({ links: [], nodes: [], status: false });
       checkData();
     }else{
-      alert("invaild address");
+      alert("invalid address");
       setWalletAddress("");
       return;
     }
