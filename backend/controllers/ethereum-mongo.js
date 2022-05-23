@@ -27,7 +27,7 @@ const getETHTransactionsInfo = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const ETHTxInfos = await Wallet_transactions.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, ETHTxInfos);
+    return cwr.createWebResp(res, header, 200, ETHTxInfos[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transactions with source address failed', e.message || e);
@@ -38,7 +38,7 @@ const getTokenTxInfo = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const TokenTxInfos = await Wallet_ERC20_tx.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, TokenTxInfos);
+    return cwr.createWebResp(res, header, 200, TokenTxInfos[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transactions with source address failed', e.message || e);
@@ -50,7 +50,7 @@ const getTxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
     const TxChainFromList = await eth_tx_traces.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TxChainFromList);
+    return cwr.createWebResp(res, header, 200, TxChainFromList[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transaction tracking lists with source address failed', e.message || e);
@@ -62,7 +62,7 @@ const getTokentxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
     const TokentxChainFromList = await eth_tokentx_traces.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TokentxChainFromList);
+    return cwr.createWebResp(res, header, 200, TokentxChainFromList[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transaction trace lists with source address failed', e.message || e);
@@ -74,7 +74,7 @@ const getEthAccountRecord = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const ethAccount = await eth_account_traces.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, ethAccount);
+    return cwr.createWebResp(res, header, 200, ethAccount[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Ethereum Account Record failed', e.message || e);
@@ -86,7 +86,7 @@ const getERC20TokenAccountRecord = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const ERC20TokenAccount = await ERC20Token_account_traces.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, ERC20TokenAccount);
+    return cwr.createWebResp(res, header, 200, ERC20TokenAccount[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get ERC20Token Account Tracking information failed', e.message || e);
@@ -98,7 +98,7 @@ const getWalletRecord = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const Wallet = await Wallet_traces.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, Wallet);
+    return cwr.createWebResp(res, header, 200, Wallet[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Wallet Record failed', e.message || e);

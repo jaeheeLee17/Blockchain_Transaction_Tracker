@@ -91,7 +91,7 @@ export const Cryptocurrency = (props) => {
         console.log("checkData")
         const resNode = res.data.data;
         console.log(resNode)
-        if (resNode.length == 1) getTxChainFrom(walletAddress); //있으면 db에서 데이터 가져옴
+        if (resNode) getTxChainFrom(walletAddress); //있으면 db에서 데이터 가져옴
         else postToDB(walletAddress); //없으면 db에 data 저장
       })
       .catch((error) => {
@@ -112,11 +112,11 @@ export const Cryptocurrency = (props) => {
       .then((res) => {
         console.log("getTxChainFrom")
         const txChains = res.data.data;
-        if(txChains.length===0 || txChains[0].first_depth.length===0){
+        if(!txChains || txChains.first_depth.length===0){
           alert("no data");
           return;
         }
-        const net = txChains[0].network;
+        const net = txChains.network;
         if(net.length!==0) setNetwork(net);
         makeNodes(txChains);
       })
@@ -172,11 +172,11 @@ export const Cryptocurrency = (props) => {
   //노드 data 생성 부분
   const makeNodes = (txChains) => {
     console.log("make node")
-    if (txChains.length > 0) {
-      const first = txChains[0].first_depth;
+    if (txChains) {
+      const first = txChains.first_depth;
       let second;
-      if (txChains[0].second_depth[0] == null) second = null;
-      else second = txChains[0].second_depth;
+      if (txChains.second_depth[0] == null) second = null;
+      else second = txChains.second_depth;
 
       for (let i = 0; i < first.length; i++) {
         const n = {
