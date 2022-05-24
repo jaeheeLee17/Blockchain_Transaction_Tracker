@@ -42,83 +42,101 @@ export const WalletAddress = (props) => {
   const [token, setToken] = useState([]);
   const [total, setTotal] = useState(false);
   const [address, setAddress] = useState([]);
+  const [tx, setTx] = useState([]);
+  const [tokenTx, setTokenTx] = useState([]);
   const [name, setName] = React.useState("");
   const regHash = /^0x([A-Fa-f0-9]{64})$/;
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
 
-  const onClickButton = () => {
+  const onClickButton = async () => {
     if (web3.utils.isAddress(walletAddress)) {
       findAddr();
     } else {
-      alert("invaild address");
+      alert("invalid address");
       setWalletAddress("");
       return;
     }
   };
 
-  const onKeyPress = (e) => {
+  const onKeyPress = async (e) => {
     if (e.key === "Enter") {
       if (web3.utils.isAddress(walletAddress)) {
-        findAddr();
+        await findAddr();
       } else {
-        alert("invaild address");
+        alert("invalid address");
         setWalletAddress("");
         return;
       }
     }
   };
 
-  const handleChange = (event) => {
+  const handleChange = async (event) => {
     setNetwork(event.target.value);
   };
-  const handleChangeName = (event) => {
+  const handleChangeName = async (event) => {
     setName(event.target.value);
   };
 
-  const onKeyPressSearch = (e) => {
+  const onKeyPressSearch = async (e) => {
     if (e.key === "Enter") {
       if (regHash.test(address)) {
-        findAddr();
+        await findAddr();
       } else {
-        alert("invaild address");
+        alert("invalid address");
         setAddress("");
         return;
       }
     }
   };
+  async function findAddr() {
+    try {
+      const [
+        resultEtherBalance,
+        resultTokenBalance,
+        resultETHTxInfo,
+        resultTokenTxInfo,
+      ] = await Promise.all([
+        axios.get(apiUrl + "/eth/network/etherBalance", {
+          params: {
+            endpoint: network,
+            walletAddress: walletAddress,
+          },
+        }),
+        axios.get(apiUrl + "/eth/network/tokenBalanceList", {
+          params: {
+            endpoint: network,
+            walletAddress: walletAddress,
+          },
+        }),
+        axios.get(apiUrl + "/eth/db/ETHTxInfo", {
+          params: {
+            walletAddress: walletAddress,
+          },
+        }),
+        axios.get(apiUrl + "/eth/db/TokenTxInfo", {
+          params: {
+            walletAddress: walletAddress,
+          },
+        }),
+      ]);
 
-  function findAddr() {
-    axios
-      .get(apiUrl + "/eth/network/etherBalance", {
-        params: {
-          endpoint: network,
-          walletAddress: walletAddress,
-        },
-      })
-      .then((res) => {
-        const etherBalance = res.data.data;
-        setEth(etherBalance);
-      })
-      .catch((error) => {
-        console.dir(error);
-      });
-
-    axios
-      .get(apiUrl + "/eth/network/tokenBalanceList", {
-        params: {
-          endpoint: network,
-          walletAddress: walletAddress,
-        },
-      })
-      .then((res) => {
-        console.log(res.data.data);
-        const data = res.data.data.tokens;
-        setToken(data);
-        setTotal(true);
-      })
-      .catch((error) => {
-        console.dir(error);
-      });
+      console.log(
+        "resultEtherBalance, resultTokenBalance, resultETHTxInfo, resultTokenTxInfo",
+        resultEtherBalance,
+        resultTokenBalance,
+        resultETHTxInfo,
+        resultTokenTxInfo
+      );
+      setEth(resultEtherBalance?.data.data);
+      setToken(resultTokenBalance?.data.data.tokens);
+      setTotal(true);
+      console.log(resultETHTxInfo?.data.data[0]);
+      console.log(resultETHTxInfo?.data.data[0].transactions);
+      setTx(resultETHTxInfo?.data.data[0].transactions.slice(0, 6));
+      setTokenTx(resultTokenTxInfo?.data.data[0].transactions.slice(0, 6));
+    } catch (e) {
+      console.dir(e);
+    }
   }
 
   return (
@@ -141,7 +159,7 @@ export const WalletAddress = (props) => {
               <Box
                 sx={{
                   flexGrow: 1,
-                  maxWidth: 1000,
+                  // maxWidth: 1000,
                   display: "inline-flex",
                 }}
               >
@@ -195,25 +213,18 @@ export const WalletAddress = (props) => {
       </Container>
 
       <Divider />
-      <Box
-        sx={{
-          display: "flex-start",
-          justifyContent: "flex-end",
-          p: 2,
-        }}
-      >
+      <Box sx={{ width: "100%" }}>
         <>
-          <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              p: 3,
+              // width: 1300,
+            }}
+          >
             <Card>
-              <Box
-                sx={{
-                  alignItems: "center",
-                  display: "flex",
-                  flexGrow: 1,
-                  minHeight: "100%",
-                  justifyContent: "flex-start",
-                }}
-              >
+              <Box>
                 {total === false ? (
                   ""
                 ) : (
@@ -232,6 +243,7 @@ export const WalletAddress = (props) => {
                         justifyContent: "flex-start",
                         // display: "flex",
                         ml: -1,
+                        width: "100%",
                       }}
                     >
                       <Typography
@@ -306,57 +318,44 @@ export const WalletAddress = (props) => {
                       </Typography>
                     </Box>
                     <Divider />
+                    {/* <Box
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                    }}
+                    > */}
                     <Box
                       sx={{
                         alignItems: "center",
                         justifyContent: "flex-start",
-                        // display: "flex",
-                        // ml: 0,
                       }}
                     >
-                      {/* <Typography
-                        // color="textSecondary"
-                        gutterBottom
-                        variant="subtitle1"
-                        sx={{
-                          margin: 5,
-                        }}
-                      >
-                        <b>Ether Balance : </b> {eth.balance}
-                      </Typography> */}
-                      <Box
-                        sx={{
-                          alignItems: "center",
-                          justifyContent: "flex-start",
-                          display: "inline-flex",
-                        }}
-                      >
-                        <Card>
-                          <Typography
-                            // color="textSecondary"
-                            gutterBottom
-                            variant="subtitle1"
-                            sx={{
-                              margin: 5,
-                            }}
-                          >
-                            <b>Latest ETH Transaction </b>
-                          </Typography>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell></TableCell>
-                                <TableCell>Txn Hash</TableCell>
-                                <TableCell>Create</TableCell>
-                                <TableCell>Update</TableCell>
-                                <TableCell>Block</TableCell>
-                                <TableCell></TableCell>
-                                <TableCell>Value</TableCell>
-                                <TableCell></TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              <TableRow>
+                      <Card>
+                        <Typography
+                          gutterBottom
+                          variant="subtitle1"
+                          sx={{
+                            margin: 5,
+                            // width: 1500,
+                          }}
+                        >
+                          <b>ETH Transaction </b>
+                        </Typography>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell></TableCell>
+                              <TableCell>Txn Hash</TableCell>
+                              <TableCell>BlockNum</TableCell>
+                              <TableCell>date</TableCell>
+                              <TableCell></TableCell>
+                              <TableCell>Value</TableCell>
+                              <TableCell></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {tx.map((t) => (
+                              <TableRow key={t.id}>
                                 <TableCell>
                                   <Button
                                     color="inherit"
@@ -369,15 +368,156 @@ export const WalletAddress = (props) => {
                                     tx
                                   </Button>
                                 </TableCell>
-                                <TableCell>dd</TableCell>
-                                <TableCell>dd</TableCell>
-                                <TableCell>dd</TableCell>
+                                <TableCell>
+                                  {+t.transactionHash.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>{t.blockNum}</TableCell>
+                                <TableCell>{t.date.substring(0, 19)}</TableCell>
+                                <TableCell>
+                                  <b>from </b>
+                                  {+t.from.substring(0, 20) + "..."}
+                                  <br />
+                                  <b>to </b>
+                                  {t.to.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    color="secondary"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    {t.value}
+                                  </Button>
+                                </TableCell>
                               </TableRow>
-                            </TableBody>
-                          </Table>
-                        </Card>
-                      </Box>
+                            ))}
+                          </TableBody>
+                        </Table>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            p: 2,
+                          }}
+                        >
+                          <Button
+                            color="primary"
+                            endIcon={<ArrowRightIcon fontSize="small" />}
+                            size="small"
+                            variant="text"
+                            // onClick={onChangePage}
+                          >
+                            View more
+                          </Button>
+                        </Box>
+                      </Card>
                     </Box>
+                    <Divider />
+                    <Box
+                      sx={{
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                        // display: "inline-flex",
+                      }}
+                    >
+                      <Card>
+                        <Typography
+                          // color="textSecondary"
+                          gutterBottom
+                          variant="subtitle1"
+                          sx={{
+                            margin: 5,
+                            // width: 1500,
+                          }}
+                        >
+                          <b>ERC20 Token Transaction</b>
+                        </Typography>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell></TableCell>
+                              <TableCell>Txn Hash</TableCell>
+                              <TableCell>Token name</TableCell>
+                              {/* <TableCell>Token symbol</TableCell> */}
+                              {/* <TableCell>Token number</TableCell> */}
+                              <TableCell>Date</TableCell>
+                              <TableCell></TableCell>
+                              <TableCell>Contract address</TableCell>
+                              <TableCell>Value</TableCell>
+                              <TableCell></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {tokenTx.map((t) => (
+                              <TableRow key={t.id}>
+                                <TableCell>
+                                  <Button
+                                    color="inherit"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    tx
+                                  </Button>
+                                </TableCell>
+                                <TableCell>
+                                  {+t.transactionHash.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>{t.tokenName}</TableCell>
+                                {/* <TableCell>{t.tokenSymbol}</TableCell> */}
+                                {/* <TableCell>{t.tokenNumber}</TableCell> */}
+                                <TableCell>{t.date.substring(0, 19)}</TableCell>
+                                <TableCell>
+                                  <b>from </b>
+                                  {+t.from.substring(0, 20) + "..."}
+                                  <br />
+                                  <b>to </b>
+                                  {t.to.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  {t.contractAddress.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    color="secondary"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    {t.value}
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            p: 2,
+                          }}
+                        >
+                          <Button
+                            color="primary"
+                            endIcon={<ArrowRightIcon fontSize="small" />}
+                            size="small"
+                            variant="text"
+                            // onClick={onChangePage}
+                          >
+                            View more
+                          </Button>
+                        </Box>
+                      </Card>
+                    </Box>
+                    {/* </Box> */}
                   </Container>
                 )}
               </Box>

@@ -65,6 +65,7 @@ export const Graph = (props) => {
         sx={{
           p: 5,
           textAlign: "center",
+          width: "100%",
         }}
       >
         <LineChart
