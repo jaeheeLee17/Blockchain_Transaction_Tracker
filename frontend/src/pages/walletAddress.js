@@ -368,8 +368,27 @@ export const WalletAddress = (props) => {
                                     tx
                                   </Button>
                                 </TableCell>
+
                                 <TableCell>
-                                  {+t.transactionHash.substring(0, 20) + "..."}
+                                  <Link
+                                    as={"/transactiondetail"}
+                                    href={{
+                                      pathname: "/txDetail",
+                                      query: {
+                                        transactionHash: t.transactionHash,
+                                        date: t.date,
+                                        blockNum: t.blockNum,
+                                        value: t.value,
+                                        from: t.from,
+                                        to: t.to,
+                                      },
+                                    }}
+                                  >
+                                    <a>
+                                      {t.transactionHash.substring(0, 20) +
+                                        "..."}
+                                    </a>
+                                  </Link>
                                 </TableCell>
                                 <TableCell>{t.blockNum}</TableCell>
                                 <TableCell>{t.date.substring(0, 19)}</TableCell>
@@ -466,7 +485,29 @@ export const WalletAddress = (props) => {
                                   </Button>
                                 </TableCell>
                                 <TableCell>
-                                  {+t.transactionHash.substring(0, 20) + "..."}
+                                  <Link
+                                    as={"/transactiondetail"}
+                                    href={{
+                                      pathname: "/tokenDetail",
+                                      query: {
+                                        transactionHash: t.transactionHash,
+                                        blockNum: t.blockNum,
+                                        date: t.date,
+                                        contractAddress: t.contractAddress,
+                                        tokenName: t.tokenName,
+                                        tokenSymbol: t.tokenSymbol,
+                                        tokenNumber: t.tokenNumber,
+                                        from: t.from,
+                                        to: t.to,
+                                        value: t.value,
+                                      },
+                                    }}
+                                  >
+                                    <a>
+                                      {t.transactionHash.substring(0, 20) +
+                                        "..."}
+                                    </a>
+                                  </Link>
                                 </TableCell>
                                 <TableCell>{t.tokenName}</TableCell>
                                 {/* <TableCell>{t.tokenSymbol}</TableCell> */}
