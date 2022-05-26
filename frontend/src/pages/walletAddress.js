@@ -131,10 +131,10 @@ export const WalletAddress = (props) => {
       setEth(resultEtherBalance?.data.data);
       setToken(resultTokenBalance?.data.data.tokens);
       setTotal(true);
-      console.log(resultETHTxInfo?.data.data[0]);
-      console.log(resultETHTxInfo?.data.data[0].transactions);
-      setTx(resultETHTxInfo?.data.data[0].transactions.slice(0, 6));
-      setTokenTx(resultTokenTxInfo?.data.data[0].transactions.slice(0, 6));
+      console.log(resultETHTxInfo?.data.data.transactions);
+
+      setTx(resultETHTxInfo?.data.data.transactions.slice(0, 6));
+      setTokenTx(resultTokenTxInfo?.data.data.transactions.slice(0, 6));
     } catch (e) {
       console.dir(e);
     }
