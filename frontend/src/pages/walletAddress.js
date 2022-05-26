@@ -20,6 +20,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Grid,
   PerfectScrollbar,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
@@ -213,14 +214,14 @@ export const WalletAddress = (props) => {
       </Container>
 
       <Divider />
-      <Box sx={{ width: "100%" }}>
+      <Box>
         <>
           <Box
             sx={{
               display: "flex",
               justifyContent: "flex-start",
+              width: "100%",
               p: 3,
-              // width: 1300,
             }}
           >
             <Card>
