@@ -155,16 +155,18 @@ const postETHTxInfoWithAddress = async (req, res) => {
         sort,
       );
       const ETHTransactions = await Promise.all(txlist.result.map(ETHTx => {
-        const timestamp = new Date(1000 * ETHTx.timeStamp);
-        const ETHTxData = {
-          transactionHash: ETHTx.hash,
-          blockNum: ETHTx.blockNumber,
-          date: timestamp,
-          from: ETHTx.from,
-          to: ETHTx.to,
-          value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
-        };
-        return ETHTxData;
+        if (ETHTx.to !== "") {
+          const timestamp = new Date(1000 * ETHTx.timeStamp);
+          const ETHTxData = {
+            transactionHash: ETHTx.hash,
+            blockNum: ETHTx.blockNumber,
+            date: timestamp,
+            from: ETHTx.from,
+            to: ETHTx.to,
+            value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
+          };
+          return ETHTxData;
+        }
       }));
       const ETHTxInfo = {
         address: walletAddress,
@@ -203,19 +205,21 @@ const postTokenTxInfoWithAddress = async (req, res) => {
         sort,
       );
       const tokenTransactions = await Promise.all(tokenTxlist.result.map(tokenTx => {
-        const timestamp = new Date(1000 * tokenTx.timeStamp);
-        const tokenTxData = {
-          transactionHash: tokenTx.hash,
-          date: timestamp,
-          contractAddress: tokenTx.contractAddress,
-          from: tokenTx.from,
-          to: tokenTx.to,
-          tokenName: tokenTx.tokenName,
-          tokenSymbol: tokenTx.tokenSymbol,
-          tokenNumber: tokenTx.tokenDecimal,
-          value: req.web3.utils.fromWei(String(tokenTx.value), 'ether'),
-        };
-        return tokenTxData;
+        if (tokenTx.to !== "") {
+          const timestamp = new Date(1000 * tokenTx.timeStamp);
+          const tokenTxData = {
+            transactionHash: tokenTx.hash,
+            date: timestamp,
+            contractAddress: tokenTx.contractAddress,
+            from: tokenTx.from,
+            to: tokenTx.to,
+            tokenName: tokenTx.tokenName,
+            tokenSymbol: tokenTx.tokenSymbol,
+            tokenNumber: tokenTx.tokenDecimal,
+            value: req.web3.utils.fromWei(String(tokenTx.value), 'ether'),
+          };
+          return tokenTxData;
+        }
       }));
       const tokenTxInfo = {
         address: walletAddress,
