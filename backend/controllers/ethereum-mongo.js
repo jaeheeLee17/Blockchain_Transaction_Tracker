@@ -50,7 +50,40 @@ const getTxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
     const TxChainFromList = await eth_tx_traces.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TxChainFromList[0]);
+
+    const second = TxChainFromList[0]["second_depth"];
+    const uniqueArrforsecond = [];
+
+    for(let i = 0; i < second.length; i++) {
+      second[i].forEach(element => {
+        if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"])) {
+          uniqueArrforsecond.push(
+            {from: element["data"]["from"],
+              to: element["data"]["to"],
+              value: element["data"]["value"],
+              recentDate: element["data"]["date"],
+              tx: [element["tx"]],
+              count: 1});
+        }
+        else{
+          let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
+          uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
+          uniqueArrforsecond[index].count += 1;
+          uniqueArrforsecond[index].tx.push(element["tx"])
+        }
+      })
+    }
+
+    const result = {
+      network: TxChainFromList[0].network,
+      from: TxChainFromList[0].from,
+      startBlockNumber: TxChainFromList[0].startBlockNumber,
+      endBlockNumber: TxChainFromList[0].endBlockNumber,
+      first_depth: TxChainFromList[0].first_depth,
+      second_depth: uniqueArrforsecond
+    }
+
+    return cwr.createWebResp(res, header, 200, result);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transaction tracking lists with source address failed', e.message || e);
