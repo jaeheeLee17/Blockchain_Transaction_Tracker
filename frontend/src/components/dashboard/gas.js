@@ -32,6 +32,7 @@ export const Gas = (props) => {
     <Card
       sx={{
         height: 300,
+        width: 600,
       }}
       {...props}
     >

@@ -27,7 +27,7 @@ const getETHTransactionsInfo = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const ETHTxInfos = await Wallet_transactions.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, ETHTxInfos);
+    return cwr.createWebResp(res, header, 200, ETHTxInfos[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transactions with source address failed', e.message || e);
@@ -38,7 +38,7 @@ const getTokenTxInfo = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const TokenTxInfos = await Wallet_ERC20_tx.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, TokenTxInfos);
+    return cwr.createWebResp(res, header, 200, TokenTxInfos[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transactions with source address failed', e.message || e);
@@ -50,7 +50,40 @@ const getTxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
     const TxChainFromList = await eth_tx_traces.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TxChainFromList);
+
+    const second = TxChainFromList[0]["second_depth"];
+    const uniqueArrforsecond = [];
+
+    for(let i = 0; i < second.length; i++) {
+      second[i].forEach(element => {
+        if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"])) {
+          uniqueArrforsecond.push(
+            {from: element["data"]["from"],
+              to: element["data"]["to"],
+              value: element["data"]["value"],
+              recentDate: element["data"]["date"],
+              tx: [element["tx"]],
+              count: 1});
+        }
+        else{
+          let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
+          uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
+          uniqueArrforsecond[index].count += 1;
+          uniqueArrforsecond[index].tx.push(element["tx"])
+        }
+      })
+    }
+
+    const result = {
+      network: TxChainFromList[0].network,
+      from: TxChainFromList[0].from,
+      startBlockNumber: TxChainFromList[0].startBlockNumber,
+      endBlockNumber: TxChainFromList[0].endBlockNumber,
+      first_depth: TxChainFromList[0].first_depth,
+      second_depth: uniqueArrforsecond
+    }
+
+    return cwr.createWebResp(res, header, 200, result);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transaction tracking lists with source address failed', e.message || e);
@@ -62,7 +95,7 @@ const getTokentxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
     const TokentxChainFromList = await eth_tokentx_traces.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TokentxChainFromList);
+    return cwr.createWebResp(res, header, 200, TokentxChainFromList[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transaction trace lists with source address failed', e.message || e);
@@ -74,7 +107,7 @@ const getEthAccountRecord = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const ethAccount = await eth_account_traces.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, ethAccount);
+    return cwr.createWebResp(res, header, 200, ethAccount[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Ethereum Account Record failed', e.message || e);
@@ -86,7 +119,7 @@ const getERC20TokenAccountRecord = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const ERC20TokenAccount = await ERC20Token_account_traces.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, ERC20TokenAccount);
+    return cwr.createWebResp(res, header, 200, ERC20TokenAccount[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get ERC20Token Account Tracking information failed', e.message || e);
@@ -98,7 +131,7 @@ const getWalletRecord = async (req, res) => {
   try {
     const {walletAddress} = req.query;
     const Wallet = await Wallet_traces.find({"address": walletAddress});
-    return cwr.createWebResp(res, header, 200, Wallet);
+    return cwr.createWebResp(res, header, 200, Wallet[0]);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Wallet Record failed', e.message || e);
