@@ -214,9 +214,10 @@ export const Cryptocurrency = (props) => {
                                 value: second[i].value,
                                 address: second[i].to,
                                 dept: 2,
-                                count: second[i].count
+                                count: second[i].count,
+                                open:false
                             };
-                            if (second[i].count > 1) secondNode.tx = secondNode.address,secondNode.address = secondNode.count;
+                            if (second[i].count > 1) secondNode.address = secondNode.count;
                             const secondLink = {
                                 source: j + 2,
                                 target: nextNodes.length + 1,
@@ -226,76 +227,59 @@ export const Cryptocurrency = (props) => {
                             nextNodes[j + 1].hasChild = true;
                             nextLinks.push(secondLink);
                             nextNodes.push(secondNode);
-
-
-                            if (second[i].count > 1) {
-                                for (let k = 0; k < second[i].count; k++) {
-                                    const thirdNode = {
-                                        id: nextNodes.length + 1,
-                                        name: "node" + (nextNodes.length + 1) + "_node" + (j + k + 3),
-                                        tx: second[i].tx[k],
-                                        from: second[i].from,
-                                        to: second[i].to,
-                                        value: second[i].value,
-                                        address: second[i].to,
-                                        dept: 3,
-                                    };
-                                    const thirdLink = {
-                                        source: secondNode.id,
-                                        target: nextNodes.length + 1,
-                                    };
-
-                                    Link.push(thirdLink)
-                                    Node.push(thirdNode)
-                                }
-
-                            }
                         }
+                    }
+
+                }
+            }
+
+            //third dept
+            for (let i = 0; i < nextNodes.length - 1; i++) {
+                if (nextNodes[i].count > 1) {
+                    for (let k = 0; k < nextNodes[i].count; k++) {
+                        const thirdNode = {
+                            id: nextNodes.length + Node.length + 1,
+                            name: "node" + (nextNodes.length + Node.length + 1) + "_node" + (nextNodes[i].id),
+                            tx: nextNodes[i].tx[k],
+                            from: nextNodes[i].from,
+                            to: nextNodes[i].to,
+                            value: nextNodes[i].value,
+                            address: nextNodes[i].to,
+                            dept: 3,
+                            parent: nextNodes[i].id
+                        };
+                        const thirdLink = {
+                            source: nextNodes[i].id,
+                            target: nextNodes.length + Node.length + 1,
+                        };
+
+                        Link.push(thirdLink)
+                        Node.push(thirdNode)
                     }
                 }
             }
 
+
             for (let i = 0; i < nextNodes.length; i++) {
                 let item = nextNodes[i];
                 if (item.dept == 0) {
-                    //root지정
-                    (item.color = "#00460c"), (item.x = 200), (item.y = 400);
+                    (item.color = "#001c06"), (item.x = 200), (item.y = 400);
+                    item.size = 2000;
                 } else if (item.dept == 1) {
-                    item.color = "#2a982a";
+                    item.color = "#075607";
                     (item.x = 1280), (item.y = 400);
-                    // if (item.hasChild == true) {//dept1에서 자식 있는 노드
-                    //     if (d2 / 2 == cnt2) x2 = 800, y2 = 520;
-                    //     if (d2 / 2 <= cnt2) {
-                    //         (item.color = "#388e3c"), (item.x = 800 - x2), (item.y = 520 - y2) , x2 += 40, y2 += 15;
-                    //     } else {
-                    //         (item.color = "#388e3c"), (item.x = 800 + x2), (item.y = 520 + y2) , x2 += 40, y2 += 15;
-                    //     }
-                    //     cnt2++;
-                    // } else {//dept1에서 자식 없는 노드
-                    //     (item.color = "#388e3c"), (item.x = 800 + x1), (item.y = 520 + y1), x1 += 40, y1 += 15;
-                    //     cnt1++;
-                    // }
+                    item.size = 1500;
                 } else if (item.dept == 2) {
-                    //dept2
-                    // if (d3 / 2 == cnt3) x3 = 1000, y3 = 520;
-                    // if (d3 / 2 <= cnt3) {
-                    //     (item.color = "#6abf69"), (item.x = 1200 - x3), (item.y = 1000 - y3), x3 += 40, y3 += 15;
-                    // } else {
-                    //     (item.color = "#6abf69"), (item.x = 1200 + x3), (item.y = 1000 - +y3), x3 += 40, y3 += 15;
-                    // }
-                    // cnt3++;
                     if (item.count > 1) {
-                        item.color = "#ff2880";
-                        item.size = 2000;
+                        item.color = "#147914";
+                        item.size = 1500;
                     } else {
                         item.color = "#62c462";
                     }
                 }
             }
-            setDatas({links: nextLinks, nodes: nextNodes, status: true});
-            console.log(Link)
-            console.log(Node)
             setThird({links: Link, nodes: Node})
+            setDatas({links: nextLinks, nodes: nextNodes, status: true});
 
         } else {
             setDatas({
@@ -311,10 +295,24 @@ export const Cryptocurrency = (props) => {
         c.setAttribute("data-for", "root");
     };
 
+
     const onClickNode = function (nodeId, node) {
-        console.log(third)
         if (node.dept == 2 && node.count > 1) {
-            console.log(third)
+            if (node.open == false) {
+                const n = third.nodes.filter(findChild);
+                const l = third.links.filter(findLink);
+                for (let i = 0; i < n.length; i++) {
+                    datas.nodes.push(n[i])
+                    datas.links.push(l[i]);
+                }
+                datas.nodes[node.index].open = true;
+                setDatas({links: datas.links,nodes:datas.nodes,status: true})
+            }else{
+                datas.nodes = datas.nodes.filter(nodes => nodes.parent != node.id);
+                datas.links = datas.links.filter(links => links.source != node.id);
+                datas.nodes[node.index].open = false;
+                setDatas({links: datas.links,nodes:datas.nodes,status: true})
+            }
         } else {
             if (node.dept == 0) {
                 return;
@@ -324,6 +322,16 @@ export const Cryptocurrency = (props) => {
                     query: {data: node.tx, net: network},
                 });
             }
+        }
+
+        function findChild(element) {
+            if (element.parent == node.id)
+                return true;
+        }
+
+        function findLink(element) {
+            if (element.source == node.id)
+                return true;
         }
     };
 
@@ -336,6 +344,9 @@ export const Cryptocurrency = (props) => {
 
     const [toolContent, setToolContent] = useState([]);
     const onMouseOverNode = function (nodeId, node) {
+        if(node.count>1) {
+            return;
+        }
         const toolId = "toolId" + node.name;
         const element = [
             {
@@ -397,7 +408,7 @@ export const Cryptocurrency = (props) => {
             disableLinkForce: false,
         },
         node: {
-            color: "#4caf50",
+            color: "#62c462",
             fontColor: "black",
             fontSize: 8,
             fontWeight: "normal",
