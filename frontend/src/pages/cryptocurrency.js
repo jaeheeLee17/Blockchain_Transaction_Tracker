@@ -134,6 +134,7 @@ export const Cryptocurrency = (props) => {
                 const txChains = res.data.data;
                 if (!txChains || txChains.first_depth.length === 0) {
                     alert("no data");
+                    handleClose();
                     return;
                 }
                 const net = txChains.network;
@@ -253,7 +254,7 @@ export const Cryptocurrency = (props) => {
             }
 
             //third dept
-            for (let i = 0; i < nextNodes.length - 1; i++) {
+            for (let i = 0; i < nextNodes.length; i++) {
                 if (nextNodes[i].count > 1) {
                     for (let k = 0; k < nextNodes[i].count; k++) {
                         const thirdNode = {
@@ -298,6 +299,7 @@ export const Cryptocurrency = (props) => {
                 }
             }
             handleClose();
+            console.log(Node)
             setThird({links: Link, nodes: Node})
             setDatas({links: nextLinks, nodes: nextNodes, status: true});
         } else {
@@ -308,6 +310,7 @@ export const Cryptocurrency = (props) => {
                 status: true,
             });
             alert("no data");
+            handleClose();
         }
         const g = document.getElementById("1");
         const c = g.childNodes[0];
@@ -319,6 +322,7 @@ export const Cryptocurrency = (props) => {
     const onClickNode = function (nodeId, node) {
         if (node.dept == 2 && node.count > 1) {
             if (node.open == false) {
+                console.log("open")
                 const n = third.nodes.filter(findChild);
                 const l = third.links.filter(findLink);
                 for (let i = 0; i < n.length; i++) {
@@ -326,11 +330,15 @@ export const Cryptocurrency = (props) => {
                     datas.links.push(l[i]);
                 }
                 datas.nodes[node.index].open = true;
+                console.log(datas)
+                console.log(third)
                 setDatas({links: datas.links, nodes: datas.nodes, status: true})
             } else {
+                console.log("close")
                 datas.nodes = datas.nodes.filter(nodes => nodes.parent != node.id);
                 datas.links = datas.links.filter(links => links.source != node.id);
                 datas.nodes[node.index].open = false;
+                console.log(datas)
                 setDatas({links: datas.links, nodes: datas.nodes, status: true})
             }
         } else {
@@ -486,7 +494,7 @@ export const Cryptocurrency = (props) => {
                     }}
                 />
                 <Typography sx={{m: 0}} variant="h4">
-                    Address Dashboard
+                    ETH Dashboard
                 </Typography>
                 <Box sx={{mt: 1}}>
                     <Card>
