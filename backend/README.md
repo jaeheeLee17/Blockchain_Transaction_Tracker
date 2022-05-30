@@ -2,7 +2,22 @@
 블록체인 거래 추적 시스템 - 개발자 메뉴얼
 
 ## Database Installation (Docker Version)
+1. docker 설치
+```shell
+$ sudo apt-get install docker
+```
 
+2. mongoDB install
+```shell
+$ docker pull mongo
+$ docker run --name test_name \ 
+    -p 27017:27017 \
+    -e MONGO_INITDB_ROOT_USERNAME=USERNAME \ 
+    -e MONGO_INITDB_ROOT_PASSWORD=PASSWORD \ 
+    -d mongo:latest
+    
+$ docker exec -it test_name bash
+```
 
 ## Application Installation
 1. github 코드 다운로드
