@@ -12,7 +12,7 @@ import {
     InputAdornment,
     SvgIcon,
     Typography,
-    Container, FormControl, InputLabel, Select, MenuItem,
+    Container, FormControl, InputLabel, Select, MenuItem, Modal
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
@@ -20,14 +20,31 @@ import {DashboardLayout} from "../components/dashboard-layout";
 import {Search as SearchIcon} from "../icons/search";
 import ReactTooltip from "react-tooltip";
 import Web3 from "web3";
-import Link from "next/link"
 import Router from "next/router";
 
 
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
+
+
 export const Cryptocurrency = (props) => {
+
     const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
     const [walletAddress, setWalletAddress] = useState("");
     const [network, setNetwork] = React.useState('mainnet');
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
     const onChangePage = (e) => {
         window.location.href = "/transactionNodeDetail";
     };
@@ -58,6 +75,7 @@ export const Cryptocurrency = (props) => {
         if (e.key === "Enter") {
             if (web3.utils.isAddress(walletAddress)) {
                 setDatas({links: [], nodes: [], status: false});
+                handleOpen();
                 checkData();
             } else {
                 alert("invalid address");
@@ -71,6 +89,7 @@ export const Cryptocurrency = (props) => {
     const onClickButton = () => {
         if (web3.utils.isAddress(walletAddress)) {
             setDatas({links: [], nodes: [], status: false});
+            handleOpen();
             checkData();
         } else {
             alert("invalid address");
@@ -215,7 +234,7 @@ export const Cryptocurrency = (props) => {
                                 address: second[i].to,
                                 dept: 2,
                                 count: second[i].count,
-                                open:false
+                                open: false
                             };
                             if (second[i].count > 1) secondNode.address = secondNode.count;
                             const secondLink = {
@@ -278,10 +297,11 @@ export const Cryptocurrency = (props) => {
                     }
                 }
             }
+            handleClose();
             setThird({links: Link, nodes: Node})
             setDatas({links: nextLinks, nodes: nextNodes, status: true});
-
         } else {
+            handleClose();
             setDatas({
                 nodes: [{id: 1, from: walletAddress, address: walletAddress}],
                 links: [],
@@ -306,12 +326,12 @@ export const Cryptocurrency = (props) => {
                     datas.links.push(l[i]);
                 }
                 datas.nodes[node.index].open = true;
-                setDatas({links: datas.links,nodes:datas.nodes,status: true})
-            }else{
+                setDatas({links: datas.links, nodes: datas.nodes, status: true})
+            } else {
                 datas.nodes = datas.nodes.filter(nodes => nodes.parent != node.id);
                 datas.links = datas.links.filter(links => links.source != node.id);
                 datas.nodes[node.index].open = false;
-                setDatas({links: datas.links,nodes:datas.nodes,status: true})
+                setDatas({links: datas.links, nodes: datas.nodes, status: true})
             }
         } else {
             if (node.dept == 0) {
@@ -344,7 +364,7 @@ export const Cryptocurrency = (props) => {
 
     const [toolContent, setToolContent] = useState([]);
     const onMouseOverNode = function (nodeId, node) {
-        if(node.count>1) {
+        if (node.count > 1) {
             return;
         }
         const toolId = "toolId" + node.name;
@@ -379,6 +399,10 @@ export const Cryptocurrency = (props) => {
 
     const handleChange = (event) => {
         setNetwork(event.target.value);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
     };
     const myConfig = {
         automaticRearrangeAfterDropNode: false,
@@ -448,6 +472,7 @@ export const Cryptocurrency = (props) => {
             strokeLinecap: "butt",
         },
     };
+
 
     return (
         <Card {...props}>
@@ -549,6 +574,21 @@ export const Cryptocurrency = (props) => {
                     )
                 }
             </Box>
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="modal-modal-title" variant="h4" component="h2" textAlign={"center"}>
+                        loading...
+                    </Typography>
+                    <Typography id="modal-modal-description" sx={{mt: 2}} textAlign={"center"} variant="h6">
+                        searching for your walletAddress
+                    </Typography>
+                </Box>
+            </Modal>
             <Divider/>
             <Box
                 sx={{
