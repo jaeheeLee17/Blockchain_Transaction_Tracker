@@ -121,13 +121,13 @@ export const Token = (props) => {
     const getTxChainFrom = (address) => {
         console.log(address)
         axios
-            .get(apiUrl + "/eth/db/TokentxChainFrom", {
+            .get(apiUrl + "/eth/db/TokentxChainTo", {
                 params: {
                     source: address
                 },
             })
             .then((res) => {
-                console.log("TokentxChainFrom")
+                console.log("TokentxChainTo")
                 console.log(res)
                 const txChains = res.data.data;
                 if (!txChains || txChains.first_depth.length === 0) {
