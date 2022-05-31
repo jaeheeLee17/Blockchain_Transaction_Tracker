@@ -175,6 +175,7 @@ export const WalletAddress = (props) => {
     axios
       .post(apiUrl + "/eth/network/walletTrace", {
         endpoint: network,
+        walletAddress: walletAddress
       })
       .then((res) => {
         getTxChainFrom();
