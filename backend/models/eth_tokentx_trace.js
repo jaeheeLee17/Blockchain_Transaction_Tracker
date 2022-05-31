@@ -6,7 +6,7 @@ const Eth_tokentx_trace_schema = new Schema({
     type: String,
     required: true
   },
-  from: {
+  to: {
     type: String,
     required: true,
     unique: true
