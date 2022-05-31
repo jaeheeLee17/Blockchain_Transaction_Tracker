@@ -40,7 +40,9 @@ export const WalletAddress = (props) => {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [eth, setEth] = useState([]);
+  const [totalEth, setTotalEth] = useState([]);
   const [token, setToken] = useState([]);
+  const [totalTk, setTotalTk] = useState([]);
   const [total, setTotal] = useState(false);
   const [address, setAddress] = useState([]);
   const [tx, setTx] = useState([]);
@@ -51,7 +53,8 @@ export const WalletAddress = (props) => {
 
   const onClickButton = async () => {
     if (web3.utils.isAddress(walletAddress)) {
-      findAddr();
+      await findAddr();
+      checkData();
     } else {
       alert("invalid address");
       setWalletAddress("");
@@ -63,6 +66,7 @@ export const WalletAddress = (props) => {
     if (e.key === "Enter") {
       if (web3.utils.isAddress(walletAddress)) {
         await findAddr();
+        checkData();
       } else {
         alert("invalid address");
         setWalletAddress("");
@@ -78,6 +82,24 @@ export const WalletAddress = (props) => {
     setName(event.target.value);
   };
 
+  const onChangeEthPage = (e) => {
+    Router.push({
+      // as: "/transactiondetail",
+      pathname: "moreEthTransaction",
+      query: {
+        data: JSON.stringify(totalEth),
+      },
+    });
+  };
+  const onChangeTokenPage = (e) => {
+    Router.push({
+      pathname: "moreTkTransaction",
+      // as: "/transactiondetail",
+      query: {
+        data: JSON.stringify(totalTk),
+      },
+    });
+  };
   const onKeyPressSearch = async (e) => {
     if (e.key === "Enter") {
       if (regHash.test(address)) {
@@ -91,12 +113,7 @@ export const WalletAddress = (props) => {
   };
   async function findAddr() {
     try {
-      const [
-        resultEtherBalance,
-        resultTokenBalance,
-        resultETHTxInfo,
-        resultTokenTxInfo,
-      ] = await Promise.all([
+      const [resultEtherBalance, resultTokenBalance] = await Promise.all([
         axios.get(apiUrl + "/eth/network/etherBalance", {
           params: {
             endpoint: network,
@@ -109,36 +126,136 @@ export const WalletAddress = (props) => {
             walletAddress: walletAddress,
           },
         }),
-        axios.get(apiUrl + "/eth/db/ETHTxInfo", {
-          params: {
-            walletAddress: walletAddress,
-          },
-        }),
-        axios.get(apiUrl + "/eth/db/TokenTxInfo", {
-          params: {
-            walletAddress: walletAddress,
-          },
-        }),
       ]);
 
       console.log(
-        "resultEtherBalance, resultTokenBalance, resultETHTxInfo, resultTokenTxInfo",
+        "resultEtherBalance, resultTokenBalance",
         resultEtherBalance,
-        resultTokenBalance,
-        resultETHTxInfo,
-        resultTokenTxInfo
+        resultTokenBalance
       );
       setEth(resultEtherBalance?.data.data);
       setToken(resultTokenBalance?.data.data.tokens);
       setTotal(true);
-      console.log(resultETHTxInfo?.data.data.transactions);
-
-      setTx(resultETHTxInfo?.data.data.transactions.slice(0, 6));
-      setTokenTx(resultTokenTxInfo?.data.data.transactions.slice(0, 6));
     } catch (e) {
       console.dir(e);
     }
   }
+
+  const checkData = async () => {
+    axios
+      .get(apiUrl + "/eth/db/walletTrace", {
+        params: {
+          endpoint: network,
+          walletAddress: walletAddress,
+        },
+      })
+      .then((res) => {
+        console.log("checkData");
+        console.log(res);
+        const result = res.data.data;
+
+        if (!result) postToDB(walletAddress);
+        else {
+          getTxChainFrom();
+        }
+      })
+      .catch((error) => {
+        console.dir(error);
+      });
+  };
+
+  //db에 data 쌓는 부분
+  const postToDB = (wallet) => {
+    //modal 띄우기
+    axios
+      .post(apiUrl + "/eth/network/walletTrace", {
+        endpoint: network,
+      })
+      .then((res) => {
+        getTxChainFrom();
+      })
+      .catch((error) => {
+        console.dir(error);
+        setWalletAddress("");
+        alert("no such data at " + network + " network");
+        return;
+      });
+  };
+
+  //db에서 있는 데이터 가져옴
+  const getTxChainFrom = () => {
+    axios
+      .get(apiUrl + "/eth/db/ETHTxInfo", {
+        params: {
+          walletAddress: walletAddress,
+        },
+      })
+      .then((res) => {
+        console.log("ETHTxInfo");
+        const resultETHTxInfo = res.data.data;
+        if (resultETHTxInfo == undefined) {
+          axios
+            .post(apiUrl + "/eth/network/ETHTxlist", {
+              endpoint: network,
+              walletAddress: walletAddress,
+              startBlockNum: "1",
+              endBlockNum: "latest",
+              page: "1",
+              offset: "100",
+              sort: "desc",
+            })
+            .then((res) => {
+              console.log(res);
+              if (res.data == 200) {
+                getTxChainFrom();
+              }
+            });
+        } else {
+          setTx(resultETHTxInfo?.transactions.slice(0, 6));
+          setTotalEth(resultETHTxInfo?.transactions);
+        }
+        getTkChainFrom();
+      })
+      .catch((error) => {
+        console.dir(error);
+      });
+
+    const getTkChainFrom = () => {
+      axios
+        .get(apiUrl + "/eth/db/TokenTxInfo", {
+          params: {
+            walletAddress: walletAddress,
+          },
+        })
+        .then((res) => {
+          console.log("TokenTxInfo");
+          const resultTokenTxInfo = res.data.data;
+          if (resultTokenTxInfo == undefined) {
+            axios
+              .post(apiUrl + "/eth/network/tokentxlist", {
+                endpoint: network,
+                walletAddress: walletAddress,
+                contractAddress: "",
+                startBlockNum: "1",
+                endBlockNum: "latest",
+                sort: "desc",
+              })
+              .then((res) => {
+                console.log(res);
+                if (res.data == 200) {
+                  getTkChainFrom();
+                }
+              });
+          } else {
+            setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
+            setTotalTk(resultTokenTxInfo?.transactions);
+          }
+        })
+        .catch((error) => {
+          console.dir(error);
+        });
+    };
+  };
 
   return (
     <Card {...props}>
@@ -152,7 +269,7 @@ export const WalletAddress = (props) => {
           }}
         />
         <Typography sx={{ m: 0 }} variant="h4">
-          Wallet Address Dashboard {network}
+          Wallet Address Dashboard
         </Typography>
         <Box sx={{ mt: 1 }}>
           <Card>
@@ -226,137 +343,155 @@ export const WalletAddress = (props) => {
           >
             <Card>
               <Box>
-                {total === false ? (
+                {/* {total === false ? (
                   ""
-                ) : (
-                  <Container>
-                    <Box sx={{ my: 3 }}>
-                      <Typography color="grey.600" variant="h5" fontSize={30}>
-                        Overview
-                      </Typography>
-                      <br />
-                      <Divider />
-                    </Box>
+                ) : ( */}
+                <Container>
+                  <Box sx={{ my: 3 }}>
+                    <Typography color="grey.600" variant="h5" fontSize={30}>
+                      Overview
+                    </Typography>
+                    <br />
+                    <Divider />
+                  </Box>
 
-                    <Box
+                  <Box
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                      // display: "flex",
+                      ml: -1,
+                      width: "100%",
+                    }}
+                  >
+                    <Typography
+                      // color="textSecondary"
+                      gutterBottom
+                      variant="subtitle1"
                       sx={{
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                        // display: "flex",
-                        ml: -1,
-                        width: "100%",
+                        margin: 5,
                       }}
                     >
-                      <Typography
-                        // color="textSecondary"
-                        gutterBottom
-                        variant="subtitle1"
-                        sx={{
-                          margin: 5,
-                        }}
-                      >
-                        <b>Ether Balance : </b> {eth.balance}
-                      </Typography>
+                      <b>Ether Balance : </b>
 
-                      <Divider />
-                      <Typography
-                        // color="textSecondary"
-                        gutterBottom
-                        variant="subtitle1"
+                      {eth.balance}
+                    </Typography>
+
+                    <Divider />
+                    <Typography
+                      // color="textSecondary"
+                      gutterBottom
+                      variant="subtitle1"
+                      sx={{
+                        margin: 5,
+                      }}
+                    >
+                      <Box />
+                      <Box
                         sx={{
-                          margin: 5,
+                          alignItems: "center",
+                          justifyContent: "flex-start",
+                          display: "inline-flex",
+                          width: 600,
                         }}
                       >
-                        <Box />
-                        <Box
-                          sx={{
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            display: "inline-flex",
-                          }}
-                        >
-                          <b>Token Balance :</b>
-                          <Box>
-                            <FormControl sx={{ m: 1, minWidth: 300 }}>
-                              <InputLabel
-                                id="demo-simple-select-label"
-                                sx={{
-                                  width: 300,
-                                }}
-                              >
-                                Token
-                              </InputLabel>
-                              <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={name}
-                                label="name"
-                                onChange={handleChangeName}
-                              >
-                                {token.map((tk) => (
-                                  <MenuItem value={tk.name} key={tk.name}>
-                                    <Typography>
-                                      {tk.name} ({tk.symbol})
-                                      <br />
-                                    </Typography>
-                                    <Typography
-                                      color="textSecondary"
-                                      gutterBottom
-                                      variant="body2"
-                                    >
-                                      {tk.balance} {tk.symbol}
-                                    </Typography>
-                                  </MenuItem>
-                                ))}
-                                {/* <MenuItem value={"ropsten"}>ropsten</MenuItem>
+                        <b>Token Balance :</b>
+                        <Box>
+                          <FormControl sx={{ m: 1, minWidth: 300 }}>
+                            <InputLabel
+                              id="demo-simple-select-label"
+                              sx={{
+                                width: 300,
+                              }}
+                            >
+                              Token
+                            </InputLabel>
+                            <Select
+                              labelId="demo-simple-select-label"
+                              id="demo-simple-select"
+                              value={name}
+                              label="name"
+                              onChange={handleChangeName}
+                            >
+                              {token.map((tk) => (
+                                <MenuItem value={tk.name} key={tk.id}>
+                                  <Typography>
+                                    {tk.name} ({tk.symbol})
+                                    <br />
+                                  </Typography>
+                                  <Typography
+                                    color="textSecondary"
+                                    gutterBottom
+                                    variant="body2"
+                                  >
+                                    {tk.balance} {tk.symbol}
+                                  </Typography>
+                                </MenuItem>
+                              ))}
+                              {/* <MenuItem value={"ropsten"}>ropsten</MenuItem>
                               <MenuItem value={"rinkeby"}>rinkeby</MenuItem>
 
                               <MenuItem value={"kovan"}>kovan</MenuItem> */}
-                              </Select>
-                            </FormControl>
-                          </Box>
+                            </Select>
+                          </FormControl>
                         </Box>
-                      </Typography>
-                    </Box>
-                    <Divider />
-                    {/* <Box
+                      </Box>
+                    </Typography>
+                  </Box>
+                  {/* <Divider /> */}
+                  {/* <Box
                     sx={{
                       alignItems: "center",
                       justifyContent: "flex-start",
                     }}
                     > */}
-                    <Box
-                      sx={{
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                      }}
-                    >
-                      <Card>
-                        <Typography
-                          gutterBottom
-                          variant="subtitle1"
-                          sx={{
-                            margin: 5,
-                            // width: 1500,
-                          }}
-                        >
-                          <b>ETH Transaction </b>
-                        </Typography>
-                        <Table>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell></TableCell>
-                              <TableCell>Txn Hash</TableCell>
-                              <TableCell>BlockNum</TableCell>
-                              <TableCell>date</TableCell>
-                              <TableCell></TableCell>
-                              <TableCell>Value</TableCell>
-                              <TableCell></TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {tx.map((t) => (
-                              <TableRow key={t.id}>
+                  <Box
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    {/* {tx.length == 0 ? (
+                        <div></div>
+                      ) : ( */}
+                    <Card>
+                      <Typography
+                        gutterBottom
+                        variant="subtitle1"
+                        sx={{
+                          margin: 5,
+                          // width: 1500,
+                        }}
+                      >
+                        <b>ETH Transaction </b>
+                      </Typography>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell>Txn Hash</TableCell>
+                            <TableCell>BlockNum</TableCell>
+                            <TableCell>date</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell>Value</TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {/* {tx.length == 0 ? (
+                              <Typography
+                                variant="inherit"
+                                sx={{
+                                  margin: 1,
+                                  textAlign: "center",
+                                }}
+                              >
+                                no data
+                              </Typography>
+                            ) : ( */}
+                          {
+                            tx.map((t) => (
+                              <TableRow key={t.transactionHash}>
                                 <TableCell>
                                   <Button
                                     color="inherit"
@@ -413,155 +548,161 @@ export const WalletAddress = (props) => {
                                   </Button>
                                 </TableCell>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            p: 2,
-                          }}
+                            ))
+                            // )
+                          }
+                        </TableBody>
+                      </Table>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          p: 2,
+                        }}
+                      >
+                        <Button
+                          color="primary"
+                          endIcon={<ArrowRightIcon fontSize="small" />}
+                          size="small"
+                          variant="text"
+                          onClick={onChangeEthPage}
                         >
-                          <Button
-                            color="primary"
-                            endIcon={<ArrowRightIcon fontSize="small" />}
-                            size="small"
-                            variant="text"
-                            // onClick={onChangePage}
-                          >
-                            View more
-                          </Button>
-                        </Box>
-                      </Card>
-                    </Box>
-                    <Divider />
-                    <Box
-                      sx={{
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                        // display: "inline-flex",
-                      }}
-                    >
-                      <Card>
-                        <Typography
-                          // color="textSecondary"
-                          gutterBottom
-                          variant="subtitle1"
-                          sx={{
-                            margin: 5,
-                            // width: 1500,
-                          }}
-                        >
-                          <b>ERC20 Token Transaction</b>
-                        </Typography>
-                        <Table>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell></TableCell>
-                              <TableCell>Txn Hash</TableCell>
-                              <TableCell>Token name</TableCell>
-                              {/* <TableCell>Token symbol</TableCell> */}
-                              {/* <TableCell>Token number</TableCell> */}
-                              <TableCell>Date</TableCell>
-                              <TableCell></TableCell>
-                              <TableCell>Contract address</TableCell>
-                              <TableCell>Value</TableCell>
-                              <TableCell></TableCell>
+                          View more
+                        </Button>
+                      </Box>
+                    </Card>
+                    {/* )} */}
+                  </Box>
+                  <Divider />
+                  <Box
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                      // display: "inline-flex",
+                    }}
+                  >
+                    {/* {tokenTx.length == 0 ? (
+                        <div></div>
+                      ) : ( */}
+                    <Card>
+                      <Typography
+                        // color="textSecondary"
+                        gutterBottom
+                        variant="subtitle1"
+                        sx={{
+                          margin: 5,
+                          // width: 1500,
+                        }}
+                      >
+                        <b>ERC20 Token Transaction</b>
+                      </Typography>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell>Txn Hash</TableCell>
+                            <TableCell>Token name</TableCell>
+                            {/* <TableCell>Token symbol</TableCell> */}
+                            {/* <TableCell>Token number</TableCell> */}
+                            <TableCell>Date</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell>Contract address</TableCell>
+                            <TableCell>Value</TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {tokenTx.map((t) => (
+                            <TableRow key={t.transactionHash}>
+                              <TableCell>
+                                <Button
+                                  color="inherit"
+                                  // disabled={formik.isSubmitting}
+                                  fullWidth
+                                  size="small"
+                                  type="submit"
+                                  variant="contained"
+                                >
+                                  tx
+                                </Button>
+                              </TableCell>
+                              <TableCell>
+                                <Link
+                                  as={"/transactiondetail"}
+                                  href={{
+                                    pathname: "/tokenDetail",
+                                    query: {
+                                      transactionHash: t.transactionHash,
+                                      blockNum: t.blockNum,
+                                      date: t.date,
+                                      contractAddress: t.contractAddress,
+                                      tokenName: t.tokenName,
+                                      tokenSymbol: t.tokenSymbol,
+                                      tokenNumber: t.tokenNumber,
+                                      from: t.from,
+                                      to: t.to,
+                                      value: t.value,
+                                    },
+                                  }}
+                                >
+                                  <a>
+                                    {t.transactionHash.substring(0, 20) + "..."}
+                                  </a>
+                                </Link>
+                              </TableCell>
+                              <TableCell>{t.tokenName}</TableCell>
+                              {/* <TableCell>{t.tokenSymbol}</TableCell> */}
+                              {/* <TableCell>{t.tokenNumber}</TableCell> */}
+                              <TableCell>{t.date.substring(0, 19)}</TableCell>
+                              <TableCell>
+                                <b>from </b>
+                                {+t.from.substring(0, 20) + "..."}
+                                <br />
+                                <b>to </b>
+                                {t.to.substring(0, 20) + "..."}
+                              </TableCell>
+                              <TableCell>
+                                {t.contractAddress.substring(0, 20) + "..."}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  color="secondary"
+                                  // disabled={formik.isSubmitting}
+                                  fullWidth
+                                  size="small"
+                                  type="submit"
+                                  variant="contained"
+                                >
+                                  {t.value}
+                                </Button>
+                              </TableCell>
                             </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {tokenTx.map((t) => (
-                              <TableRow key={t.id}>
-                                <TableCell>
-                                  <Button
-                                    color="inherit"
-                                    // disabled={formik.isSubmitting}
-                                    fullWidth
-                                    size="small"
-                                    type="submit"
-                                    variant="contained"
-                                  >
-                                    tx
-                                  </Button>
-                                </TableCell>
-                                <TableCell>
-                                  <Link
-                                    as={"/transactiondetail"}
-                                    href={{
-                                      pathname: "/tokenDetail",
-                                      query: {
-                                        transactionHash: t.transactionHash,
-                                        blockNum: t.blockNum,
-                                        date: t.date,
-                                        contractAddress: t.contractAddress,
-                                        tokenName: t.tokenName,
-                                        tokenSymbol: t.tokenSymbol,
-                                        tokenNumber: t.tokenNumber,
-                                        from: t.from,
-                                        to: t.to,
-                                        value: t.value,
-                                      },
-                                    }}
-                                  >
-                                    <a>
-                                      {t.transactionHash.substring(0, 20) +
-                                        "..."}
-                                    </a>
-                                  </Link>
-                                </TableCell>
-                                <TableCell>{t.tokenName}</TableCell>
-                                {/* <TableCell>{t.tokenSymbol}</TableCell> */}
-                                {/* <TableCell>{t.tokenNumber}</TableCell> */}
-                                <TableCell>{t.date.substring(0, 19)}</TableCell>
-                                <TableCell>
-                                  <b>from </b>
-                                  {+t.from.substring(0, 20) + "..."}
-                                  <br />
-                                  <b>to </b>
-                                  {t.to.substring(0, 20) + "..."}
-                                </TableCell>
-                                <TableCell>
-                                  {t.contractAddress.substring(0, 20) + "..."}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    color="secondary"
-                                    // disabled={formik.isSubmitting}
-                                    fullWidth
-                                    size="small"
-                                    type="submit"
-                                    variant="contained"
-                                  >
-                                    {t.value}
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            p: 2,
-                          }}
+                          ))}
+                        </TableBody>
+                      </Table>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          p: 2,
+                        }}
+                      >
+                        <Button
+                          color="primary"
+                          endIcon={<ArrowRightIcon fontSize="small" />}
+                          size="small"
+                          variant="text"
+                          onClick={onChangeTokenPage}
                         >
-                          <Button
-                            color="primary"
-                            endIcon={<ArrowRightIcon fontSize="small" />}
-                            size="small"
-                            variant="text"
-                            // onClick={onChangePage}
-                          >
-                            View more
-                          </Button>
-                        </Box>
-                      </Card>
-                    </Box>
-                    {/* </Box> */}
-                  </Container>
-                )}
+                          View more
+                        </Button>
+                      </Box>
+                    </Card>
+                    {/* )} */}
+                  </Box>
+                  {/* </Box> */}
+                </Container>
+                {/* )} */}
               </Box>
             </Card>
           </Box>

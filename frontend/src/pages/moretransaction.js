@@ -28,7 +28,7 @@ const Moretransaction = (props) => {
   const [latest, setLatest] = useState([]);
   useEffect(() => {
     axios
-      .get(apiUrl+"/eth/db/latestTransaction", {})
+      .get(apiUrl + "/eth/db/latestTransaction", {})
       .then((res) => {
         console.log(res.data.data);
         setTransaction(res.data.data);
