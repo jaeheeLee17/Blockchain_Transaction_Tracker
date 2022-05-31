@@ -22,6 +22,7 @@ import {
   TableRow,
   Grid,
   PerfectScrollbar,
+  Modal,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import { DashboardLayout } from "../components/dashboard-layout";
@@ -37,23 +38,26 @@ export const WalletAddress = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
   const [network, setNetwork] = React.useState("mainnet");
   const onChangeAddress = (e) => setWalletAddress(e.target.value);
-
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [eth, setEth] = useState([]);
   const [totalEth, setTotalEth] = useState([]);
   const [token, setToken] = useState([]);
   const [totalTk, setTotalTk] = useState([]);
   const [total, setTotal] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const [address, setAddress] = useState([]);
   const [tx, setTx] = useState([]);
   const [tokenTx, setTokenTx] = useState([]);
   const [name, setName] = React.useState("");
+  const [open, setOpen] = React.useState(false);
   const regHash = /^0x([A-Fa-f0-9]{64})$/;
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
 
   const onClickButton = async () => {
     if (web3.utils.isAddress(walletAddress)) {
       await findAddr();
+      handleOpen();
       checkData();
     } else {
       alert("invalid address");
@@ -66,6 +70,7 @@ export const WalletAddress = (props) => {
     if (e.key === "Enter") {
       if (web3.utils.isAddress(walletAddress)) {
         await findAddr();
+        handleOpen();
         checkData();
       } else {
         alert("invalid address");
@@ -206,13 +211,16 @@ export const WalletAddress = (props) => {
             })
             .then((res) => {
               console.log(res);
+              handleClose();
               if (res.data == 200) {
                 getTxChainFrom();
+                handleClose();
               }
             });
         } else {
           setTx(resultETHTxInfo?.transactions.slice(0, 6));
           setTotalEth(resultETHTxInfo?.transactions);
+          handleClose();
         }
         getTkChainFrom();
       })
@@ -255,6 +263,22 @@ export const WalletAddress = (props) => {
           console.dir(error);
         });
     };
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
   };
 
   return (
@@ -708,6 +732,33 @@ export const WalletAddress = (props) => {
           </Box>
         </>
       </Box>
+      {
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography
+              id="modal-modal-title"
+              variant="h4"
+              component="h2"
+              textAlign={"center"}
+            >
+              loading...
+            </Typography>
+            <Typography
+              id="modal-modal-description"
+              sx={{ mt: 2 }}
+              textAlign={"center"}
+              variant="h6"
+            >
+              searching for your walletAddress
+            </Typography>
+          </Box>
+        </Modal>
+      }
     </Card>
   );
 };
