@@ -534,7 +534,7 @@ const getTokenBalanceList = async (req, res) => {
 // 특정 지갑 주소가 보유한 ERC20 토큰의 거래 목록 조회 후 DB에 저장
 const postTokenTxChainWithAddress = async (req, res) => {
   try {
-    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='desc'} = req.body;
+    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
     const TokentxChainCheck = await eth_tokentx_traces.find({"from": walletAddress});
     if (TokentxChainCheck.length === 0) {
       const tokenTxlist = await req.etherscan.account.tokentx(
@@ -542,6 +542,8 @@ const postTokenTxChainWithAddress = async (req, res) => {
         contractAddress,
         startBlockNum,
         endBlockNum,
+        page,
+        offset,
         sort
       );
       // walletAddress를 출발점으로 하는 ERC20 토큰 거래가 아닌 목록 제거
@@ -590,6 +592,8 @@ const postTokenTxChainWithAddress = async (req, res) => {
             contractAddress,
             startBlockNum,
             endBlockNum,
+            page,
+            offset,
             sort
           );
           const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
