@@ -71,13 +71,7 @@ export const WalletAddress = (props) => {
     if (e.key === "Enter") {
       if (web3.utils.isAddress(walletAddress)) {
         handleOpen();
-        const a = await findAddr();
-        if (a == undefined) {
-          alert("");
-          handleClose();
-          return;
-        }
-        checkData();
+        await findAddr();
       } else {
         alert("invalid address");
         setWalletAddress("");
@@ -148,8 +142,12 @@ export const WalletAddress = (props) => {
       console.log(resultTokenBalance.data.data);
       setToken(resultTokenBalance?.data.data.tokens);
       setTotal(true);
+      checkData();
     } catch (e) {
       console.dir(e);
+      alert("");
+      handleClose();
+      return;
     }
   }
 
@@ -182,7 +180,7 @@ export const WalletAddress = (props) => {
     axios
       .post(apiUrl + "/eth/network/walletTrace", {
         endpoint: network,
-        walletAddress: walletAddress
+        walletAddress: walletAddress,
       })
       .then((res) => {
         getTxChainFrom();
