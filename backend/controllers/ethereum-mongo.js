@@ -49,7 +49,7 @@ const getTokenTxInfo = async (req, res) => {
 const getTxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
-    const TxChainFromList = await eth_tx_traces.find({"from": source});
+    const TxChainFromList = await eth_tx_traces.find({"from": source.toLowerCase()});
 
     const second = TxChainFromList[0]["second_depth"];
     const uniqueArrforsecond = [];
@@ -90,11 +90,11 @@ const getTxChainFrom = async (req, res) => {
   }
 }
 
-// source에서 시작하는 ERC20 토큰 거래 체인 목록 출력
-const getTokentxChainFrom = async (req, res) => {
+// Destination에서 끝나는 ERC20 토큰 거래 체인 목록 출력
+const getTokentxChainTo = async (req, res) => {
   try {
-    const {source} = req.query;
-    const TokentxChainFromList = await eth_tokentx_traces.find({"from": source});
+    const {destination} = req.query;
+    const TokentxChainFromList = await eth_tokentx_traces.find({"to": destination.toLowerCase()});
 
     const second = TokentxChainFromList[0]["second_depth"];
     const uniqueArrforsecond = [];
@@ -123,7 +123,7 @@ const getTokentxChainFrom = async (req, res) => {
 
     const result = {
       network: TokentxChainFromList[0].network,
-      from: TokentxChainFromList[0].from,
+      to: TokentxChainFromList[0].to,
       startBlockNumber: TokentxChainFromList[0].startBlockNumber,
       endBlockNumber: TokentxChainFromList[0].endBlockNumber,
       first_depth: TokentxChainFromList[0].first_depth,
@@ -219,7 +219,7 @@ module.exports = {
   getETHTransactionsInfo,
   getTokenTxInfo,
   getTxChainFrom,
-  getTokentxChainFrom,
+  getTokentxChainTo,
   getEthAccountRecord,
   getERC20TokenAccountRecord,
   getWalletRecord,

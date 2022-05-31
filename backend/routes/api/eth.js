@@ -25,7 +25,7 @@ router.get('/db/latestTransaction', DBController.getLatestTransactions);
 router.get('/db/TxChainFrom', DBController.getTxChainFrom);
 router.get('/db/ETHTxInfo', DBController.getETHTransactionsInfo);
 router.get('/db/TokenTxInfo', DBController.getTokenTxInfo);
-router.get('/db/TokentxChainFrom', DBController.getTokentxChainFrom);
+router.get('/db/TokentxChainTo', DBController.getTokentxChainTo);
 router.get('/db/ethAccountTrace', DBController.getEthAccountRecord);
 router.get('/db/ERC20TokenAccountTrace', DBController.getERC20TokenAccountRecord);
 router.get('/db/WalletTrace', DBController.getWalletRecord);

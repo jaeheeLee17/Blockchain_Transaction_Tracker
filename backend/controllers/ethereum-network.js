@@ -354,7 +354,7 @@ const postWalletTraceRecord = async (req, res) => {
 const postTxlistChainWithAddress = async (req, res) => {
   try {
     const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
-    const TxlistChainCheck = await eth_tx_traces.find({"from": walletAddress});
+    const TxlistChainCheck = await eth_tx_traces.find({"from": walletAddress.toLowerCase()});
     if (TxlistChainCheck.length === 0) {
       const txlist = await req.etherscan.account.txlist(
         walletAddress,
@@ -440,7 +440,7 @@ const postTxlistChainWithAddress = async (req, res) => {
       }
       const txChain = {
         network: req.body.endpoint,
-        from: walletAddress,
+        from: walletAddress.toLowerCase(),
         startBlockNumber: String(startBlockNum),
         endBlockNumber: String(endBlockNum),
         first_depth: first_depth_tx,
@@ -538,7 +538,7 @@ const getTokenBalanceList = async (req, res) => {
 const postTokenTxChainWithAddress = async (req, res) => {
   try {
     const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
-    const TokentxChainCheck = await eth_tokentx_traces.find({"from": walletAddress});
+    const TokentxChainCheck = await eth_tokentx_traces.find({"to": walletAddress.toLowerCase()});
     if (TokentxChainCheck.length === 0) {
       const tokenTxlist = await req.etherscan.account.tokentx(
         walletAddress,
@@ -629,7 +629,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       }
       const tokentxChain = {
         network: req.body.endpoint,
-        from: walletAddress,
+        to: walletAddress.toLowerCase(),
         startBlockNumber: String(startBlockNum),
         endBlockNumber: String(endBlockNum),
         first_depth: first_layer_tokentx,
