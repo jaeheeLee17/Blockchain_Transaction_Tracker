@@ -331,7 +331,7 @@ const postERC20TokenAccountTraceRecord = async (req, res) => {
 const postWalletTraceRecord = async (req, res) => {
   try {
     const {walletAddress} = req.body;
-    const walletTraceCheck = await eth_account_traces.find({"address": walletAddress});
+    const walletTraceCheck = await Wallet_traces.find({"address": walletAddress});
     if (walletTraceCheck.length === 0) {
       const walletTraceRequest = {
         address: walletAddress,
