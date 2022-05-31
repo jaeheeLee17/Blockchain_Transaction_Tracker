@@ -511,13 +511,16 @@ const getTokenBalanceList = async (req, res) => {
     const tokenList = [];
     for (let tokenAddress of tokenAddresses) {
       const contract = new req.web3.eth.Contract(StandardABI, tokenAddress);
-      const unit_convert_num = 10 ** (await contract.methods.decimals().call());
-      const tokenBalance = (await contract.methods.balanceOf(walletAddress).call()) / unit_convert_num;
+      const tokenBalance = await req.etherscan.account.tokenbalance(
+        walletAddress,
+        '',
+        tokenAddress
+      );
       const tokenName = await contract.methods.name().call();
       const tokenSymbol = await contract.methods.symbol().call();
       const tokenData = {
         name: tokenName,
-        balance: tokenBalance.toString(),
+        balance: tokenBalance.result.toString(),
         symbol: tokenSymbol.toString(),
       }
       tokenList.push(tokenData);
@@ -546,9 +549,9 @@ const postTokenTxChainWithAddress = async (req, res) => {
         offset,
         sort
       );
-      // walletAddress를 출발점으로 하는 ERC20 토큰 거래가 아닌 목록 제거
+      // walletAddress를 목적지로 하는 ERC20 토큰 거래가 아닌 목록 제거
       const selectedTokenTxlist = await Promise.all(tokenTxlist.result.filter(tokentxReceipt => {
-        if (tokentxReceipt.to !== walletAddress.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
+        if (tokentxReceipt.from !== walletAddress.toLowerCase() && tokentxReceipt.from !== '' && tokentxReceipt.from !== undefined
           && tokentxReceipt.value !== '0') {
           return tokentxReceipt;
         }
@@ -556,7 +559,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       const uniqueTokenTxlist = await Promise.all(selectedTokenTxlist.filter((addr, idx) => {
         return (
           selectedTokenTxlist.findIndex((addr2, idx) => {
-            return addr.to === addr2.to;
+            return addr.from === addr2.from;
           }) === idx
         );
       }));
@@ -575,17 +578,17 @@ const postTokenTxChainWithAddress = async (req, res) => {
         };
         return tokentxData;
       }));
-      const token_to_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
-        if (tokentxReceipt.to !== walletAddress.toLowerCase()) {
-          return tokentxReceipt.to;
+      const token_from_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
+        if (tokentxReceipt.from !== walletAddress.toLowerCase()) {
+          return tokentxReceipt.from;
         } else {
           return '';
         }
       });
       const related_tokentx = [];
       let address_idx = 0;
-      while (address_idx < token_to_addresses.length) {
-        let address = token_to_addresses[address_idx];
+      while (address_idx < token_from_addresses.length) {
+        let address = token_from_addresses[address_idx];
         if (address !== "") {
           const related_tokenTxlist = await req.etherscan.account.tokentx(
             address,
@@ -597,14 +600,14 @@ const postTokenTxChainWithAddress = async (req, res) => {
             sort
           );
           const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
-            if (tokentxReceipt.to !== address.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
+            if (tokentxReceipt.from !== address.toLowerCase() && tokentxReceipt.from !== '' && tokentxReceipt.from !== undefined
               && tokentxReceipt.value !== '0') {
               return tokentxReceipt;
             }
           }));
           const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
-            if (relatedTokenTxReceipt.to !== '' && relatedTokenTxReceipt.to !== undefined &&
-              relatedTokenTxReceipt.to !== relatedTokenTxReceipt.from && relatedTokenTxReceipt.value !== '0') {
+            if (relatedTokenTxReceipt.from !== '' && relatedTokenTxReceipt.from !== undefined &&
+              relatedTokenTxReceipt.from !== relatedTokenTxReceipt.to && relatedTokenTxReceipt.value !== '0') {
               const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
               const tokentxData = {
                 tx: relatedTokenTxReceipt.hash,
