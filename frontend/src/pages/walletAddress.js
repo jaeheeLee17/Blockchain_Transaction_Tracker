@@ -51,13 +51,14 @@ export const WalletAddress = (props) => {
   const [tokenTx, setTokenTx] = useState([]);
   const [name, setName] = React.useState("");
   const [open, setOpen] = React.useState(false);
+  const [status, setStatus] = React.useState(false);
   const regHash = /^0x([A-Fa-f0-9]{64})$/;
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
 
   const onClickButton = async () => {
     if (web3.utils.isAddress(walletAddress)) {
-      await findAddr();
       handleOpen();
+      await findAddr();
       checkData();
     } else {
       alert("invalid address");
@@ -69,8 +70,13 @@ export const WalletAddress = (props) => {
   const onKeyPress = async (e) => {
     if (e.key === "Enter") {
       if (web3.utils.isAddress(walletAddress)) {
-        await findAddr();
         handleOpen();
+        const a = await findAddr();
+        if (a == undefined) {
+          alert("");
+          handleClose();
+          return;
+        }
         checkData();
       } else {
         alert("invalid address");
@@ -139,6 +145,7 @@ export const WalletAddress = (props) => {
         resultTokenBalance
       );
       setEth(resultEtherBalance?.data.data);
+      console.log(resultTokenBalance.data.data);
       setToken(resultTokenBalance?.data.data.tokens);
       setTotal(true);
     } catch (e) {
@@ -212,16 +219,14 @@ export const WalletAddress = (props) => {
             })
             .then((res) => {
               console.log(res);
-              handleClose();
+
               if (res.data == 200) {
                 getTxChainFrom();
-                handleClose();
               }
             });
         } else {
           setTx(resultETHTxInfo?.transactions.slice(0, 6));
           setTotalEth(resultETHTxInfo?.transactions);
-          handleClose();
         }
         getTkChainFrom();
       })
@@ -239,6 +244,7 @@ export const WalletAddress = (props) => {
         .then((res) => {
           console.log("TokenTxInfo");
           const resultTokenTxInfo = res.data.data;
+
           if (resultTokenTxInfo == undefined) {
             axios
               .post(apiUrl + "/eth/network/tokentxlist", {
@@ -254,11 +260,17 @@ export const WalletAddress = (props) => {
                 if (res.data == 200) {
                   getTkChainFrom();
                 }
+              })
+              .catch((e) => {
+                console.log(e);
               });
           } else {
             setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
             setTotalTk(resultTokenTxInfo?.transactions);
           }
+          setStatus(true);
+          console.log(token);
+          handleClose();
         })
         .catch((error) => {
           console.dir(error);
@@ -277,8 +289,9 @@ export const WalletAddress = (props) => {
     transform: "translate(-50%, -50%)",
     width: 400,
     bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
+
+    // border: 1,
+    // boxShadow: 24,
     p: 4,
   };
 
@@ -438,47 +451,36 @@ export const WalletAddress = (props) => {
                               label="name"
                               onChange={handleChangeName}
                             >
-                              {token.map((tk) => (
-                                <MenuItem value={tk.name} key={tk.id}>
-                                  <Typography>
-                                    {tk.name} ({tk.symbol})
-                                    <br />
-                                  </Typography>
-                                  <Typography
-                                    color="textSecondary"
-                                    gutterBottom
-                                    variant="body2"
-                                  >
-                                    {tk.balance} {tk.symbol}
-                                  </Typography>
-                                </MenuItem>
-                              ))}
-                              {/* <MenuItem value={"ropsten"}>ropsten</MenuItem>
-                              <MenuItem value={"rinkeby"}>rinkeby</MenuItem>
-
-                              <MenuItem value={"kovan"}>kovan</MenuItem> */}
+                              {status == true
+                                ? token.map((tk) => (
+                                    <MenuItem value={tk.name} key={tk.id}>
+                                      <Typography>
+                                        {tk.name}
+                                        <br />
+                                      </Typography>
+                                      <Typography
+                                        color="textSecondary"
+                                        gutterBottom
+                                        variant="body2"
+                                      >
+                                        {tk.balance}
+                                      </Typography>
+                                    </MenuItem>
+                                  ))
+                                : ""}
                             </Select>
                           </FormControl>
                         </Box>
                       </Box>
                     </Typography>
                   </Box>
-                  {/* <Divider /> */}
-                  {/* <Box
-                    sx={{
-                      alignItems: "center",
-                      justifyContent: "flex-start",
-                    }}
-                    > */}
+
                   <Box
                     sx={{
                       alignItems: "center",
                       justifyContent: "flex-start",
                     }}
                   >
-                    {/* {tx.length == 0 ? (
-                        <div></div>
-                      ) : ( */}
                     <Card>
                       <Typography
                         gutterBottom
@@ -503,79 +505,70 @@ export const WalletAddress = (props) => {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {/* {tx.length == 0 ? (
-                              <Typography
-                                variant="inherit"
-                                sx={{
-                                  margin: 1,
-                                  textAlign: "center",
-                                }}
-                              >
-                                no data
-                              </Typography>
-                            ) : ( */}
-                          {
-                            tx.map((t) => (
-                              <TableRow key={t.transactionHash}>
-                                <TableCell>
-                                  <Button
-                                    color="inherit"
-                                    // disabled={formik.isSubmitting}
-                                    fullWidth
-                                    size="small"
-                                    type="submit"
-                                    variant="contained"
-                                  >
-                                    tx
-                                  </Button>
-                                </TableCell>
+                          {status == true
+                            ? tx.map((t) => (
+                                <TableRow key={t.transactionHash}>
+                                  <TableCell>
+                                    <Button
+                                      color="inherit"
+                                      // disabled={formik.isSubmitting}
+                                      fullWidth
+                                      size="small"
+                                      type="submit"
+                                      variant="contained"
+                                    >
+                                      tx
+                                    </Button>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Link
+                                      as={"/transactiondetail"}
+                                      href={{
+                                        pathname: "/txDetail",
+                                        query: {
+                                          transactionHash: t.transactionHash,
+                                          date: t.date,
+                                          blockNum: t.blockNum,
+                                          value: t.value,
+                                          from: t.from,
+                                          to: t.to,
+                                        },
+                                      }}
+                                    >
+                                      <a>
+                                        {t.transactionHash.substring(0, 20) +
+                                          "..."}
+                                      </a>
+                                    </Link>
+                                  </TableCell>
+                                  <TableCell>{t.blockNum}</TableCell>
+                                  <TableCell>
+                                    {t.date.substring(0, 19)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <b>from </b>
+                                    {+t.from.substring(0, 20) + "..."}
+                                    <br />
+                                    <b>to </b>
+                                    {t.to.substring(0, 20) + "..."}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      color="secondary"
+                                      // disabled={formik.isSubmitting}
+                                      fullWidth
+                                      size="small"
+                                      type="submit"
+                                      variant="contained"
+                                    >
+                                      {t.value}
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            : // )
 
-                                <TableCell>
-                                  <Link
-                                    as={"/transactiondetail"}
-                                    href={{
-                                      pathname: "/txDetail",
-                                      query: {
-                                        transactionHash: t.transactionHash,
-                                        date: t.date,
-                                        blockNum: t.blockNum,
-                                        value: t.value,
-                                        from: t.from,
-                                        to: t.to,
-                                      },
-                                    }}
-                                  >
-                                    <a>
-                                      {t.transactionHash.substring(0, 20) +
-                                        "..."}
-                                    </a>
-                                  </Link>
-                                </TableCell>
-                                <TableCell>{t.blockNum}</TableCell>
-                                <TableCell>{t.date.substring(0, 19)}</TableCell>
-                                <TableCell>
-                                  <b>from </b>
-                                  {+t.from.substring(0, 20) + "..."}
-                                  <br />
-                                  <b>to </b>
-                                  {t.to.substring(0, 20) + "..."}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    color="secondary"
-                                    // disabled={formik.isSubmitting}
-                                    fullWidth
-                                    size="small"
-                                    type="submit"
-                                    variant="contained"
-                                  >
-                                    {t.value}
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                            // )
-                          }
+                              ""}
                         </TableBody>
                       </Table>
                       <Box
@@ -606,9 +599,6 @@ export const WalletAddress = (props) => {
                       // display: "inline-flex",
                     }}
                   >
-                    {/* {tokenTx.length == 0 ? (
-                        <div></div>
-                      ) : ( */}
                     <Card>
                       <Typography
                         // color="textSecondary"
