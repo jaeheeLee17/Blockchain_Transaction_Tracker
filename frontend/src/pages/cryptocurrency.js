@@ -12,7 +12,9 @@ import {
     InputAdornment,
     SvgIcon,
     Typography,
-    Container, FormControl, InputLabel, Select, MenuItem, Modal
+    Container, FormControl, InputLabel, Select, MenuItem, Modal, Table,
+
+
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
@@ -21,8 +23,7 @@ import {Search as SearchIcon} from "../icons/search";
 import ReactTooltip from "react-tooltip";
 import Web3 from "web3";
 import Router from "next/router";
-
-
+import PerfectScrollbar from "react-perfect-scrollbar";
 
 const style = {
     position: 'absolute',
@@ -66,6 +67,8 @@ export const Cryptocurrency = (props) => {
             dept: 0,
             x: 100,
             y: 200,
+            color: "#001c06",
+            size: 2000
         },
     ];
     let nextLinks = [];
@@ -209,6 +212,10 @@ export const Cryptocurrency = (props) => {
                     value: first[i].data.value,
                     address: (first[i].data.to),
                     dept: 1,
+                    color: "#075607",
+                    size: 1500,
+                    x: 1000,
+                    y: 100 + i * 10
                 };
 
                 const s = {
@@ -235,9 +242,11 @@ export const Cryptocurrency = (props) => {
                                 address: second[i].to,
                                 dept: 2,
                                 count: second[i].count,
-                                open: false
+                                open: false,
+                                x: 2000,
+                                y: 100 + i * 10
                             };
-                            if (second[i].count > 1) secondNode.address = secondNode.count;
+                            if (second[i].count > 1) secondNode.address = secondNode.count,secondNode.tx=secondNode.count;
                             const secondLink = {
                                 source: j + 2,
                                 target: nextNodes.length + 1,
@@ -266,7 +275,11 @@ export const Cryptocurrency = (props) => {
                             value: nextNodes[i].value,
                             address: nextNodes[i].to,
                             dept: 3,
-                            parent: nextNodes[i].id
+                            parent: nextNodes[i].id,
+                            color: "#62c462",
+                            size: 1000,
+                            x: nextNodes[i].x,
+                            y: nextNodes[i].y
                         };
                         const thirdLink = {
                             source: nextNodes[i].id,
@@ -282,19 +295,10 @@ export const Cryptocurrency = (props) => {
 
             for (let i = 0; i < nextNodes.length; i++) {
                 let item = nextNodes[i];
-                if (item.dept == 0) {
-                    (item.color = "#001c06"), (item.x = 200), (item.y = 400);
-                    item.size = 2000;
-                } else if (item.dept == 1) {
-                    item.color = "#075607";
-                    (item.x = 1280), (item.y = 400);
-                    item.size = 1500;
-                } else if (item.dept == 2) {
+                if (item.dept == 2) {
                     if (item.count > 1) {
                         item.color = "#147914";
                         item.size = 1500;
-                    } else {
-                        item.color = "#62c462";
                     }
                 }
             }
@@ -364,7 +368,6 @@ export const Cryptocurrency = (props) => {
     };
 
     const onRightClickNode = function (event, nodeId, node) {
-        console.log(event);
         navigator.clipboard.writeText(node.address).then(() => {
             alert("주소를 복사했습니다.");
         });
@@ -372,7 +375,7 @@ export const Cryptocurrency = (props) => {
 
     const [toolContent, setToolContent] = useState([]);
     const onMouseOverNode = function (nodeId, node) {
-        if (node.count > 1) {
+        if (node.count > 1 || node.dept==0) {
             return;
         }
         const toolId = "toolId" + node.name;
@@ -560,44 +563,11 @@ export const Cryptocurrency = (props) => {
                         onMouseOverNode={onMouseOverNode}
                     />
                 }
-                {
-                    <ReactTooltip id={"root"} clickable={true}>
-                        <h3>transaction Info</h3>
-                        <br/>
-                        <p>source : {walletAddress}</p>
-                    </ReactTooltip>
-                }
-                {
-                    toolContent.map((tool) =>
-                        (
-                            <ReactTooltip id={tool.toolId} clickable={true} key={tool.toolId}>
-                                <h3>transaction Info</h3>
-                                <br/>
-                                <p>to : {tool.toolNode.to}</p>
-                                <p>from : {tool.toolNode.from}</p>
-                                <p>tx : {tool.toolNode.tx}</p>
-                                <p>value : {tool.toolNode.value}</p>
-                            </ReactTooltip>
-                        )
-                    )
-                }
             </Box>
-            <Modal
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="modal-modal-title" variant="h4" component="h2" textAlign={"center"}>
-                        loading...
-                    </Typography>
-                    <Typography id="modal-modal-description" sx={{mt: 2}} textAlign={"center"} variant="h6">
-                        searching for your walletAddress
-                    </Typography>
-                </Box>
-            </Modal>
             <Divider/>
+            {
+                datas.status === true ?
+
             <Box
                 sx={{
                     display: "flex",
@@ -614,7 +584,48 @@ export const Cryptocurrency = (props) => {
                     More Details
                 </Button>
             </Box>
+                    : ""
+            }
+            {
+                <ReactTooltip id={"root"} clickable={true}>
+                    <h3>transaction Info</h3>
+                    <br/>
+                    <p>source : {walletAddress}</p>
+                </ReactTooltip>
+            }
+            {
+                toolContent.map((tool) =>
+                    (
+                        <ReactTooltip id={tool.toolId} clickable={true} key={tool.toolId}>
+                            <h3>transaction Info</h3>
+                            <br/>
+                            <p>to : {tool.toolNode.to}</p>
+                            <p>from : {tool.toolNode.from}</p>
+                            <p>tx : {tool.toolNode.tx}</p>
+                            <p>value : {tool.toolNode.value}</p>
+                        </ReactTooltip>
+                    )
+                )
+            }
+            {
+
+                <Modal
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={style}>
+                        <Typography id="modal-modal-title" variant="h4" component="h2" textAlign={"center"}>
+                            loading...
+                        </Typography>
+                        <Typography id="modal-modal-description" sx={{mt: 2}} textAlign={"center"} variant="h6">
+                            searching for your walletAddress
+                        </Typography>
+                    </Box>
+                </Modal>}
         </Card>
+
     );
 };
 
