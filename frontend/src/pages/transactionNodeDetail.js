@@ -52,8 +52,8 @@ const TransactionNodeDetail = (props) => {
             transactionIndex:result[3],
             from: result[4],
             to:result[5],
-            value_ether: result[6],
-            gasPrice_ether: result[7],
+            value_ether: result[6]+"ether",
+            gasPrice_ether: result[7]+"gwei",
               date:result[8],
 
           });
@@ -118,7 +118,7 @@ const TransactionNodeDetail = (props) => {
                     >
                       <div>
                         <b>Transaction hash : </b>
-                        {hash}
+                        {detail.transactionHash}
                         <br />
                         <b>blockHash : </b>
                         {detail.blockHash}
@@ -137,12 +137,12 @@ const TransactionNodeDetail = (props) => {
                         <Divider />
                         <br />
                         <b>gasPrice: </b>
-                        {detail.gasPrice_ether}gwei
+                        {detail.gasPrice_ether}
                         <br /><br />
                         <Divider />
                         <br />
                         <b>Value: </b>
-                        {detail.value_ether}ether
+                        {detail.value_ether}
                         <br />
                       </div>
                     </Grid>

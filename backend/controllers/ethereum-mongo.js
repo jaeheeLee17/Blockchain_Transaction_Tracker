@@ -49,7 +49,7 @@ const getTokenTxInfo = async (req, res) => {
 const getTxChainFrom = async (req, res) => {
   try {
     const {source} = req.query;
-    const TxChainFromList = await eth_tx_traces.find({"from": source});
+    const TxChainFromList = await eth_tx_traces.find({"from": source.toLowerCase()});
 
     const second = TxChainFromList[0]["second_depth"];
     const uniqueArrforsecond = [];
@@ -90,12 +90,47 @@ const getTxChainFrom = async (req, res) => {
   }
 }
 
-// source에서 시작하는 ERC20 토큰 거래 체인 목록 출력
-const getTokentxChainFrom = async (req, res) => {
+// Destination에서 끝나는 ERC20 토큰 거래 체인 목록 출력
+const getTokentxChainTo = async (req, res) => {
   try {
-    const {source} = req.query;
-    const TokentxChainFromList = await eth_tokentx_traces.find({"from": source});
-    return cwr.createWebResp(res, header, 200, TokentxChainFromList[0]);
+    const {destination} = req.query;
+    const TokentxChainFromList = await eth_tokentx_traces.find({"to": destination.toLowerCase()});
+
+    const second = TokentxChainFromList[0]["second_depth"];
+    const uniqueArrforsecond = [];
+
+    for(let i = 0; i < second.length; i++) {
+      second[i].forEach(element => {
+        if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"] && v.tokenName === element["data"]["tokenName"])) {
+          uniqueArrforsecond.push(
+            {from: element["data"]["from"],
+              to: element["data"]["to"],
+              value: element["data"]["value"],
+              recentDate: element["data"]["date"],
+              tokenSymbol: element["data"]["tokenSymbol"],
+              tokenName: element["data"]["tokenName"],
+              tx: [element["tx"]],
+              count: 1});
+        }
+        else{
+          let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
+          uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
+          uniqueArrforsecond[index].count += 1;
+          uniqueArrforsecond[index].tx.push(element["tx"])
+        }
+      })
+    }
+
+    const result = {
+      network: TokentxChainFromList[0].network,
+      to: TokentxChainFromList[0].to,
+      startBlockNumber: TokentxChainFromList[0].startBlockNumber,
+      endBlockNumber: TokentxChainFromList[0].endBlockNumber,
+      first_depth: TokentxChainFromList[0].first_depth,
+      second_depth: uniqueArrforsecond
+    }
+
+    return cwr.createWebResp(res, header, 200, result);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transaction trace lists with source address failed', e.message || e);
@@ -184,7 +219,7 @@ module.exports = {
   getETHTransactionsInfo,
   getTokenTxInfo,
   getTxChainFrom,
-  getTokentxChainFrom,
+  getTokentxChainTo,
   getEthAccountRecord,
   getERC20TokenAccountRecord,
   getWalletRecord,

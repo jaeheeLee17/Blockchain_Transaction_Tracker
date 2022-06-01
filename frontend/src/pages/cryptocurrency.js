@@ -12,7 +12,9 @@ import {
   InputAdornment,
   SvgIcon,
   Typography,
-  Container, FormControl, InputLabel, Select, MenuItem,
+  Container, FormControl, InputLabel, Select, MenuItem, Modal, Table,
+
+
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import axios from "axios";
@@ -20,14 +22,30 @@ import {DashboardLayout} from "../components/dashboard-layout";
 import {Search as SearchIcon} from "../icons/search";
 import ReactTooltip from "react-tooltip";
 import Web3 from "web3";
-import Link from "next/link"
 import Router from "next/router";
+import PerfectScrollbar from "react-perfect-scrollbar";
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 
 export const Cryptocurrency = (props) => {
+
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const [walletAddress, setWalletAddress] = useState("");
   const [network, setNetwork] = React.useState('mainnet');
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const onChangePage = (e) => {
     window.location.href = "/transactionNodeDetail";
   };
@@ -49,6 +67,8 @@ export const Cryptocurrency = (props) => {
       dept: 0,
       x: 100,
       y: 200,
+      color: "#001c06",
+      size: 2000
     },
   ];
   let nextLinks = [];
@@ -58,6 +78,7 @@ export const Cryptocurrency = (props) => {
     if (e.key === "Enter") {
       if (web3.utils.isAddress(walletAddress)) {
         setDatas({links: [], nodes: [], status: false});
+        handleOpen();
         checkData();
       } else {
         alert("invalid address");
@@ -71,6 +92,7 @@ export const Cryptocurrency = (props) => {
   const onClickButton = () => {
     if (web3.utils.isAddress(walletAddress)) {
       setDatas({links: [], nodes: [], status: false});
+      handleOpen();
       checkData();
     } else {
       alert("invalid address");
@@ -115,6 +137,7 @@ export const Cryptocurrency = (props) => {
         const txChains = res.data.data;
         if (!txChains || txChains.first_depth.length === 0) {
           alert("no data");
+          handleClose();
           return;
         }
         const net = txChains.network;
@@ -189,6 +212,10 @@ export const Cryptocurrency = (props) => {
           value: first[i].data.value,
           address: (first[i].data.to),
           dept: 1,
+          color: "#075607",
+          size: 1500,
+          x: 1000,
+          y: 100 + i * 10
         };
 
         const s = {
@@ -214,9 +241,12 @@ export const Cryptocurrency = (props) => {
                 value: second[i].value,
                 address: second[i].to,
                 dept: 2,
-                count: second[i].count
+                count: second[i].count,
+                open: false,
+                x: 2000,
+                y: 100 + i * 10
               };
-              if (second[i].count > 1) secondNode.tx = secondNode.address,secondNode.address = secondNode.count;
+              if (second[i].count > 1) secondNode.address = secondNode.count,secondNode.tx=secondNode.count;
               const secondLink = {
                 source: j + 2,
                 target: nextNodes.length + 1,
@@ -226,84 +256,65 @@ export const Cryptocurrency = (props) => {
               nextNodes[j + 1].hasChild = true;
               nextLinks.push(secondLink);
               nextNodes.push(secondNode);
-
-
-              if (second[i].count > 1) {
-                for (let k = 0; k < second[i].count; k++) {
-                  const thirdNode = {
-                    id: nextNodes.length + 1,
-                    name: "node" + (nextNodes.length + 1) + "_node" + (j + k + 3),
-                    tx: second[i].tx[k],
-                    from: second[i].from,
-                    to: second[i].to,
-                    value: second[i].value,
-                    address: second[i].to,
-                    dept: 3,
-                  };
-                  const thirdLink = {
-                    source: secondNode.id,
-                    target: nextNodes.length + 1,
-                  };
-
-                  Link.push(thirdLink)
-                  Node.push(thirdNode)
-                }
-
-              }
             }
+          }
+
+        }
+      }
+
+      //third dept
+      for (let i = 0; i < nextNodes.length; i++) {
+        if (nextNodes[i].count > 1) {
+          for (let k = 0; k < nextNodes[i].count; k++) {
+            const thirdNode = {
+              id: nextNodes.length + Node.length + 1,
+              name: "node" + (nextNodes.length + Node.length + 1) + "_node" + (nextNodes[i].id),
+              tx: nextNodes[i].tx[k],
+              from: nextNodes[i].from,
+              to: nextNodes[i].to,
+              value: nextNodes[i].value,
+              address: nextNodes[i].to,
+              dept: 3,
+              parent: nextNodes[i].id,
+              color: "#62c462",
+              size: 1000,
+              x: nextNodes[i].x,
+              y: nextNodes[i].y
+            };
+            const thirdLink = {
+              source: nextNodes[i].id,
+              target: nextNodes.length + Node.length + 1,
+            };
+
+            Link.push(thirdLink)
+            Node.push(thirdNode)
           }
         }
       }
+
 
       for (let i = 0; i < nextNodes.length; i++) {
         let item = nextNodes[i];
-        if (item.dept == 0) {
-          //root지정
-          (item.color = "#00460c"), (item.x = 200), (item.y = 400);
-        } else if (item.dept == 1) {
-          item.color = "#2a982a";
-          (item.x = 1280), (item.y = 400);
-          // if (item.hasChild == true) {//dept1에서 자식 있는 노드
-          //     if (d2 / 2 == cnt2) x2 = 800, y2 = 520;
-          //     if (d2 / 2 <= cnt2) {
-          //         (item.color = "#388e3c"), (item.x = 800 - x2), (item.y = 520 - y2) , x2 += 40, y2 += 15;
-          //     } else {
-          //         (item.color = "#388e3c"), (item.x = 800 + x2), (item.y = 520 + y2) , x2 += 40, y2 += 15;
-          //     }
-          //     cnt2++;
-          // } else {//dept1에서 자식 없는 노드
-          //     (item.color = "#388e3c"), (item.x = 800 + x1), (item.y = 520 + y1), x1 += 40, y1 += 15;
-          //     cnt1++;
-          // }
-        } else if (item.dept == 2) {
-          //dept2
-          // if (d3 / 2 == cnt3) x3 = 1000, y3 = 520;
-          // if (d3 / 2 <= cnt3) {
-          //     (item.color = "#6abf69"), (item.x = 1200 - x3), (item.y = 1000 - y3), x3 += 40, y3 += 15;
-          // } else {
-          //     (item.color = "#6abf69"), (item.x = 1200 + x3), (item.y = 1000 - +y3), x3 += 40, y3 += 15;
-          // }
-          // cnt3++;
+        if (item.dept == 2) {
           if (item.count > 1) {
-            item.color = "#ff2880";
-            item.size = 2000;
-          } else {
-            item.color = "#62c462";
+            item.color = "#147914";
+            item.size = 1500;
           }
         }
       }
-      setDatas({links: nextLinks, nodes: nextNodes, status: true});
-      console.log(Link)
+      handleClose();
       console.log(Node)
       setThird({links: Link, nodes: Node})
-
+      setDatas({links: nextLinks, nodes: nextNodes, status: true});
     } else {
+      handleClose();
       setDatas({
         nodes: [{id: 1, from: walletAddress, address: walletAddress}],
         links: [],
         status: true,
       });
       alert("no data");
+      handleClose();
     }
     const g = document.getElementById("1");
     const c = g.childNodes[0];
@@ -311,10 +322,29 @@ export const Cryptocurrency = (props) => {
     c.setAttribute("data-for", "root");
   };
 
+
   const onClickNode = function (nodeId, node) {
-    console.log(third)
     if (node.dept == 2 && node.count > 1) {
-      console.log(third)
+      if (node.open == false) {
+        console.log("open")
+        const n = third.nodes.filter(findChild);
+        const l = third.links.filter(findLink);
+        for (let i = 0; i < n.length; i++) {
+          datas.nodes.push(n[i])
+          datas.links.push(l[i]);
+        }
+        datas.nodes[node.index].open = true;
+        console.log(datas)
+        console.log(third)
+        setDatas({links: datas.links, nodes: datas.nodes, status: true})
+      } else {
+        console.log("close")
+        datas.nodes = datas.nodes.filter(nodes => nodes.parent != node.id);
+        datas.links = datas.links.filter(links => links.source != node.id);
+        datas.nodes[node.index].open = false;
+        console.log(datas)
+        setDatas({links: datas.links, nodes: datas.nodes, status: true})
+      }
     } else {
       if (node.dept == 0) {
         return;
@@ -325,10 +355,19 @@ export const Cryptocurrency = (props) => {
         });
       }
     }
+
+    function findChild(element) {
+      if (element.parent == node.id)
+        return true;
+    }
+
+    function findLink(element) {
+      if (element.source == node.id)
+        return true;
+    }
   };
 
   const onRightClickNode = function (event, nodeId, node) {
-    console.log(event);
     navigator.clipboard.writeText(node.address).then(() => {
       alert("주소를 복사했습니다.");
     });
@@ -336,6 +375,9 @@ export const Cryptocurrency = (props) => {
 
   const [toolContent, setToolContent] = useState([]);
   const onMouseOverNode = function (nodeId, node) {
+    if (node.count > 1 || node.dept==0) {
+      return;
+    }
     const toolId = "toolId" + node.name;
     const element = [
       {
@@ -369,6 +411,10 @@ export const Cryptocurrency = (props) => {
   const handleChange = (event) => {
     setNetwork(event.target.value);
   };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
   const myConfig = {
     automaticRearrangeAfterDropNode: false,
     collapsible: true,
@@ -397,7 +443,7 @@ export const Cryptocurrency = (props) => {
       disableLinkForce: false,
     },
     node: {
-      color: "#4caf50",
+      color: "#62c462",
       fontColor: "black",
       fontSize: 8,
       fontWeight: "normal",
@@ -438,6 +484,7 @@ export const Cryptocurrency = (props) => {
     },
   };
 
+
   return (
     <Card {...props}>
       <Container maxWidth={false}>
@@ -450,7 +497,7 @@ export const Cryptocurrency = (props) => {
           }}
         />
         <Typography sx={{m: 0}} variant="h4">
-          Address Dashboard
+          ETH Dashboard
         </Typography>
         <Box sx={{mt: 1}}>
           <Card>
@@ -516,46 +563,69 @@ export const Cryptocurrency = (props) => {
             onMouseOverNode={onMouseOverNode}
           />
         }
-        {
-          <ReactTooltip id={"root"} clickable={true}>
-            <h3>transaction Info</h3>
-            <br/>
-            <p>source : {walletAddress}</p>
-          </ReactTooltip>
-        }
-        {
-          toolContent.map((tool) =>
-            (
-              <ReactTooltip id={tool.toolId} clickable={true} key={tool.toolId}>
-                <h3>transaction Info</h3>
-                <br/>
-                <p>to : {tool.toolNode.to}</p>
-                <p>from : {tool.toolNode.from}</p>
-                <p>tx : {tool.toolNode.tx}</p>
-                <p>value : {tool.toolNode.value}</p>
-              </ReactTooltip>
-            )
-          )
-        }
       </Box>
       <Divider/>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          p: 2,
-        }}
-      >
-        <Button
-          color="primary"
-          endIcon={<ArrowRightIcon fontSize="small"/>}
-          size="small"
-          onClick={onChangePage}
+      {
+        datas.status === true ?
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              p: 2,
+            }}
+          >
+            <Button
+              color="primary"
+              endIcon={<ArrowRightIcon fontSize="small"/>}
+              size="small"
+              onClick={onChangePage}
+            >
+              More Details
+            </Button>
+          </Box>
+          : ""
+      }
+      {
+        <ReactTooltip id={"root"} clickable={true}>
+          <h3>transaction Info</h3>
+          <br/>
+          <p>source : {walletAddress}</p>
+        </ReactTooltip>
+      }
+      {
+        toolContent.map((tool) =>
+          (
+            <ReactTooltip id={tool.toolId} clickable={true} key={tool.toolId}>
+              <h3>transaction Info</h3>
+              <br/>
+              <p>to : {tool.toolNode.to}</p>
+              <p>from : {tool.toolNode.from}</p>
+              <p>tx : {tool.toolNode.tx}</p>
+              <p>value : {tool.toolNode.value}</p>
+            </ReactTooltip>
+          )
+        )
+      }
+      {
+
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
         >
-          More Details
-        </Button>
-      </Box>
+          <Box sx={style}>
+            <Typography id="modal-modal-title" variant="h4" component="h2" textAlign={"center"}>
+              loading...
+            </Typography>
+            <Typography id="modal-modal-description" sx={{mt: 2}} textAlign={"center"} variant="h6">
+              searching for your walletAddress
+            </Typography>
+          </Box>
+        </Modal>}
     </Card>
+
   );
 };
 

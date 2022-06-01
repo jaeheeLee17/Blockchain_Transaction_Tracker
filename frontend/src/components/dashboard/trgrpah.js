@@ -28,6 +28,10 @@ export const Graph = (props) => {
   const [tr, setTr] = useState([]);
 
   useEffect(() => {
+    axios.post(apiUrl + "/eth/network/postblockinfo", {
+      endpoint: "mainnet",
+      blockn: "10000",
+    });
     axios
       .get(apiUrl + "/eth/db/getTransactionsPerHour", {
         params: {

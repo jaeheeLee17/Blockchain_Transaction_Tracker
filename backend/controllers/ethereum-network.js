@@ -332,7 +332,7 @@ const postERC20TokenAccountTraceRecord = async (req, res) => {
 const postWalletTraceRecord = async (req, res) => {
   try {
     const {walletAddress} = req.body;
-    const walletTraceCheck = await eth_account_traces.find({"address": walletAddress});
+    const walletTraceCheck = await Wallet_traces.find({"address": walletAddress});
     if (walletTraceCheck.length === 0) {
       const walletTraceRequest = {
         address: walletAddress,
@@ -355,7 +355,7 @@ const postWalletTraceRecord = async (req, res) => {
 const postTxlistChainWithAddress = async (req, res) => {
   try {
     const {walletAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
-    const TxlistChainCheck = await eth_tx_traces.find({"from": walletAddress});
+    const TxlistChainCheck = await eth_tx_traces.find({"from": walletAddress.toLowerCase()});
     if (TxlistChainCheck.length === 0) {
       const txlist = await req.etherscan.account.txlist(
         walletAddress,
@@ -441,7 +441,7 @@ const postTxlistChainWithAddress = async (req, res) => {
       }
       const txChain = {
         network: req.body.endpoint,
-        from: walletAddress,
+        from: walletAddress.toLowerCase(),
         startBlockNumber: String(startBlockNum),
         endBlockNumber: String(endBlockNum),
         first_depth: first_depth_tx,
@@ -512,13 +512,16 @@ const getTokenBalanceList = async (req, res) => {
     const tokenList = [];
     for (let tokenAddress of tokenAddresses) {
       const contract = new req.web3.eth.Contract(StandardABI, tokenAddress);
-      const unit_convert_num = 10 ** (await contract.methods.decimals().call());
-      const tokenBalance = (await contract.methods.balanceOf(walletAddress).call()) / unit_convert_num;
+      const tokenBalance = await req.etherscan.account.tokenbalance(
+        walletAddress,
+        '',
+        tokenAddress
+      );
       const tokenName = await contract.methods.name().call();
       const tokenSymbol = await contract.methods.symbol().call();
       const tokenData = {
         name: tokenName,
-        balance: tokenBalance.toString(),
+        balance: tokenBalance.result.toString(),
         symbol: tokenSymbol.toString(),
       }
       tokenList.push(tokenData);
@@ -535,19 +538,21 @@ const getTokenBalanceList = async (req, res) => {
 // 특정 지갑 주소가 보유한 ERC20 토큰의 거래 목록 조회 후 DB에 저장
 const postTokenTxChainWithAddress = async (req, res) => {
   try {
-    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', sort='desc'} = req.body;
-    const TokentxChainCheck = await eth_tokentx_traces.find({"from": walletAddress});
+    const {walletAddress, contractAddress, startBlockNum=1, endBlockNum='latest', page, offset, sort='desc'} = req.body;
+    const TokentxChainCheck = await eth_tokentx_traces.find({"to": walletAddress.toLowerCase()});
     if (TokentxChainCheck.length === 0) {
       const tokenTxlist = await req.etherscan.account.tokentx(
         walletAddress,
         contractAddress,
         startBlockNum,
         endBlockNum,
+        page,
+        offset,
         sort
       );
-      // walletAddress를 출발점으로 하는 ERC20 토큰 거래가 아닌 목록 제거
+      // walletAddress를 목적지로 하는 ERC20 토큰 거래가 아닌 목록 제거
       const selectedTokenTxlist = await Promise.all(tokenTxlist.result.filter(tokentxReceipt => {
-        if (tokentxReceipt.to !== walletAddress.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
+        if (tokentxReceipt.from !== walletAddress.toLowerCase() && tokentxReceipt.from !== '' && tokentxReceipt.from !== undefined
           && tokentxReceipt.value !== '0') {
           return tokentxReceipt;
         }
@@ -555,7 +560,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       const uniqueTokenTxlist = await Promise.all(selectedTokenTxlist.filter((addr, idx) => {
         return (
           selectedTokenTxlist.findIndex((addr2, idx) => {
-            return addr.to === addr2.to;
+            return addr.from === addr2.from;
           }) === idx
         );
       }));
@@ -574,34 +579,36 @@ const postTokenTxChainWithAddress = async (req, res) => {
         };
         return tokentxData;
       }));
-      const token_to_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
-        if (tokentxReceipt.to !== walletAddress.toLowerCase()) {
-          return tokentxReceipt.to;
+      const token_from_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
+        if (tokentxReceipt.from !== walletAddress.toLowerCase()) {
+          return tokentxReceipt.from;
         } else {
           return '';
         }
       });
       const related_tokentx = [];
       let address_idx = 0;
-      while (address_idx < token_to_addresses.length) {
-        let address = token_to_addresses[address_idx];
+      while (address_idx < token_from_addresses.length) {
+        let address = token_from_addresses[address_idx];
         if (address !== "") {
           const related_tokenTxlist = await req.etherscan.account.tokentx(
             address,
             contractAddress,
             startBlockNum,
             endBlockNum,
+            page,
+            offset,
             sort
           );
           const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
-            if (tokentxReceipt.to !== address.toLowerCase() && tokentxReceipt.to !== '' && tokentxReceipt.to !== undefined
+            if (tokentxReceipt.from !== address.toLowerCase() && tokentxReceipt.from !== '' && tokentxReceipt.from !== undefined
               && tokentxReceipt.value !== '0') {
               return tokentxReceipt;
             }
           }));
           const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
-            if (relatedTokenTxReceipt.to !== '' && relatedTokenTxReceipt.to !== undefined &&
-              relatedTokenTxReceipt.to !== relatedTokenTxReceipt.from && relatedTokenTxReceipt.value !== '0') {
+            if (relatedTokenTxReceipt.from !== '' && relatedTokenTxReceipt.from !== undefined &&
+              relatedTokenTxReceipt.from !== relatedTokenTxReceipt.to && relatedTokenTxReceipt.value !== '0') {
               const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
               const tokentxData = {
                 tx: relatedTokenTxReceipt.hash,
@@ -623,7 +630,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       }
       const tokentxChain = {
         network: req.body.endpoint,
-        from: walletAddress,
+        to: walletAddress.toLowerCase(),
         startBlockNumber: String(startBlockNum),
         endBlockNumber: String(endBlockNum),
         first_depth: first_layer_tokentx,
