@@ -512,19 +512,20 @@ const getTokenBalanceList = async (req, res) => {
     const tokenList = [];
     for (let tokenAddress of tokenAddresses) {
       const contract = new req.web3.eth.Contract(StandardABI, tokenAddress);
-      const tokenBalance = await req.etherscan.account.tokenbalance(
-        walletAddress,
-        '',
-        tokenAddress
-      );
-      const tokenName = await contract.methods.name().call();
-      const tokenSymbol = await contract.methods.symbol().call();
-      const tokenData = {
-        name: tokenName,
-        balance: tokenBalance.result.toString(),
-        symbol: tokenSymbol.toString(),
+      const decimal = 10 ** (await contract.methods.decimals().call());
+      const [tokenBalance, tokenName, tokenSymbol] = await Promise.all([
+        (await contract.methods.balanceOf(walletAddress).call()) / decimal,
+        await contract.methods.name().call(),
+        await contract.methods.symbol().call(),
+      ]);
+      if (tokenBalance !== 0) {
+        const tokenData = {
+          name: tokenName,
+          balance: tokenBalance.result.toString(),
+          symbol: tokenSymbol.toString(),
+        }
+        tokenList.push(tokenData);
       }
-      tokenList.push(tokenData);
     }
     return cwr.createWebResp(res, header, 200, {
       tokens: tokenList,
