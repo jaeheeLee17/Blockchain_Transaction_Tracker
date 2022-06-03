@@ -521,7 +521,7 @@ const getTokenBalanceList = async (req, res) => {
       if (tokenBalance !== 0) {
         const tokenData = {
           name: tokenName,
-          balance: tokenBalance.result.toString(),
+          balance: tokenBalance.toString(),
           symbol: tokenSymbol.toString(),
         }
         tokenList.push(tokenData);
