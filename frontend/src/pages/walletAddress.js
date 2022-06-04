@@ -597,7 +597,6 @@ export const WalletAddress = (props) => {
                         variant="subtitle1"
                         sx={{
                           margin: 5,
-                          // width: 1500,
                         }}
                       >
                         <b>ERC20 Token Transaction</b>
@@ -608,8 +607,7 @@ export const WalletAddress = (props) => {
                             <TableCell></TableCell>
                             <TableCell>Txn Hash</TableCell>
                             <TableCell>Token name</TableCell>
-                            {/* <TableCell>Token symbol</TableCell> */}
-                            {/* <TableCell>Token number</TableCell> */}
+
                             <TableCell>Date</TableCell>
                             <TableCell></TableCell>
                             <TableCell>Contract address</TableCell>
