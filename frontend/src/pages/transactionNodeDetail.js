@@ -19,8 +19,7 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 const TransactionNodeDetail = (props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
   const router = useRouter();
-  const hash = router.query.data;
-  const network = router.query.net;
+  const {data: hash, net: network} = router.query;
   const [detail,setDetail]=useState([{
     blockHash: "",
     blockNumber: "",
@@ -32,37 +31,35 @@ const TransactionNodeDetail = (props) => {
     transactionIndex:"",
     value_ether: "",
   }])
-  const [data,setData]=useState([])
 
-  useEffect(() => {
-    axios
-        .get(apiUrl+"/eth/network/getTransactionInfo", {
-          params: {
-            addr: hash,
-            endpoint: network
-          },
-        })
-        .then((res) => {
-          const transactionInfo = res.data.data;
-          const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
-          setDetail({
-            blockHash: result[0],
-            blockNumber: result[1],
-            transactionHash:result[2],
-            transactionIndex:result[3],
-            from: result[4],
-            to:result[5],
-            value_ether: result[6]+"ether",
-            gasPrice_ether: result[7]+"gwei",
-              date:result[8],
-
-          });
-
-        })
-        .catch((error) => {
-          console.dir(error);
+  useEffect(async () => {
+    if (hash && network) {
+      try {
+        const res = await axios
+          .get(apiUrl+"/eth/network/getTransactionInfo", {
+            params: {
+              addr: hash,
+              endpoint: network
+            },
+          })
+        const transactionInfo = res.data.data;
+        const result = Object.keys(transactionInfo).map((key) => transactionInfo[key]);
+        setDetail({
+          blockHash: result[0],
+          blockNumber: result[1],
+          transactionHash:result[2],
+          transactionIndex:result[3],
+          from: result[4],
+          to:result[5],
+          value_ether: result[6],
+          gasPrice_ether: result[7],
+          date:result[8],
         });
-  },[])
+      } catch (e) {
+        console.dir(e);
+      }
+    }
+  },[hash, network])
 
   function onChangePage() {
     if (network === 'mainnet') {
@@ -137,12 +134,12 @@ const TransactionNodeDetail = (props) => {
                         <Divider />
                         <br />
                         <b>gasPrice: </b>
-                        {detail.gasPrice_ether}
+                        {detail.gasPrice_ether} gwei
                         <br /><br />
                         <Divider />
                         <br />
                         <b>Value: </b>
-                        {detail.value_ether}
+                        {detail.value_ether} ether
                         <br />
                       </div>
                     </Grid>
@@ -165,17 +162,17 @@ const TransactionNodeDetail = (props) => {
           </Container>
         </Box>
         <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              p: 2,
-            }}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            p: 2,
+          }}
         >
           <Button
-              color="primary"
-              endIcon={<ArrowRightIcon fontSize="small" />}
-              size="small"
-              onClick={onChangePage}
+            color="primary"
+            endIcon={<ArrowRightIcon fontSize="small" />}
+            size="small"
+            onClick={onChangePage}
           >
             More Details
           </Button>
