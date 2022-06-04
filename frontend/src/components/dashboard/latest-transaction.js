@@ -82,9 +82,9 @@ export const LatestTransaction = (props) => {
                   <TableCell>Status</TableCell> */}
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {latest.map((tr) => (
-                  <TableRow key={tr.id}>
+              {latest.map((tr) => (
+                <TableBody key={tr._id}>
+                  <TableRow>
                     <TableCell>
                       <Button
                         color="inherit"
@@ -168,8 +168,8 @@ export const LatestTransaction = (props) => {
                       </SeverityPill>
                     </TableCell> */}
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              ))}
             </Table>
           </Box>
         </PerfectScrollbar>
