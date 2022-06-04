@@ -144,17 +144,13 @@ export const WalletAddress = (props) => {
       console.log(resultTokenBalance.data.data);
       setToken(resultTokenBalance?.data.data.tokens);
       setTotal(true);
-      checkData();
+      checkData(resultTokenBalance?.data.data.tokens);
     } catch (e) {
       console.dir(e);
-      checkData();
-      //alert("");
-      // handleClose();
-      // return;
     }
   }
 
-  const checkData = async () => {
+  const checkData = async (token) => {
     axios
       .get(apiUrl + "/eth/db/walletTrace", {
         params: {
@@ -169,7 +165,7 @@ export const WalletAddress = (props) => {
 
         if (!result) postToDB(walletAddress);
         else {
-          getTxChainFrom();
+          getTxChainFrom(token);
         }
       })
       .catch((error) => {
@@ -197,7 +193,7 @@ export const WalletAddress = (props) => {
   };
 
   //db에서 있는 데이터 가져옴
-  const getTxChainFrom = () => {
+  const getTxChainFrom = (token) => {
     console.log("getfrom");
     axios
       .post(apiUrl + "/eth/network/ETHTxlist", {
@@ -211,63 +207,87 @@ export const WalletAddress = (props) => {
       })
       .then((res) => {
         console.log(res);
-        if (res.data.responseStatus == 200) {
-          axios
-            .get(apiUrl + "/eth/db/ETHTxInfo", {
-              params: {
-                walletAddress: walletAddress,
-              },
-            })
-            .then((res) => {
-              console.log("ETHTxInfo");
-              const resultETHTxInfo = res.data.data;
-              setTx(resultETHTxInfo?.transactions.slice(0, 6));
-              setTotalEth(resultETHTxInfo?.transactions);
-              getTkChainFrom();
-            })
-            .catch((error) => {
-              console.dir(error);
-            });
-        }
-      });
-
-    const getTkChainFrom = () => {
-      axios
-        .post(apiUrl + "/eth/network/tokentxlist", {
-          endpoint: network,
-          walletAddress: walletAddress,
-          contractAddress: "",
-          startBlockNum: "1",
-          endBlockNum: "latest",
-          sort: "desc",
-        })
-        .then((res) => {
-          console.log(res);
+        setTimeout(() => {
           if (res.data.responseStatus == 200) {
             axios
-              .get(apiUrl + "/eth/db/TokenTxInfo", {
+              .get(apiUrl + "/eth/db/ETHTxInfo", {
                 params: {
                   walletAddress: walletAddress,
                 },
               })
               .then((res) => {
-                console.log("TokenTxInfo");
-                const resultTokenTxInfo = res.data.data;
-                setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
-                setTotalTk(resultTokenTxInfo?.transactions);
+                console.log("ETHTxInfo");
+                const resultETHTxInfo = res.data.data;
+                if (resultETHTxInfo == undefined) {
+                  setTx([]);
+                  setTotalEth([]);
+                } else {
+                  setTx(resultETHTxInfo?.transactions.slice(0, 6));
+                  setTotalEth(resultETHTxInfo?.transactions);
+                }
 
-                setStatus(true);
-                console.log(resultTokenTxInfo);
-                handleClose();
+                getTkChainFrom(token);
               })
               .catch((error) => {
                 console.dir(error);
               });
           }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+        }, 2000);
+      });
+
+    const getTkChainFrom = (tokens) => {
+      console.log("tk");
+      console.log(tokens);
+      if (tokens == undefined) {
+        setTokenTx([]);
+        setTotalTk([]);
+        console.log("no token");
+        setStatus(true);
+        handleClose();
+        return;
+      } else {
+        axios
+          .post(apiUrl + "/eth/network/tokentxlist", {
+            endpoint: network,
+            walletAddress: walletAddress,
+            contractAddress: "",
+            startBlockNum: "1",
+            endBlockNum: "latest",
+            sort: "desc",
+          })
+          .then((res) => {
+            setTimeout(() => {
+              if (res.data.responseStatus == 200) {
+                axios
+                  .get(apiUrl + "/eth/db/TokenTxInfo", {
+                    params: {
+                      walletAddress: walletAddress,
+                    },
+                  })
+                  .then((res) => {
+                    console.log("TokenTxInfo");
+                    const resultTokenTxInfo = res.data.data;
+                    if (resultTokenTxInfo == undefined) {
+                      setTokenTx([]);
+                      setTotalTk([]);
+                    } else {
+                      setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
+                      setTotalTk(resultTokenTxInfo?.transactions);
+                    }
+
+                    setStatus(true);
+                    handleClose();
+                  })
+                  .catch((error) => {
+                    console.dir(error);
+                  });
+              }
+            }, 1500);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
     };
   };
 
@@ -499,8 +519,7 @@ export const WalletAddress = (props) => {
                         </TableHead>
                         <TableBody>
                           {status == true
-                            ? true &&
-                              tx.map((t) => (
+                            ? tx.map((t) => (
                                 <TableRow key={t.transactionHash}>
                                   <TableCell>
                                     <Button
