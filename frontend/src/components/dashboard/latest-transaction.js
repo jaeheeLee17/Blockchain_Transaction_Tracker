@@ -84,7 +84,7 @@ export const LatestTransaction = (props) => {
               </TableHead>
               <TableBody>
                 {latest.map((tr) => (
-                  <TableRow hover key={tr.id}>
+                  <TableRow key={tr.id}>
                     <TableCell>
                       <Button
                         color="inherit"
@@ -113,12 +113,12 @@ export const LatestTransaction = (props) => {
                             pathname: "/transactiondetail",
                             query: {
                               transactionHash: tr.transactionHash,
-                              createdAt:tr.createdAt,
-                              updatedAt:tr.updatedAt,
-                              blockNumber:tr.blockNumber,
-                              from:tr.from,
-                              to:tr.to,
-                              value:tr.value
+                              createdAt: tr.createdAt,
+                              updatedAt: tr.updatedAt,
+                              blockNumber: tr.blockNumber,
+                              from: tr.from,
+                              to: tr.to,
+                              value: tr.value,
                             },
                           }}
                         >
