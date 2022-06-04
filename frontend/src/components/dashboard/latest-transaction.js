@@ -68,7 +68,7 @@ export const LatestTransaction = (props) => {
                   <TableCell>Create</TableCell>
                   <TableCell>Update</TableCell>
                   <TableCell>Block</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell>from-to</TableCell>
                   <TableCell>Value</TableCell>
                   <TableCell></TableCell>
                   {/* <TableCell sortDirection="desc">
