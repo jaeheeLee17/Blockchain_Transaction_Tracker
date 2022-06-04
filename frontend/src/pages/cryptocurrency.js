@@ -229,7 +229,7 @@ export const Cryptocurrency = (props) => {
 
             //second_dept
             console.log(second)
-            if (second[0].length != 0) {
+            if (second!=null) {
                 for (let i = 0; i < second.length; i++) {
                     for (let j = 0; j < first.length; j++) {
                         if (second[i].length != 0 && first[j].data.to == second[i].from) {
