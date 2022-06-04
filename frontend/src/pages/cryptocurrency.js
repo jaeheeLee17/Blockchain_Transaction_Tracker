@@ -41,6 +41,7 @@ const style = {
 export const Cryptocurrency = (props) => {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
+  const homeUrl = process.env.NEXT_PUBLIC_HOME_URL;
   const [walletAddress, setWalletAddress] = useState("");
   const [network, setNetwork] = React.useState('mainnet');
   const [open, setOpen] = React.useState(false);
@@ -349,10 +350,7 @@ export const Cryptocurrency = (props) => {
       if (node.dept == 0) {
         return;
       } else {
-        Router.push({
-          pathname: "/transactionNodeDetail",
-          query: {data: node.tx, net: network},
-        });
+        window.open(homeUrl+"/transactionNodeDetail"+"?data="+node.tx+"&net="+network);
       }
     }
 

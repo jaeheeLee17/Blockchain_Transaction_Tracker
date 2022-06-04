@@ -145,10 +145,11 @@ export const WalletAddress = (props) => {
       checkData();
     } catch (e) {
       console.dir(e);
-      alert("");
-      handleClose();
-      return;
+      //alert("");
+      // handleClose();
+      // return;
     }
+    checkData();
   }
 
   const checkData = async () => {
@@ -195,83 +196,75 @@ export const WalletAddress = (props) => {
 
   //db에서 있는 데이터 가져옴
   const getTxChainFrom = () => {
+    console.log("getfrom");
     axios
-      .get(apiUrl + "/eth/db/ETHTxInfo", {
-        params: {
-          walletAddress: walletAddress,
-        },
+      .post(apiUrl + "/eth/network/ETHTxlist", {
+        endpoint: network,
+        walletAddress: walletAddress,
+        startBlockNum: "1",
+        endBlockNum: "latest",
+        page: "1",
+        offset: "100",
+        sort: "desc",
       })
       .then((res) => {
-        console.log("ETHTxInfo");
-        const resultETHTxInfo = res.data.data;
-        if (resultETHTxInfo == undefined) {
+        console.log(res);
+        if (res.data.responseStatus == 200) {
           axios
-            .post(apiUrl + "/eth/network/ETHTxlist", {
-              endpoint: network,
-              walletAddress: walletAddress,
-              startBlockNum: "1",
-              endBlockNum: "latest",
-              page: "1",
-              offset: "100",
-              sort: "desc",
+            .get(apiUrl + "/eth/db/ETHTxInfo", {
+              params: {
+                walletAddress: walletAddress,
+              },
             })
             .then((res) => {
-              console.log(res);
-
-              if (res.data == 200) {
-                getTxChainFrom();
-              }
+              console.log("ETHTxInfo");
+              const resultETHTxInfo = res.data.data;
+              setTx(resultETHTxInfo?.transactions.slice(0, 6));
+              setTotalEth(resultETHTxInfo?.transactions);
+              getTkChainFrom();
+            })
+            .catch((error) => {
+              console.dir(error);
             });
-        } else {
-          setTx(resultETHTxInfo?.transactions.slice(0, 6));
-          setTotalEth(resultETHTxInfo?.transactions);
         }
-        getTkChainFrom();
-      })
-      .catch((error) => {
-        console.dir(error);
       });
 
     const getTkChainFrom = () => {
       axios
-        .get(apiUrl + "/eth/db/TokenTxInfo", {
-          params: {
-            walletAddress: walletAddress,
-          },
+        .post(apiUrl + "/eth/network/tokentxlist", {
+          endpoint: network,
+          walletAddress: walletAddress,
+          contractAddress: "",
+          startBlockNum: "1",
+          endBlockNum: "latest",
+          sort: "desc",
         })
         .then((res) => {
-          console.log("TokenTxInfo");
-          const resultTokenTxInfo = res.data.data;
-
-          if (resultTokenTxInfo == undefined) {
+          console.log(res);
+          if (res.data.responseStatus == 200) {
             axios
-              .post(apiUrl + "/eth/network/tokentxlist", {
-                endpoint: network,
-                walletAddress: walletAddress,
-                contractAddress: "",
-                startBlockNum: "1",
-                endBlockNum: "latest",
-                sort: "desc",
+              .get(apiUrl + "/eth/db/TokenTxInfo", {
+                params: {
+                  walletAddress: walletAddress,
+                },
               })
               .then((res) => {
-                console.log(res);
-                if (res.data == 200) {
-                  getTkChainFrom();
-                }
+                console.log("TokenTxInfo");
+                const resultTokenTxInfo = res.data.data;
+                setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
+                setTotalTk(resultTokenTxInfo?.transactions);
+
+                setStatus(true);
+                console.log(token);
+                handleClose();
               })
-              .catch((e) => {
-                console.log(e);
+              .catch((error) => {
+                console.dir(error);
               });
-          } else {
-            setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
-            setTotalTk(resultTokenTxInfo?.transactions);
           }
-          setStatus(true);
-          console.log(token);
-          handleClose();
         })
-        .catch((error) => {
-          console.dir(error);
+        .catch((e) => {
+          console.log(e);
         });
     };
   };

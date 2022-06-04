@@ -82,9 +82,9 @@ export const LatestTransaction = (props) => {
                   <TableCell>Status</TableCell> */}
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {latest.map((tr) => (
-                  <TableRow hover key={tr.id}>
+              {latest.map((tr) => (
+                <TableBody key={tr._id}>
+                  <TableRow>
                     <TableCell>
                       <Button
                         color="inherit"
@@ -113,12 +113,12 @@ export const LatestTransaction = (props) => {
                             pathname: "/transactiondetail",
                             query: {
                               transactionHash: tr.transactionHash,
-                              createdAt:tr.createdAt,
-                              updatedAt:tr.updatedAt,
-                              blockNumber:tr.blockNumber,
-                              from:tr.from,
-                              to:tr.to,
-                              value:tr.value
+                              createdAt: tr.createdAt,
+                              updatedAt: tr.updatedAt,
+                              blockNumber: tr.blockNumber,
+                              from: tr.from,
+                              to: tr.to,
+                              value: tr.value,
                             },
                           }}
                         >
@@ -168,8 +168,8 @@ export const LatestTransaction = (props) => {
                       </SeverityPill>
                     </TableCell> */}
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              ))}
             </Table>
           </Box>
         </PerfectScrollbar>

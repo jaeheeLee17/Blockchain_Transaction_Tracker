@@ -28,36 +28,43 @@ export const Graph = (props) => {
   const [tr, setTr] = useState([]);
 
   useEffect(() => {
-    axios.post(apiUrl + "/eth/network/postblockinfo", {
-      endpoint: "mainnet",
-      blockn: "10000",
-    });
+    const network = "mainnet";
     axios
-      .get(apiUrl + "/eth/db/getTransactionsPerHour", {
-        params: {
-          sethour: 7,
-        },
+      .post(apiUrl + "/eth/network/postblockinfo", {
+        endpoint: network,
+        blockn: "10000",
       })
       .then((res) => {
-        const transaction = res.data.data;
-        let t = [];
-        transaction.forEach((ts, num) => {
-          const da = ts.starttime.substring(0, 10);
-          const te = ts.starttime.substring(11, 16);
-          const data = {
-            starttime: ` ${ts.starttime.substring(0, 10)} 
+        console.log(res);
+        if (res.data.responseStatus == 200) {
+          axios
+            .get(apiUrl + "/eth/db/getTransactionsPerHour", {
+              params: {
+                sethour: 7,
+              },
+            })
+            .then((res) => {
+              const transaction = res.data.data;
+              let t = [];
+              transaction.forEach((ts, num) => {
+                const da = ts.starttime.substring(0, 10);
+                const te = ts.starttime.substring(11, 16);
+                const data = {
+                  starttime: ` ${ts.starttime.substring(0, 10)} 
             
             ${ts.starttime.substring(11, 16)}
             `,
-            transactions: ts.transactions,
-            endtime: ts.endtime,
-          };
-          t.push(data);
-        });
-        setTr(t.reverse());
-      })
-      .catch((error) => {
-        console.dir(error);
+                  transactions: ts.transactions,
+                  endtime: ts.endtime,
+                };
+                t.push(data);
+              });
+              setTr(t.reverse());
+            })
+            .catch((error) => {
+              console.dir(error);
+            });
+        }
       });
   }, []);
 
