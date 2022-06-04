@@ -47,11 +47,13 @@ export const WalletAddress = (props) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [address, setAddress] = useState([]);
+
   const [tx, setTx] = useState([]);
   const [tokenTx, setTokenTx] = useState([]);
   const [name, setName] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [status, setStatus] = React.useState(false);
+
   const regHash = /^0x([A-Fa-f0-9]{64})$/;
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
 
@@ -145,11 +147,11 @@ export const WalletAddress = (props) => {
       checkData();
     } catch (e) {
       console.dir(e);
+      checkData();
       //alert("");
       // handleClose();
       // return;
     }
-    checkData();
   }
 
   const checkData = async () => {
@@ -255,7 +257,7 @@ export const WalletAddress = (props) => {
                 setTotalTk(resultTokenTxInfo?.transactions);
 
                 setStatus(true);
-                console.log(token);
+                console.log(resultTokenTxInfo);
                 handleClose();
               })
               .catch((error) => {
@@ -497,7 +499,8 @@ export const WalletAddress = (props) => {
                         </TableHead>
                         <TableBody>
                           {status == true
-                            ? tx.map((t) => (
+                            ? true &&
+                              tx.map((t) => (
                                 <TableRow key={t.transactionHash}>
                                   <TableCell>
                                     <Button
@@ -615,74 +618,79 @@ export const WalletAddress = (props) => {
                             <TableCell></TableCell>
                           </TableRow>
                         </TableHead>
-                        <TableBody>
-                          {tokenTx.map((t) => (
-                            <TableRow key={t.transactionHash}>
-                              <TableCell>
-                                <Button
-                                  color="inherit"
-                                  // disabled={formik.isSubmitting}
-                                  fullWidth
-                                  size="small"
-                                  type="submit"
-                                  variant="contained"
-                                >
-                                  tx
-                                </Button>
-                              </TableCell>
-                              <TableCell>
-                                <Link
-                                  as={"/transactiondetail"}
-                                  href={{
-                                    pathname: "/tokenDetail",
-                                    query: {
-                                      transactionHash: t.transactionHash,
-                                      blockNum: t.blockNum,
-                                      date: t.date,
-                                      contractAddress: t.contractAddress,
-                                      tokenName: t.tokenName,
-                                      tokenSymbol: t.tokenSymbol,
-                                      tokenNumber: t.tokenNumber,
-                                      from: t.from,
-                                      to: t.to,
-                                      value: t.value,
-                                    },
-                                  }}
-                                >
-                                  <a>
-                                    {t.transactionHash.substring(0, 20) + "..."}
-                                  </a>
-                                </Link>
-                              </TableCell>
-                              <TableCell>{t.tokenName}</TableCell>
-                              {/* <TableCell>{t.tokenSymbol}</TableCell> */}
-                              {/* <TableCell>{t.tokenNumber}</TableCell> */}
-                              <TableCell>{t.date.substring(0, 19)}</TableCell>
-                              <TableCell>
-                                <b>from </b>
-                                {+t.from.substring(0, 20) + "..."}
-                                <br />
-                                <b>to </b>
-                                {t.to.substring(0, 20) + "..."}
-                              </TableCell>
-                              <TableCell>
-                                {t.contractAddress.substring(0, 20) + "..."}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  color="secondary"
-                                  // disabled={formik.isSubmitting}
-                                  fullWidth
-                                  size="small"
-                                  type="submit"
-                                  variant="contained"
-                                >
-                                  {t.value}
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
+                        {status == true ? (
+                          tokenTx.map((t, n) => (
+                            <TableBody>
+                              <TableRow key={n}>
+                                <TableCell>
+                                  <Button
+                                    color="inherit"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    tx
+                                  </Button>
+                                </TableCell>
+                                <TableCell>
+                                  <Link
+                                    as={"/transactiondetail"}
+                                    href={{
+                                      pathname: "/tokenDetail",
+                                      query: {
+                                        transactionHash: t.transactionHash,
+                                        blockNum: t.blockNum,
+                                        date: t.date,
+                                        contractAddress: t.contractAddress,
+                                        tokenName: t.tokenName,
+                                        tokenSymbol: t.tokenSymbol,
+                                        tokenNumber: t.tokenNumber,
+                                        from: t.from,
+                                        to: t.to,
+                                        value: t.value,
+                                      },
+                                    }}
+                                  >
+                                    <a>
+                                      {t.transactionHash.substring(0, 20) +
+                                        "..."}
+                                    </a>
+                                  </Link>
+                                </TableCell>
+                                <TableCell>{t.tokenName}</TableCell>
+                                {/* <TableCell>{t.tokenSymbol}</TableCell> */}
+                                {/* <TableCell>{t.tokenNumber}</TableCell> */}
+                                <TableCell>{t.date.substring(0, 19)}</TableCell>
+                                <TableCell>
+                                  <b>from </b>
+                                  {+t.from.substring(0, 20) + "..."}
+                                  <br />
+                                  <b>to </b>
+                                  {t.to.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  {t.contractAddress.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    color="secondary"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    {t.value}
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          ))
+                        ) : (
+                          <TableBody></TableBody>
+                        )}
                       </Table>
                       <Box
                         sx={{
