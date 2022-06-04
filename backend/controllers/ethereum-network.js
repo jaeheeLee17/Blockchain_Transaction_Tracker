@@ -239,8 +239,13 @@ const postTokenTxInfoWithAddress = async (req, res) => {
       'ERC20 Token Transactions with wallet address loading success!');
   } catch (e) {
     const tokenTxInfo = {};
-    return cwr.errorWebResp(res, header, 500,
-      e, e.message || tokenTxInfo);
+    if (tokenTxInfo !== undefined) {
+      return cwr.createWebResp(res, header, 200,
+        tokenTxInfo);
+    } else {
+      return cwr.errorWebResp(res, header, 500,
+        e, e.message || tokenTxInfo);
+    }
   }
 }
 
@@ -529,11 +534,17 @@ const getTokenBalanceList = async (req, res) => {
     }
     return cwr.createWebResp(res, header, 200, {
       tokens: tokenList,
-    })
+    });
   } catch (e) {
     const tokenList = [];
-    return cwr.errorWebResp(res, header, 500,
-      e, e.message || tokenList);
+    if (tokenList.length === 0) {
+      return cwr.createWebResp(res, header, 200, {
+        tokens: tokenList,
+      });
+    } else {
+      return cwr.errorWebResp(res, header, 500,
+        e, e.message || tokenList);
+    }
   }
 }
 
