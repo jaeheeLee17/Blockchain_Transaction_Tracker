@@ -238,8 +238,9 @@ const postTokenTxInfoWithAddress = async (req, res) => {
     return cwr.createWebResp(res, header, 200,
       'ERC20 Token Transactions with wallet address loading success!');
   } catch (e) {
+    const tokenTxInfo = {};
     return cwr.errorWebResp(res, header, 500,
-      'ERC20 Token Transactions with wallet address loading failed', e.message || e);
+      e, e.message || tokenTxInfo);
   }
 }
 
@@ -530,8 +531,9 @@ const getTokenBalanceList = async (req, res) => {
       tokens: tokenList,
     })
   } catch (e) {
+    const tokenList = [];
     return cwr.errorWebResp(res, header, 500,
-      'get token list failed', e.message || e);
+      e, e.message || tokenList);
   }
 }
 
