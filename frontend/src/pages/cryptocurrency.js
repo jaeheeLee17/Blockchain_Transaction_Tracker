@@ -247,7 +247,7 @@ export const Cryptocurrency = (props) => {
                                 x: 2000,
                                 y: 100 + i * 10
                             };
-                            if (second[i].count > 1) secondNode.address = secondNode.count,secondNode.tx=secondNode.count;
+                            if (second[i].count > 1) secondNode.address = secondNode.count;
                             const secondLink = {
                                 source: j + 2,
                                 target: nextNodes.length + 1,
