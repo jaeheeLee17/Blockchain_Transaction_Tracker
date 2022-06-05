@@ -136,7 +136,8 @@ export const Cryptocurrency = (props) => {
             .then((res) => {
                 console.log("getTxChainFrom")
                 const txChains = res.data.data;
-                if (!txChains || txChains.first_depth.length === 0) {
+                console.log(txChains);
+                if (!txChains || txChains.length === 0 || txChains.first_depth.length === 0) {
                     alert("no data");
                     handleClose();
                     return;

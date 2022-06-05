@@ -124,14 +124,14 @@ export const Token = (props) => {
         axios
             .get(apiUrl + "/eth/db/TokentxChainTo", {
                 params: {
-                    source: address
+                    destination: address
                 },
             })
             .then((res) => {
                 console.log("TokentxChainTo")
                 console.log(res)
                 const txChains = res.data.data;
-                if (!txChains || txChains.first_depth.length === 0) {
+                if (!txChains || txChains.length === 0 || txChains.first_depth.length === 0) {
                     alert("no data");
                     handleClose();
                     return;
