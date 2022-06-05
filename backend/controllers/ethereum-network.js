@@ -388,7 +388,7 @@ const postTxlistChainWithAddress = async (req, res) => {
       const first_depth_tx = await Promise.all(uniqueTxlist.map(txReceipt => {
         const timestamp = new Date(1000 * txReceipt.timeStamp);
         const txData = {
-          tx: txReceipt.hash,
+          first_tx: txReceipt.hash,
           data: {
             from: txReceipt.from,
             to: txReceipt.to,
@@ -429,7 +429,7 @@ const postTxlistChainWithAddress = async (req, res) => {
               relatedTxReceipt.value !== '0') {
               const timestamp = new Date(1000 * relatedTxReceipt.timeStamp);
               const txData = {
-                tx: relatedTxReceipt.hash,
+                second_tx: relatedTxReceipt.hash,
                 data: {
                   from: relatedTxReceipt.from,
                   to: relatedTxReceipt.to,
@@ -580,7 +580,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
       const first_layer_tokentx = await Promise.all(uniqueTokenTxlist.map(tokentxReceipt => {
         const timestamp = new Date(1000 * tokentxReceipt.timeStamp);
         const tokentxData = {
-          tx: tokentxReceipt.hash,
+          first_tx: tokentxReceipt.hash,
           data: {
             from: tokentxReceipt.from,
             to: tokentxReceipt.to,
@@ -624,7 +624,7 @@ const postTokenTxChainWithAddress = async (req, res) => {
               relatedTokenTxReceipt.from !== relatedTokenTxReceipt.to && relatedTokenTxReceipt.value !== '0') {
               const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
               const tokentxData = {
-                tx: relatedTokenTxReceipt.hash,
+                second_tx: relatedTokenTxReceipt.hash,
                 data: {
                   from: relatedTokenTxReceipt.from,
                   to: relatedTokenTxReceipt.to,
