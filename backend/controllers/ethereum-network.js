@@ -154,25 +154,28 @@ const postETHTxInfoWithAddress = async (req, res) => {
         offset,
         sort,
       );
-      const ETHTransactions = await Promise.all(txlist.result.map(ETHTx => {
-        if (ETHTx.to !== "") {
-          const timestamp = new Date(1000 * ETHTx.timeStamp);
-          const ETHTxData = {
-            transactionHash: ETHTx.hash,
-            blockNum: ETHTx.blockNumber,
-            date: timestamp,
-            from: ETHTx.from,
-            to: ETHTx.to,
-            value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
-          };
-          return ETHTxData;
+      const ETHTransactions = await Promise.all(txlist.result.filter(ETHTx => {
+        if (ETHTx !== undefined && ETHTx.to !== "") {
+          return ETHTx;
         }
+      }));
+      const ETHTxs = await Promise.all(ETHTransactions.map(ETHTxInfos => {
+        const timestamp = new Date(1000 * ETHTxInfos.timeStamp);
+        const ETHTxData = {
+          transactionHash: ETHTxInfos.hash,
+          blockNum: ETHTxInfos.blockNumber,
+          date: timestamp,
+          from: ETHTxInfos.from,
+          to: ETHTxInfos.to,
+          value: req.web3.utils.fromWei(String(ETHTxInfos.value), 'ether')
+        };
+        return ETHTxData;
       }));
       const ETHTxInfo = {
         address: walletAddress,
         network: req.body.endpoint,
-        transactionCount: ETHTransactions.length,
-        transactions: ETHTransactions
+        transactionCount: ETHTxs.length,
+        transactions: ETHTxs
       };
       Wallet_transactions.insertMany(ETHTxInfo, {upsert: true}).catch(err => {
         console.log(err);
@@ -205,7 +208,7 @@ const postTokenTxInfoWithAddress = async (req, res) => {
         sort,
       );
       const tokenTransactions = await Promise.all(tokenTxlist.result.map(tokenTx => {
-        if (tokenTx.to !== "") {
+        if (tokenTx !== undefined && tokenTx.to !== "") {
           const timestamp = new Date(1000 * tokenTx.timeStamp);
           const tokenTxData = {
             transactionHash: tokenTx.hash,
