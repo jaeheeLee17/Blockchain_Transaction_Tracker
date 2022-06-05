@@ -63,14 +63,14 @@ const getTxChainFrom = async (req, res) => {
                 to: element["data"]["to"],
                 value: element["data"]["value"],
                 recentDate: element["data"]["date"],
-                tx: [element["tx"]],
+                tx: [element["second_tx"]],
                 count: 1});
           }
           else{
             let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
             uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
             uniqueArrforsecond[index].count += 1;
-            uniqueArrforsecond[index].tx.push(element["tx"])
+            uniqueArrforsecond[index].tx.push(element["second_tx"])
           }
         })
       }
@@ -113,14 +113,14 @@ const getTokentxChainTo = async (req, res) => {
               recentDate: element["data"]["date"],
               tokenSymbol: element["data"]["tokenSymbol"],
               tokenName: element["data"]["tokenName"],
-              tx: [element["tx"]],
+              tx: [element["second_tx"]],
               count: 1});
         }
         else{
           let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
           uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
           uniqueArrforsecond[index].count += 1;
-          uniqueArrforsecond[index].tx.push(element["tx"])
+          uniqueArrforsecond[index].tx.push(element["second_tx"])
         }
       })
     }
