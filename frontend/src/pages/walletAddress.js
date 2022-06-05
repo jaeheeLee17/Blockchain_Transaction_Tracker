@@ -282,7 +282,7 @@ export const WalletAddress = (props) => {
                     console.dir(error);
                   });
               }
-            }, 1500);
+            }, 2000);
           })
           .catch((e) => {
             console.log(e);
