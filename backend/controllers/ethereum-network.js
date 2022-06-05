@@ -458,7 +458,7 @@ const postTxlistChainWithAddress = async (req, res) => {
         });
       } else {
         return cwr.createWebResp(res, header, 200, {
-          message: "No transactions!",
+          message: "No ethereum transactions!",
         });
       }
     } else {
@@ -626,7 +626,14 @@ const postTokenTxChainWithAddress = async (req, res) => {
                 return tokentxReceipt;
               }
             }));
-            const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
+            const uniqueTokenTxs = await Promise.all(filtered_tokenTxlist.filter((addr, idx) => {
+              return (
+                filtered_tokenTxlist.findIndex((addr2, idx) => {
+                  return addr.from === addr2.from;
+                }) === idx
+              );
+            }));
+            const address_related_tokentx = await Promise.all(uniqueTokenTxs.map(relatedTokenTxReceipt => {
               if (relatedTokenTxReceipt.from !== '' && relatedTokenTxReceipt.from !== undefined &&
                 relatedTokenTxReceipt.from !== relatedTokenTxReceipt.to && relatedTokenTxReceipt.value !== '0') {
                 const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
@@ -658,6 +665,10 @@ const postTokenTxChainWithAddress = async (req, res) => {
         };
         eth_tokentx_traces.insertMany(tokentxChain, {upsert: true}).catch(err => {
           console.log(err);
+        });
+      } else {
+        return cwr.createWebResp(res, header, 200, {
+          message: "No ERC20 Token Transactions!",
         });
       }
     } else {
