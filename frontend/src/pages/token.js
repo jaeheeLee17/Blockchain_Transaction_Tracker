@@ -201,7 +201,7 @@ export const Token = (props) => {
                 const n = {
                     id: i + 2,
                     name: "node" + (i + 2),
-                    tx: first[i].tx,
+                    tx: first[i].first_tx,
                     from: first[i].data.from,
                     to: first[i].data.to,
                     value: first[i].data.value,
