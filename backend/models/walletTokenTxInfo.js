@@ -19,8 +19,7 @@ const wallet_ERC20_tx_Schema = new Schema({
     {
       transactionHash: {
         type: String,
-        required: true,
-        unique: true
+        required: true
       },
       date: {
         type: Date,
