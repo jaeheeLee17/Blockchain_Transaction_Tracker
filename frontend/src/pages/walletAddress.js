@@ -89,7 +89,7 @@ export const WalletAddress = (props) => {
     setName(event.target.value);
   };
 
-  const onChangeEthPage = (e) => {
+  const onChangeEthPage = async (e) => {
     Router.push({
       // as: "/transactiondetail",
       pathname: "moreEthTransaction",
@@ -98,7 +98,7 @@ export const WalletAddress = (props) => {
       },
     });
   };
-  const onChangeTokenPage = (e) => {
+  const onChangeTokenPage = async (e) => {
     Router.push({
       pathname: "moreTkTransaction",
       // as: "/transactiondetail",
@@ -174,7 +174,7 @@ export const WalletAddress = (props) => {
   };
 
   //db에 data 쌓는 부분
-  const postToDB = (wallet) => {
+  const postToDB = async (wallet) => {
     //modal 띄우기
     axios
       .post(apiUrl + "/eth/network/walletTrace", {
@@ -193,7 +193,7 @@ export const WalletAddress = (props) => {
   };
 
   //db에서 있는 데이터 가져옴
-  const getTxChainFrom = (token) => {
+  const getTxChainFrom = async (token) => {
     console.log("getfrom");
     axios
       .post(apiUrl + "/eth/network/ETHTxlist", {
@@ -232,10 +232,10 @@ export const WalletAddress = (props) => {
                 console.dir(error);
               });
           }
-        }, 2000);
+        }, 2500);
       });
 
-    const getTkChainFrom = (tokens) => {
+    const getTkChainFrom = async (tokens) => {
       console.log("tk");
       console.log(tokens);
       if (tokens == undefined) {
@@ -282,7 +282,7 @@ export const WalletAddress = (props) => {
                     console.dir(error);
                   });
               }
-            }, 2000);
+            }, 3000);
           })
           .catch((e) => {
             console.log(e);
@@ -291,9 +291,9 @@ export const WalletAddress = (props) => {
     };
   };
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
+  // const closeModal = () => {
+  //   setModalOpen(false);
+  // };
 
   const style = {
     position: "absolute",
