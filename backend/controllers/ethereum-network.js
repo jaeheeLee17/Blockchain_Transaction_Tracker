@@ -473,6 +473,10 @@ const postTxlistChainWithAddress = async (req, res) => {
       message: "Transaction trace list loading Completed, database updated!",
     });
   } catch (e) {
+    const txChain = {};
+    if (txChain !== undefined) {
+      return cwr.createWebResp(res, header, 200, txChain);
+    }
     return cwr.errorWebResp(res, header, 500,
       'get Transaction trace list failed', e.message || e);
   }
@@ -683,6 +687,10 @@ const postTokenTxChainWithAddress = async (req, res) => {
       message: "Token transaction trace list loading Completed, database updated!",
     });
   } catch (e) {
+    const tokentxChain = {};
+    if (tokentxChain !== undefined) {
+      return cwr.createWebResp(res, header, 200, tokentxChain);
+    }
     return cwr.errorWebResp(res, header, 500,
       'get token transaction trace list failed', e.message || e);
   }
