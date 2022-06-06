@@ -47,11 +47,13 @@ export const WalletAddress = (props) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [address, setAddress] = useState([]);
+
   const [tx, setTx] = useState([]);
   const [tokenTx, setTokenTx] = useState([]);
   const [name, setName] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [status, setStatus] = React.useState(false);
+
   const regHash = /^0x([A-Fa-f0-9]{64})$/;
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8546");
 
@@ -142,17 +144,13 @@ export const WalletAddress = (props) => {
       console.log(resultTokenBalance.data.data);
       setToken(resultTokenBalance?.data.data.tokens);
       setTotal(true);
-      checkData();
+      checkData(resultTokenBalance?.data.data.tokens);
     } catch (e) {
       console.dir(e);
-      //alert("");
-      // handleClose();
-      // return;
     }
-    checkData();
   }
 
-  const checkData = async () => {
+  const checkData = async (token) => {
     axios
       .get(apiUrl + "/eth/db/walletTrace", {
         params: {
@@ -167,7 +165,7 @@ export const WalletAddress = (props) => {
 
         if (!result) postToDB(walletAddress);
         else {
-          getTxChainFrom();
+          getTxChainFrom(token);
         }
       })
       .catch((error) => {
@@ -195,7 +193,7 @@ export const WalletAddress = (props) => {
   };
 
   //db에서 있는 데이터 가져옴
-  const getTxChainFrom = () => {
+  const getTxChainFrom = (token) => {
     console.log("getfrom");
     axios
       .post(apiUrl + "/eth/network/ETHTxlist", {
@@ -209,63 +207,87 @@ export const WalletAddress = (props) => {
       })
       .then((res) => {
         console.log(res);
-        if (res.data.responseStatus == 200) {
-          axios
-            .get(apiUrl + "/eth/db/ETHTxInfo", {
-              params: {
-                walletAddress: walletAddress,
-              },
-            })
-            .then((res) => {
-              console.log("ETHTxInfo");
-              const resultETHTxInfo = res.data.data;
-              setTx(resultETHTxInfo?.transactions.slice(0, 6));
-              setTotalEth(resultETHTxInfo?.transactions);
-              getTkChainFrom();
-            })
-            .catch((error) => {
-              console.dir(error);
-            });
-        }
-      });
-
-    const getTkChainFrom = () => {
-      axios
-        .post(apiUrl + "/eth/network/tokentxlist", {
-          endpoint: network,
-          walletAddress: walletAddress,
-          contractAddress: "",
-          startBlockNum: "1",
-          endBlockNum: "latest",
-          sort: "desc",
-        })
-        .then((res) => {
-          console.log(res);
+        setTimeout(() => {
           if (res.data.responseStatus == 200) {
             axios
-              .get(apiUrl + "/eth/db/TokenTxInfo", {
+              .get(apiUrl + "/eth/db/ETHTxInfo", {
                 params: {
                   walletAddress: walletAddress,
                 },
               })
               .then((res) => {
-                console.log("TokenTxInfo");
-                const resultTokenTxInfo = res.data.data;
-                setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
-                setTotalTk(resultTokenTxInfo?.transactions);
+                console.log("ETHTxInfo");
+                const resultETHTxInfo = res.data.data;
+                if (resultETHTxInfo == undefined) {
+                  setTx([]);
+                  setTotalEth([]);
+                } else {
+                  setTx(resultETHTxInfo?.transactions.slice(0, 6));
+                  setTotalEth(resultETHTxInfo?.transactions);
+                }
 
-                setStatus(true);
-                console.log(token);
-                handleClose();
+                getTkChainFrom(token);
               })
               .catch((error) => {
                 console.dir(error);
               });
           }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+        }, 2000);
+      });
+
+    const getTkChainFrom = (tokens) => {
+      console.log("tk");
+      console.log(tokens);
+      if (tokens == undefined) {
+        setTokenTx([]);
+        setTotalTk([]);
+        console.log("no token");
+        setStatus(true);
+        handleClose();
+        return;
+      } else {
+        axios
+          .post(apiUrl + "/eth/network/tokentxlist", {
+            endpoint: network,
+            walletAddress: walletAddress,
+            contractAddress: "",
+            startBlockNum: "1",
+            endBlockNum: "latest",
+            sort: "desc",
+          })
+          .then((res) => {
+            setTimeout(() => {
+              if (res.data.responseStatus == 200) {
+                axios
+                  .get(apiUrl + "/eth/db/TokenTxInfo", {
+                    params: {
+                      walletAddress: walletAddress,
+                    },
+                  })
+                  .then((res) => {
+                    console.log("TokenTxInfo");
+                    const resultTokenTxInfo = res.data.data;
+                    if (resultTokenTxInfo == undefined) {
+                      setTokenTx([]);
+                      setTotalTk([]);
+                    } else {
+                      setTokenTx(resultTokenTxInfo?.transactions.slice(0, 6));
+                      setTotalTk(resultTokenTxInfo?.transactions);
+                    }
+
+                    setStatus(true);
+                    handleClose();
+                  })
+                  .catch((error) => {
+                    console.dir(error);
+                  });
+              }
+            }, 2000);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
     };
   };
 
@@ -597,7 +619,6 @@ export const WalletAddress = (props) => {
                         variant="subtitle1"
                         sx={{
                           margin: 5,
-                          // width: 1500,
                         }}
                       >
                         <b>ERC20 Token Transaction</b>
@@ -608,8 +629,7 @@ export const WalletAddress = (props) => {
                             <TableCell></TableCell>
                             <TableCell>Txn Hash</TableCell>
                             <TableCell>Token name</TableCell>
-                            {/* <TableCell>Token symbol</TableCell> */}
-                            {/* <TableCell>Token number</TableCell> */}
+
                             <TableCell>Date</TableCell>
                             <TableCell></TableCell>
                             <TableCell>Contract address</TableCell>
@@ -617,74 +637,79 @@ export const WalletAddress = (props) => {
                             <TableCell></TableCell>
                           </TableRow>
                         </TableHead>
-                        <TableBody>
-                          {tokenTx.map((t) => (
-                            <TableRow key={t.transactionHash}>
-                              <TableCell>
-                                <Button
-                                  color="inherit"
-                                  // disabled={formik.isSubmitting}
-                                  fullWidth
-                                  size="small"
-                                  type="submit"
-                                  variant="contained"
-                                >
-                                  tx
-                                </Button>
-                              </TableCell>
-                              <TableCell>
-                                <Link
-                                  as={"/transactiondetail"}
-                                  href={{
-                                    pathname: "/tokenDetail",
-                                    query: {
-                                      transactionHash: t.transactionHash,
-                                      blockNum: t.blockNum,
-                                      date: t.date,
-                                      contractAddress: t.contractAddress,
-                                      tokenName: t.tokenName,
-                                      tokenSymbol: t.tokenSymbol,
-                                      tokenNumber: t.tokenNumber,
-                                      from: t.from,
-                                      to: t.to,
-                                      value: t.value,
-                                    },
-                                  }}
-                                >
-                                  <a>
-                                    {t.transactionHash.substring(0, 20) + "..."}
-                                  </a>
-                                </Link>
-                              </TableCell>
-                              <TableCell>{t.tokenName}</TableCell>
-                              {/* <TableCell>{t.tokenSymbol}</TableCell> */}
-                              {/* <TableCell>{t.tokenNumber}</TableCell> */}
-                              <TableCell>{t.date.substring(0, 19)}</TableCell>
-                              <TableCell>
-                                <b>from </b>
-                                {+t.from.substring(0, 20) + "..."}
-                                <br />
-                                <b>to </b>
-                                {t.to.substring(0, 20) + "..."}
-                              </TableCell>
-                              <TableCell>
-                                {t.contractAddress.substring(0, 20) + "..."}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  color="secondary"
-                                  // disabled={formik.isSubmitting}
-                                  fullWidth
-                                  size="small"
-                                  type="submit"
-                                  variant="contained"
-                                >
-                                  {t.value}
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
+                        {status == true ? (
+                          tokenTx.map((t, n) => (
+                            <TableBody>
+                              <TableRow key={n}>
+                                <TableCell>
+                                  <Button
+                                    color="inherit"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    tx
+                                  </Button>
+                                </TableCell>
+                                <TableCell>
+                                  <Link
+                                    as={"/transactiondetail"}
+                                    href={{
+                                      pathname: "/tokenDetail",
+                                      query: {
+                                        transactionHash: t.transactionHash,
+                                        blockNum: t.blockNum,
+                                        date: t.date,
+                                        contractAddress: t.contractAddress,
+                                        tokenName: t.tokenName,
+                                        tokenSymbol: t.tokenSymbol,
+                                        tokenNumber: t.tokenNumber,
+                                        from: t.from,
+                                        to: t.to,
+                                        value: t.value,
+                                      },
+                                    }}
+                                  >
+                                    <a>
+                                      {t.transactionHash.substring(0, 20) +
+                                        "..."}
+                                    </a>
+                                  </Link>
+                                </TableCell>
+                                <TableCell>{t.tokenName}</TableCell>
+                                {/* <TableCell>{t.tokenSymbol}</TableCell> */}
+                                {/* <TableCell>{t.tokenNumber}</TableCell> */}
+                                <TableCell>{t.date.substring(0, 19)}</TableCell>
+                                <TableCell>
+                                  <b>from </b>
+                                  {+t.from.substring(0, 20) + "..."}
+                                  <br />
+                                  <b>to </b>
+                                  {t.to.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  {t.contractAddress.substring(0, 20) + "..."}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    color="secondary"
+                                    // disabled={formik.isSubmitting}
+                                    fullWidth
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                  >
+                                    {t.value}
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          ))
+                        ) : (
+                          <TableBody></TableBody>
+                        )}
                       </Table>
                       <Box
                         sx={{

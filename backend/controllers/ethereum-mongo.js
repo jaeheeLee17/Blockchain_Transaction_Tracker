@@ -51,39 +51,43 @@ const getTxChainFrom = async (req, res) => {
     const {source} = req.query;
     const TxChainFromList = await eth_tx_traces.find({"from": source.toLowerCase()});
 
-    const second = TxChainFromList[0]["second_depth"];
-    const uniqueArrforsecond = [];
+    if (TxChainFromList.length !== 0) {
+      const second = TxChainFromList[0]["second_depth"];
+      const uniqueArrforsecond = [];
 
-    for(let i = 0; i < second.length; i++) {
-      second[i].forEach(element => {
-        if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"])) {
-          uniqueArrforsecond.push(
-            {from: element["data"]["from"],
-              to: element["data"]["to"],
-              value: element["data"]["value"],
-              recentDate: element["data"]["date"],
-              tx: [element["tx"]],
-              count: 1});
-        }
-        else{
-          let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
-          uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
-          uniqueArrforsecond[index].count += 1;
-          uniqueArrforsecond[index].tx.push(element["tx"])
-        }
-      })
+      for(let i = 0; i < second.length; i++) {
+        second[i].forEach(element => {
+          if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"])) {
+            uniqueArrforsecond.push(
+              {from: element["data"]["from"],
+                to: element["data"]["to"],
+                value: element["data"]["value"],
+                recentDate: element["data"]["date"],
+                tx: [element["second_tx"]],
+                count: 1});
+          }
+          else{
+            let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
+            uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
+            uniqueArrforsecond[index].count += 1;
+            uniqueArrforsecond[index].tx.push(element["second_tx"])
+          }
+        })
+      }
+
+      const result = {
+        network: TxChainFromList[0].network,
+        from: TxChainFromList[0].from,
+        startBlockNumber: TxChainFromList[0].startBlockNumber,
+        endBlockNumber: TxChainFromList[0].endBlockNumber,
+        first_depth: TxChainFromList[0].first_depth,
+        second_depth: uniqueArrforsecond
+      }
+
+      return cwr.createWebResp(res, header, 200, result);
+    } else {
+      return cwr.createWebResp(res, header, 200, []);
     }
-
-    const result = {
-      network: TxChainFromList[0].network,
-      from: TxChainFromList[0].from,
-      startBlockNumber: TxChainFromList[0].startBlockNumber,
-      endBlockNumber: TxChainFromList[0].endBlockNumber,
-      first_depth: TxChainFromList[0].first_depth,
-      second_depth: uniqueArrforsecond
-    }
-
-    return cwr.createWebResp(res, header, 200, result);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Transaction tracking lists with source address failed', e.message || e);
@@ -96,41 +100,43 @@ const getTokentxChainTo = async (req, res) => {
     const {destination} = req.query;
     const TokentxChainFromList = await eth_tokentx_traces.find({"to": destination.toLowerCase()});
 
-    const second = TokentxChainFromList[0]["second_depth"];
-    const uniqueArrforsecond = [];
+    if (TokentxChainFromList.length !== 0) {
+      const second = TokentxChainFromList[0]["second_depth"];
+      const uniqueArrforsecond = [];
 
-    for(let i = 0; i < second.length; i++) {
-      second[i].forEach(element => {
-        if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"] && v.tokenName === element["data"]["tokenName"])) {
-          uniqueArrforsecond.push(
-            {from: element["data"]["from"],
-              to: element["data"]["to"],
-              value: element["data"]["value"],
-              recentDate: element["data"]["date"],
-              tokenSymbol: element["data"]["tokenSymbol"],
-              tokenName: element["data"]["tokenName"],
-              tx: [element["tx"]],
-              count: 1});
-        }
-        else{
-          let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
-          uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
-          uniqueArrforsecond[index].count += 1;
-          uniqueArrforsecond[index].tx.push(element["tx"])
-        }
-      })
+      for(let i = 0; i < second.length; i++) {
+        second[i].forEach(element => {
+          if (!uniqueArrforsecond.some(v => v.from === element["data"]["from"] && v.to === element["data"]["to"] && v.tokenName === element["data"]["tokenName"])) {
+            uniqueArrforsecond.push(
+              {from: element["data"]["from"],
+                to: element["data"]["to"],
+                value: element["data"]["value"],
+                recentDate: element["data"]["date"],
+                tokenSymbol: element["data"]["tokenSymbol"],
+                tokenName: element["data"]["tokenName"],
+                tx: [element["second_tx"]],
+                count: 1});
+          }
+          else{
+            let index = uniqueArrforsecond.indexOf(uniqueArrforsecond.find(v => v.from === element["data"]["from"] && v.to === element["data"]["to"]))
+            uniqueArrforsecond[index].value = uniqueArrforsecond[index].value*1 + element["data"]["value"]*1;
+            uniqueArrforsecond[index].count += 1;
+            uniqueArrforsecond[index].tx.push(element["second_tx"])
+          }
+        })
+      }
+
+      const result = {
+        network: TokentxChainFromList[0].network,
+        to: TokentxChainFromList[0].to,
+        startBlockNumber: TokentxChainFromList[0].startBlockNumber,
+        endBlockNumber: TokentxChainFromList[0].endBlockNumber,
+        first_depth: TokentxChainFromList[0].first_depth,
+        second_depth: uniqueArrforsecond
+      }
+
+      return cwr.createWebResp(res, header, 200, result);
     }
-
-    const result = {
-      network: TokentxChainFromList[0].network,
-      to: TokentxChainFromList[0].to,
-      startBlockNumber: TokentxChainFromList[0].startBlockNumber,
-      endBlockNumber: TokentxChainFromList[0].endBlockNumber,
-      first_depth: TokentxChainFromList[0].first_depth,
-      second_depth: uniqueArrforsecond
-    }
-
-    return cwr.createWebResp(res, header, 200, result);
   } catch (e) {
     return cwr.errorWebResp(res, header, 500,
       'get Token Transaction trace lists with source address failed', e.message || e);

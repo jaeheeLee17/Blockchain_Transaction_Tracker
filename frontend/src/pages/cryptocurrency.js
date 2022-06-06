@@ -136,7 +136,8 @@ export const Cryptocurrency = (props) => {
       .then((res) => {
         console.log("getTxChainFrom")
         const txChains = res.data.data;
-        if (!txChains || txChains.first_depth.length === 0) {
+        console.log(txChains);
+        if (!txChains || txChains.length === 0 || txChains.first_depth.length === 0) {
           alert("no data");
           handleClose();
           return;
@@ -207,7 +208,7 @@ export const Cryptocurrency = (props) => {
         const n = {
           id: i + 2,
           name: "node" + (i + 2),
-          tx: first[i].tx,
+          tx: first[i].first_tx,
           from: first[i].data.from,
           to: first[i].data.to,
           value: first[i].data.value,
@@ -247,7 +248,7 @@ export const Cryptocurrency = (props) => {
                 x: 2000,
                 y: 100 + i * 10
               };
-              if (second[i].count > 1) secondNode.address = secondNode.count,secondNode.tx=secondNode.count;
+              if (second[i].count > 1) secondNode.address = secondNode.count;
               const secondLink = {
                 source: j + 2,
                 target: nextNodes.length + 1,

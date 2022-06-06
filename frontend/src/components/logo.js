@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { styled } from "@mui/material/styles";
 // import Blockchaingers from "../components/dashboard/blockchaingers.png";
+// <img src={Blockchaingers} />;
 
 export const Logo = styled((props) => {
   const { variant, ...other } = props;
@@ -32,7 +33,6 @@ export const Logo = styled((props) => {
         fill={color}
       />
     </svg>
-    // <img src={Blockchaingers} />
   );
 })``;
 

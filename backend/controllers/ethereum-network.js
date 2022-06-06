@@ -155,25 +155,28 @@ const postETHTxInfoWithAddress = async (req, res) => {
         offset,
         sort,
       );
-      const ETHTransactions = await Promise.all(txlist.result.map(ETHTx => {
-        if (ETHTx.to !== "") {
-          const timestamp = new Date(1000 * ETHTx.timeStamp);
-          const ETHTxData = {
-            transactionHash: ETHTx.hash,
-            blockNum: ETHTx.blockNumber,
-            date: timestamp,
-            from: ETHTx.from,
-            to: ETHTx.to,
-            value: req.web3.utils.fromWei(String(ETHTx.value), 'ether')
-          };
-          return ETHTxData;
+      const ETHTransactions = await Promise.all(txlist.result.filter(ETHTx => {
+        if (ETHTx !== undefined && ETHTx.to !== "") {
+          return ETHTx;
         }
+      }));
+      const ETHTxs = await Promise.all(ETHTransactions.map(ETHTxInfos => {
+        const timestamp = new Date(1000 * ETHTxInfos.timeStamp);
+        const ETHTxData = {
+          transactionHash: ETHTxInfos.hash,
+          blockNum: ETHTxInfos.blockNumber,
+          date: timestamp,
+          from: ETHTxInfos.from,
+          to: ETHTxInfos.to,
+          value: req.web3.utils.fromWei(String(ETHTxInfos.value), 'ether')
+        };
+        return ETHTxData;
       }));
       const ETHTxInfo = {
         address: walletAddress,
         network: req.body.endpoint,
-        transactionCount: ETHTransactions.length,
-        transactions: ETHTransactions
+        transactionCount: ETHTxs.length,
+        transactions: ETHTxs
       };
       Wallet_transactions.insertMany(ETHTxInfo, {upsert: true}).catch(err => {
         console.log(err);
@@ -206,7 +209,7 @@ const postTokenTxInfoWithAddress = async (req, res) => {
         sort,
       );
       const tokenTransactions = await Promise.all(tokenTxlist.result.map(tokenTx => {
-        if (tokenTx.to !== "") {
+        if (tokenTx !== undefined && tokenTx.to !== "") {
           const timestamp = new Date(1000 * tokenTx.timeStamp);
           const tokenTxData = {
             transactionHash: tokenTx.hash,
@@ -240,8 +243,13 @@ const postTokenTxInfoWithAddress = async (req, res) => {
       'ERC20 Token Transactions with wallet address loading success!');
   } catch (e) {
     const tokenTxInfo = {};
-    return cwr.errorWebResp(res, header, 500,
-      e, e.message || tokenTxInfo);
+    if (tokenTxInfo !== undefined) {
+      return cwr.createWebResp(res, header, 200,
+        tokenTxInfo);
+    } else {
+      return cwr.errorWebResp(res, header, 500,
+        e, e.message || tokenTxInfo);
+    }
   }
 }
 
@@ -381,76 +389,82 @@ const postTxlistChainWithAddress = async (req, res) => {
           }) === idx
         );
       }));
-      const first_depth_tx = await Promise.all(uniqueTxlist.map(txReceipt => {
-        const timestamp = new Date(1000 * txReceipt.timeStamp);
-        const txData = {
-          tx: txReceipt.hash,
-          data: {
-            from: txReceipt.from,
-            to: txReceipt.to,
-            value: req.web3.utils.fromWei(String(txReceipt.value), 'ether'),
-            date: timestamp
+      if (uniqueTxlist.length !== 0) {
+        const first_depth_tx = await Promise.all(uniqueTxlist.map(txReceipt => {
+          const timestamp = new Date(1000 * txReceipt.timeStamp);
+          const txData = {
+            first_tx: txReceipt.hash,
+            data: {
+              from: txReceipt.from,
+              to: txReceipt.to,
+              value: req.web3.utils.fromWei(String(txReceipt.value), 'ether'),
+              date: timestamp
+            }
+          };
+          return txData;
+        }));
+        const to_addresses = uniqueTxlist.map(txReceipt => {
+          if (txReceipt.to !== walletAddress.toLowerCase()) {
+            return txReceipt.to;
+          } else {
+            return '';
           }
+        });
+        const related_tx = [];
+        let address_idx = 0;
+        while (address_idx < to_addresses.length) {
+          let address = to_addresses[address_idx];
+          if (address !== "") {
+            const relatedTxlist = await req.etherscan.account.txlist(
+              address,
+              startBlockNum,
+              endBlockNum,
+              page,
+              offset,
+              sort,
+            );
+            const filteredTxlist = await Promise.all(relatedTxlist.result.filter(txReceipt => {
+              if (txReceipt.to !== address.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
+                && txReceipt.value !== '0') {
+                return txReceipt;
+              }
+            }));
+            const address_related_Tx = await Promise.all(filteredTxlist.map(relatedTxReceipt => {
+              if (relatedTxReceipt.to !== '' && relatedTxReceipt.to !== undefined && relatedTxReceipt.to !== relatedTxReceipt.from &&
+                relatedTxReceipt.value !== '0') {
+                const timestamp = new Date(1000 * relatedTxReceipt.timeStamp);
+                const txData = {
+                  second_tx: relatedTxReceipt.hash,
+                  data: {
+                    from: relatedTxReceipt.from,
+                    to: relatedTxReceipt.to,
+                    value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether'),
+                    date: timestamp
+                  }
+                };
+                return txData;
+              }
+            }));
+            related_tx.push(address_related_Tx);
+            address_idx++;
+          }
+        }
+        const txChain = {
+          network: req.body.endpoint,
+          from: walletAddress.toLowerCase(),
+          startBlockNumber: String(startBlockNum),
+          endBlockNumber: String(endBlockNum),
+          first_depth: first_depth_tx,
+          second_depth: related_tx
         };
-        return txData;
-      }));
-      const to_addresses = uniqueTxlist.map(txReceipt => {
-        if (txReceipt.to !== walletAddress.toLowerCase()) {
-          return txReceipt.to;
-        } else {
-          return '';
-        }
-      });
-      const related_tx = [];
-      let address_idx = 0;
-      while (address_idx < to_addresses.length) {
-        let address = to_addresses[address_idx];
-        if (address !== "") {
-          const relatedTxlist = await req.etherscan.account.txlist(
-            address,
-            startBlockNum,
-            endBlockNum,
-            page,
-            offset,
-            sort,
-          );
-          const filteredTxlist = await Promise.all(relatedTxlist.result.filter(txReceipt => {
-            if (txReceipt.to !== address.toLowerCase() && txReceipt.to !== '' && txReceipt.to !== undefined
-              && txReceipt.value !== '0') {
-              return txReceipt;
-            }
-          }));
-          const address_related_Tx = await Promise.all(filteredTxlist.map(relatedTxReceipt => {
-            if (relatedTxReceipt.to !== '' && relatedTxReceipt.to !== undefined && relatedTxReceipt.to !== relatedTxReceipt.from &&
-              relatedTxReceipt.value !== '0') {
-              const timestamp = new Date(1000 * relatedTxReceipt.timeStamp);
-              const txData = {
-                tx: relatedTxReceipt.hash,
-                data: {
-                  from: relatedTxReceipt.from,
-                  to: relatedTxReceipt.to,
-                  value: req.web3.utils.fromWei(String(relatedTxReceipt.value), 'ether'),
-                  date: timestamp
-                }
-              };
-              return txData;
-            }
-          }));
-          related_tx.push(address_related_Tx);
-          address_idx++;
-        }
+        eth_tx_traces.insertMany(txChain, {upsert: true}).catch(err => {
+          console.log(err);
+        });
+      } else {
+        return cwr.createWebResp(res, header, 200, {
+          message: "No ethereum transactions!",
+        });
       }
-      const txChain = {
-        network: req.body.endpoint,
-        from: walletAddress.toLowerCase(),
-        startBlockNumber: String(startBlockNum),
-        endBlockNumber: String(endBlockNum),
-        first_depth: first_depth_tx,
-        second_depth: related_tx
-      };
-      eth_tx_traces.insertMany(txChain, {upsert: true}).catch(err => {
-        console.log(err);
-      });
     } else {
       return cwr.createWebResp(res, header, 200, {
         message: "Transaction trace list already exists in database!",
@@ -460,6 +474,10 @@ const postTxlistChainWithAddress = async (req, res) => {
       message: "Transaction trace list loading Completed, database updated!",
     });
   } catch (e) {
+    const txChain = {};
+    if (txChain !== undefined) {
+      return cwr.createWebResp(res, header, 200, txChain);
+    }
     return cwr.errorWebResp(res, header, 500,
       'get Transaction trace list failed', e.message || e);
   }
@@ -530,11 +548,17 @@ const getTokenBalanceList = async (req, res) => {
     }
     return cwr.createWebResp(res, header, 200, {
       tokens: tokenList,
-    })
+    });
   } catch (e) {
     const tokenList = [];
-    return cwr.errorWebResp(res, header, 500,
-      e, e.message || tokenList);
+    if (tokenList.length === 0) {
+      return cwr.createWebResp(res, header, 200, {
+        tokens: tokenList,
+      });
+    } else {
+      return cwr.errorWebResp(res, header, 500,
+        e, e.message || tokenList);
+    }
   }
 }
 
@@ -567,81 +591,94 @@ const postTokenTxChainWithAddress = async (req, res) => {
           }) === idx
         );
       }));
-      const first_layer_tokentx = await Promise.all(uniqueTokenTxlist.map(tokentxReceipt => {
-        const timestamp = new Date(1000 * tokentxReceipt.timeStamp);
-        const tokentxData = {
-          tx: tokentxReceipt.hash,
-          data: {
-            from: tokentxReceipt.from,
-            to: tokentxReceipt.to,
-            tokenName: tokentxReceipt.tokenName,
-            tokenSymbol: tokentxReceipt.tokenSymbol,
-            value: req.web3.utils.fromWei(String(tokentxReceipt.value), 'ether'),
-            date: timestamp
+      if (uniqueTokenTxlist.length !== 0) {
+        const first_layer_tokentx = await Promise.all(uniqueTokenTxlist.map(tokentxReceipt => {
+          const timestamp = new Date(1000 * tokentxReceipt.timeStamp);
+          const tokentxData = {
+            first_tx: tokentxReceipt.hash,
+            data: {
+              from: tokentxReceipt.from,
+              to: tokentxReceipt.to,
+              tokenName: tokentxReceipt.tokenName,
+              tokenSymbol: tokentxReceipt.tokenSymbol,
+              value: req.web3.utils.fromWei(String(tokentxReceipt.value), 'ether'),
+              date: timestamp
+            }
+          };
+          return tokentxData;
+        }));
+        const token_from_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
+          if (tokentxReceipt.from !== walletAddress.toLowerCase()) {
+            return tokentxReceipt.from;
+          } else {
+            return '';
           }
+        });
+        const related_tokentx = [];
+        let address_idx = 0;
+        while (address_idx < token_from_addresses.length) {
+          let address = token_from_addresses[address_idx];
+          if (address !== "") {
+            const related_tokenTxlist = await req.etherscan.account.tokentx(
+              address,
+              contractAddress,
+              startBlockNum,
+              endBlockNum,
+              page,
+              offset,
+              sort
+            );
+            const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
+              if (tokentxReceipt.from !== address.toLowerCase() && tokentxReceipt.from !== '' && tokentxReceipt.from !== undefined
+                && tokentxReceipt.value !== '0') {
+                return tokentxReceipt;
+              }
+            }));
+            const uniqueTokenTxs = await Promise.all(filtered_tokenTxlist.filter((addr, idx) => {
+              return (
+                filtered_tokenTxlist.findIndex((addr2, idx) => {
+                  return addr.from === addr2.from;
+                }) === idx
+              );
+            }));
+            const address_related_tokentx = await Promise.all(uniqueTokenTxs.map(relatedTokenTxReceipt => {
+              if (relatedTokenTxReceipt.from !== '' && relatedTokenTxReceipt.from !== undefined &&
+                relatedTokenTxReceipt.from !== relatedTokenTxReceipt.to && relatedTokenTxReceipt.value !== '0') {
+                const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
+                const tokentxData = {
+                  second_tx: relatedTokenTxReceipt.hash,
+                  data: {
+                    from: relatedTokenTxReceipt.from,
+                    to: relatedTokenTxReceipt.to,
+                    tokenName: relatedTokenTxReceipt.tokenName,
+                    tokenSymbol: relatedTokenTxReceipt.tokenSymbol,
+                    value: req.web3.utils.fromWei(String(relatedTokenTxReceipt.value), 'ether'),
+                    date: timestamp
+                  }
+                };
+                return tokentxData;
+              }
+            }));
+            related_tokentx.push(address_related_tokentx);
+            address_idx++;
+          }
+        }
+        const tokentxChain = {
+          network: req.body.endpoint,
+          to: walletAddress.toLowerCase(),
+          startBlockNumber: String(startBlockNum),
+          endBlockNumber: String(endBlockNum),
+          first_depth: first_layer_tokentx,
+          second_depth: related_tokentx
         };
-        return tokentxData;
-      }));
-      const token_from_addresses = uniqueTokenTxlist.map(tokentxReceipt => {
-        if (tokentxReceipt.from !== walletAddress.toLowerCase()) {
-          return tokentxReceipt.from;
-        } else {
-          return '';
-        }
-      });
-      const related_tokentx = [];
-      let address_idx = 0;
-      while (address_idx < token_from_addresses.length) {
-        let address = token_from_addresses[address_idx];
-        if (address !== "") {
-          const related_tokenTxlist = await req.etherscan.account.tokentx(
-            address,
-            contractAddress,
-            startBlockNum,
-            endBlockNum,
-            page,
-            offset,
-            sort
-          );
-          const filtered_tokenTxlist = await Promise.all(related_tokenTxlist.result.filter(tokentxReceipt => {
-            if (tokentxReceipt.from !== address.toLowerCase() && tokentxReceipt.from !== '' && tokentxReceipt.from !== undefined
-              && tokentxReceipt.value !== '0') {
-              return tokentxReceipt;
-            }
-          }));
-          const address_related_tokentx = await Promise.all(filtered_tokenTxlist.map(relatedTokenTxReceipt => {
-            if (relatedTokenTxReceipt.from !== '' && relatedTokenTxReceipt.from !== undefined &&
-              relatedTokenTxReceipt.from !== relatedTokenTxReceipt.to && relatedTokenTxReceipt.value !== '0') {
-              const timestamp = new Date(1000 * relatedTokenTxReceipt.timeStamp);
-              const tokentxData = {
-                tx: relatedTokenTxReceipt.hash,
-                data: {
-                  from: relatedTokenTxReceipt.from,
-                  to: relatedTokenTxReceipt.to,
-                  tokenName: relatedTokenTxReceipt.tokenName,
-                  tokenSymbol: relatedTokenTxReceipt.tokenSymbol,
-                  value: req.web3.utils.fromWei(String(relatedTokenTxReceipt.value), 'ether'),
-                  date: timestamp
-                }
-              };
-              return tokentxData;
-            }
-          }));
-          related_tokentx.push(address_related_tokentx);
-          address_idx++;
-        }
+        eth_tokentx_traces.insertMany(tokentxChain, {upsert: true}).catch(err => {
+          console.log(err);
+        });
+      } else {
+        return cwr.createWebResp(res, header, 200, {
+          message: "No ERC20 Token Transactions!",
+        });
       }
-      const tokentxChain = {
-        network: req.body.endpoint,
-        to: walletAddress.toLowerCase(),
-        startBlockNumber: String(startBlockNum),
-        endBlockNumber: String(endBlockNum),
-        first_depth: first_layer_tokentx,
-        second_depth: related_tokentx
-      };
-      eth_tokentx_traces.insertMany(tokentxChain, {upsert: true}).catch(err => {
-        console.log(err);
-      });
     } else {
       return cwr.createWebResp(res, header, 200, {
         message: "Token transaction trace list already exists in database!",
@@ -651,6 +688,10 @@ const postTokenTxChainWithAddress = async (req, res) => {
       message: "Token transaction trace list loading Completed, database updated!",
     });
   } catch (e) {
+    const tokentxChain = {};
+    if (tokentxChain !== undefined) {
+      return cwr.createWebResp(res, header, 200, tokentxChain);
+    }
     return cwr.errorWebResp(res, header, 500,
       'get token transaction trace list failed', e.message || e);
   }

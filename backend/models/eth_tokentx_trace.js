@@ -21,10 +21,9 @@ const Eth_tokentx_trace_schema = new Schema({
   },
   first_depth: [
     {
-      tx: {
+      first_tx: {
         type: String,
-        required: true,
-        unique: true
+        required: true
       },
       data: {
         from: {
@@ -57,10 +56,9 @@ const Eth_tokentx_trace_schema = new Schema({
   second_depth: [
     [
       {
-        tx: {
+        second_tx: {
           type: String,
-          required: true,
-          unique: true
+          required: true
         },
         data: {
           from: {

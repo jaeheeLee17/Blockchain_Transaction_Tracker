@@ -131,7 +131,7 @@ export const Token = (props) => {
                 console.log("TokentxChainTo")
                 console.log(res)
                 const txChains = res.data.data;
-                if (!txChains || txChains.first_depth.length === 0) {
+                if (!txChains || txChains.length === 0 || txChains.first_depth.length === 0) {
                     alert("no data");
                     handleClose();
                     return;
@@ -201,7 +201,7 @@ export const Token = (props) => {
                 const n = {
                     id: i + 2,
                     name: "node" + (i + 2),
-                    tx: first[i].tx,
+                    tx: first[i].first_tx,
                     from: first[i].data.from,
                     to: first[i].data.to,
                     value: first[i].data.value,
@@ -225,7 +225,7 @@ export const Token = (props) => {
 
             //second_dept
             console.log(second)
-            if (second[0].length != 0) {
+            if (second!=undefined) {
                 for (let i = 0; i < second.length; i++) {
                     for (let j = 0; j < first.length; j++) {
                         if (second[i].length != 0 && first[j].data.from == second[i].to) {
