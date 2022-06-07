@@ -71,11 +71,8 @@ const Transactiondetail = (props) => {
                         {data.blockNumber}
                         <br />
                         <br />
-                        <b>Create: </b>
-                        {data.createdAt}
-                        <br />
-                        <br />
-                        <b>Update: </b> {data.updatedAt}
+                        <b>Date: </b>
+                        {data.txDate}
                         <br />
                         <br />
                         <Divider />
