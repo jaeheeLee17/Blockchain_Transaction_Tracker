@@ -62,9 +62,9 @@ export const Token = (props) => {
             from: walletAddress,
             address: walletAddress,
             dept: 0,
-            x: 100,
-            y: 200,
-            color: "#001c06",
+            x: 1500,
+            y: 600,
+            color: "#62c462",
             size: 2000
         },
     ];
@@ -209,10 +209,10 @@ export const Token = (props) => {
                     tokenName: first[i].data.tokenName,
                     tokenSymbol: first[i].data.tokenSymbol,
                     dept: 1,
-                    color: "#075607",
+                    color: "#147914",
                     size: 1500,
-                    x: 200 + i * 10,
-                    y: 100 + i * 10
+                    x: 1000 - i * 10,
+                    y: 400 - i * 10
                 };
 
                 const s = {
@@ -277,10 +277,10 @@ export const Token = (props) => {
                             tokenSymbol: nextNodes[i].tokenSymbol,
                             dept: 3,
                             parent: nextNodes[i].id,
-                            color: "#62c462",
+                            color: "#001c06",
                             size: 1000,
-                            x: nextNodes[i].x,
-                            y: nextNodes[i].y
+                            x: 100,
+                            y:200+i*10
                         };
                         const thirdLink = {
                             source: nextNodes[i].id,
@@ -296,7 +296,7 @@ export const Token = (props) => {
                 let item = nextNodes[i];
                 if (item.dept == 2) {
                     if (item.count > 1) {
-                        item.color = "#147914";
+                        item.color = "#001c06";
                         item.size = 1500;
                     }
                 }
@@ -429,7 +429,7 @@ export const Token = (props) => {
             disableLinkForce: false,
         },
         node: {
-            color: "#62c462",
+            color: "#0b4917",
             fontColor: "black",
             fontSize: 8,
             fontWeight: "normal",

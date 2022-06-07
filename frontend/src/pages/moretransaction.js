@@ -21,6 +21,7 @@ import {
   Divider,
 } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import Link from "next/link";
 
 const Moretransaction = (props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_ROOT;
@@ -37,6 +38,9 @@ const Moretransaction = (props) => {
         console.dir(error);
       });
   }, []);
+  const onChangePage = (e) => {
+    window.location.href = "/moretransaction";
+  };
 
   return (
     <Card {...props}>
@@ -50,8 +54,7 @@ const Moretransaction = (props) => {
                 <TableRow>
                   <TableCell></TableCell>
                   <TableCell>Txn Hash</TableCell>
-                  <TableCell>Create</TableCell>
-                  <TableCell>Update</TableCell>
+                  <TableCell>Date</TableCell>
                   <TableCell>Block</TableCell>
                   <TableCell></TableCell>
                   <TableCell>Value</TableCell>
@@ -73,17 +76,42 @@ const Moretransaction = (props) => {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      {tr.transactionHash.substring(0, 20) + "..."}
+                      {
+                        // <span
+                        //   onClick={() =>
+                        //     router.replace({
+                        //       pathname: "/transactiondetail",
+                        //       query: { hash: tr.transactionHash, to: tr.to },
+                        //     })
+                        //   }
+                        // >
+                        <Link
+                          as={"/transactiondetail"}
+                          href={{
+                            pathname: "/transactiondetail",
+                            query: {
+                              transactionHash: tr.transactionHash,
+                              txDate: tr.date,
+                              blockNumber: tr.blockNumber,
+                              from: tr.from,
+                              to: tr.to,
+                              value: tr.value,
+                            },
+                          }}
+                        >
+                          <a>{tr.transactionHash.substring(0, 20) + "..."}</a>
+                        </Link>
+                        // </span>
+                      }
                     </TableCell>
-                    <TableCell>{tr.createdAt}</TableCell>
-                    <TableCell>{tr.updatedAt}</TableCell>
+                    <TableCell>{tr.date.substring(0, 19)}</TableCell>
                     <TableCell>{tr.blockNumber}</TableCell>
                     <TableCell>
                       <b>from </b>
-                      {+tr.from.substring(0, 20) + "..."}
+                      {tr.from}
                       <br />
                       <b>to </b>
-                      {tr.to.substring(0, 20) + "..."}
+                      {tr.to}
                     </TableCell>
                     <TableCell>
                       <Button

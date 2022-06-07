@@ -40,7 +40,7 @@ export const Graph = (props) => {
           axios
             .get(apiUrl + "/eth/db/getTransactionsPerHour", {
               params: {
-                sethour: 7,
+                sethour: 6,
               },
             })
             .then((res) => {

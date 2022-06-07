@@ -65,8 +65,7 @@ export const LatestTransaction = (props) => {
                 <TableRow>
                   <TableCell></TableCell>
                   <TableCell>Txn Hash</TableCell>
-                  <TableCell>Create</TableCell>
-                  <TableCell>Update</TableCell>
+                  <TableCell>Date</TableCell>
                   <TableCell>Block</TableCell>
                   <TableCell>from-to</TableCell>
                   <TableCell>Value</TableCell>
@@ -113,8 +112,7 @@ export const LatestTransaction = (props) => {
                             pathname: "/transactiondetail",
                             query: {
                               transactionHash: tr.transactionHash,
-                              createdAt: tr.createdAt,
-                              updatedAt: tr.updatedAt,
+                              txDate: tr.date,
                               blockNumber: tr.blockNumber,
                               from: tr.from,
                               to: tr.to,
@@ -130,15 +128,14 @@ export const LatestTransaction = (props) => {
                     {/* <TableCell>
                       {new Date().format(tr.createdAt, "dd/MM/yyyy")}
                     </TableCell> */}
-                    <TableCell>{tr.createdAt}</TableCell>
-                    <TableCell>{tr.updatedAt}</TableCell>
+                    <TableCell>{tr.date.substring(0, 19)}</TableCell>
                     <TableCell>{tr.blockNumber}</TableCell>
                     <TableCell>
                       <b>from </b>
-                      {+tr.from.substring(0, 20) + "..."}
+                      {tr.from}
                       <br />
                       <b>to </b>
-                      {tr.to.substring(0, 20) + "..."}
+                      {tr.to}
                     </TableCell>
                     <TableCell>
                       <Button

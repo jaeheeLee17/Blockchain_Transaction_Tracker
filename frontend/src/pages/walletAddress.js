@@ -615,33 +615,24 @@ export const WalletAddress = (props) => {
                       <Table>
                         <TableHead>
                           <TableRow>
-                            <TableCell></TableCell>
-                            <TableCell>Txn Hash</TableCell>
+                            <TableCell style={{ textAlign: "center" }}>
+                              Txn Hash
+                            </TableCell>
                             <TableCell>Token name</TableCell>
 
                             <TableCell>Date</TableCell>
                             <TableCell></TableCell>
                             <TableCell>Contract address</TableCell>
-                            <TableCell>Value</TableCell>
+                            <TableCell style={{ textAlign: "center" }}>
+                              Value
+                            </TableCell>
                             <TableCell></TableCell>
                           </TableRow>
                         </TableHead>
-                        {status == true ? (
-                          tokenTx.map((t, n) => (
-                            <TableBody>
+                        <TableBody>
+                          {status == true ? (
+                            tokenTx.map((t, n) => (
                               <TableRow key={n}>
-                                <TableCell>
-                                  <Button
-                                    color="inherit"
-                                    // disabled={formik.isSubmitting}
-                                    fullWidth
-                                    size="small"
-                                    type="submit"
-                                    variant="contained"
-                                  >
-                                    tx
-                                  </Button>
-                                </TableCell>
                                 <TableCell>
                                   <Link
                                     as={"/transactiondetail"}
@@ -672,11 +663,10 @@ export const WalletAddress = (props) => {
                                 {/* <TableCell>{t.tokenNumber}</TableCell> */}
                                 <TableCell>{t.date.substring(0, 19)}</TableCell>
                                 <TableCell>
-                                  <b>from </b>
+                                  <b>from </b>{" "}
                                   {+t.from.substring(0, 20) + "..."}
                                   <br />
-                                  <b>to </b>
-                                  {t.to.substring(0, 20) + "..."}
+                                  <b>to </b> {t.to.substring(0, 20) + "..."}
                                 </TableCell>
                                 <TableCell>
                                   {t.contractAddress.substring(0, 20) + "..."}
@@ -690,15 +680,15 @@ export const WalletAddress = (props) => {
                                     type="submit"
                                     variant="contained"
                                   >
-                                    {t.value}
+                                    {t.value.substring(0, 10)}
                                   </Button>
                                 </TableCell>
                               </TableRow>
-                            </TableBody>
-                          ))
-                        ) : (
-                          <TableBody></TableBody>
-                        )}
+                            ))
+                          ) : (
+                            <TableCell></TableCell>
+                          )}
+                        </TableBody>
                       </Table>
                       <Box
                         sx={{
